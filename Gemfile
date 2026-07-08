@@ -30,7 +30,7 @@ gem "bootsnap", require: false
 # gem "rack-cors"
 
 gem 'bcrypt'
-gem "jwt", "~> 2.9"
+gem "jwt", "~> 3.2"
 
 gem "kamal"
 
