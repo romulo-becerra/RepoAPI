@@ -28,5 +28,11 @@ module Bankfacilito
     # Middleware like session, flash, cookies can be added back manually.
     # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
+    config.middleware.use ActionDispatch::Cookies
+    config.middleware.use ActionDispatch::Session::CookieStore, key: '_bankfacilito_session'
+    config.action_dispatch.default_headers = {
+      'Content-Type' => 'application/json'
+    }
+    config.action_dispatch.perform_deep_munge = false
   end
 end

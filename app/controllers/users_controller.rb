@@ -1,12 +1,13 @@
 class UsersController < ApplicationController
-  skip_before_action :authenticate_request, only: [:register, :login]
-  
+  skip_before_action :authenticate_request, only: [:index, :register, :login]
+
   def index
+    render json: { status: 'ok', service: 'bankfacilito', message: 'API funcionando' }, status: :ok
   end
 
   def register
-    @user = User.new(user_params)
-    @user.pin = params[:pin]
+    attrs = registration_params
+    @user = User.new(attrs)
 
     if @user.save
       @account = @user.accounts.first
@@ -44,7 +45,20 @@ class UsersController < ApplicationController
 
   private
 
+  def registration_params
+    payload = request.raw_post.presence || request.body.read.to_s
+    return params.permit(:first_name, :last_name, :email, :pin).to_h.symbolize_keys if payload.blank?
+
+    data = JSON.parse(payload)
+    return {} unless data.is_a?(Hash)
+
+    data = data.with_indifferent_access
+    data.slice(:first_name, :last_name, :email, :pin)
+  rescue JSON::ParserError, TypeError
+    params.permit(:first_name, :last_name, :email, :pin).to_h.symbolize_keys
+  end
+
   def user_params
-    params.permit(:first_name, :last_name, :email)
+    params.permit(:first_name, :last_name, :email, :pin)
   end
 end

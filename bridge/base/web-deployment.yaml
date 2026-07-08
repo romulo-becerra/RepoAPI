@@ -1,0 +1,47 @@
+#! web-deployment.yaml
+# Generated code, do not edit
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: web
+    namespace: bankfacilito
+    labels:
+        com.docker.compose.project: bankfacilito
+        com.docker.compose.service: web
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            com.docker.compose.project: bankfacilito
+            com.docker.compose.service: web
+    strategy:
+        type: Recreate
+    template:
+        metadata:
+            labels:
+                com.docker.compose.project: bankfacilito
+                com.docker.compose.service: web
+                com.docker.compose.network.default: "true"
+        spec:
+            containers:
+                - name: web
+                  image: bankfacilito-web
+                  imagePullPolicy: IfNotPresent
+                  args:
+                    - ./bin/rails
+                    - server
+                    - -b
+                    - 0.0.0.0
+                  env:
+                    - name: RAILS_ENV
+                      value: "development"
+                  ports:
+                    - name: web-3000
+                      containerPort: 3000
+                  volumeMounts:
+                    - name: rails
+                      mountPath: /rails
+            volumes:
+                - name: rails
+                  hostPath:
+                    path: C:\Github\CodigoFacilito\bankfacilito

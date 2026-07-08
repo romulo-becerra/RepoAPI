@@ -1,0 +1,19 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bankfacilito-api
+    ports:
+      - "3001:3000"
+    environment:
+      RAILS_ENV: development
+      PORT: 3000
+    command: ["bundle", "exec", "rails", "server", "-b", "0.0.0.0", "-p", "3000"]
+    volumes:
+      - .:/app
+      - bundle:/usr/local/bundle
+    restart: unless-stopped
+
+volumes:
+  bundle:
