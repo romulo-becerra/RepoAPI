@@ -1,4 +1,5 @@
 const storageKey = 'angelfire-dashboard-state';
+const BALANCE_AUTO_REFRESH_MS = 15000;
 
 const defaultState = {
   baseUrl: 'http://localhost:3001',
@@ -22,6 +23,7 @@ const defaultState = {
   adminInspectAccountLookup: '',
   adminInspectLoanId: '',
   adminInspectUserId: '',
+  balanceAutoRefresh: false,
   activeView: 'client',
   auditLog: []
 };
@@ -34,6 +36,7 @@ let adminUsersPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1
 let adminPlanPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
 let modalDecisionResolver = null;
 let modalCloseTimer = null;
+let balanceAutoRefreshTimer = null;
 
 const el = {
   baseUrl: document.getElementById('baseUrl'),
@@ -42,6 +45,9 @@ const el = {
   responseStatus: document.getElementById('responseStatus'),
   responseBox: document.getElementById('responseBox'),
   balanceValue: document.getElementById('balanceValue'),
+  balanceAutoIndicator: document.getElementById('balanceAutoIndicator'),
+  refreshBalanceBtn: document.getElementById('refreshBalanceBtn'),
+  autoRefreshBalanceToggle: document.getElementById('autoRefreshBalanceToggle'),
   accountNumberValue: document.getElementById('accountNumberValue'),
   userNameValue: document.getElementById('userNameValue'),
   loanStateValue: document.getElementById('loanStateValue'),
@@ -159,6 +165,7 @@ function renderPermissions() {
 }
 
 function clearSession(keepBaseUrl = true) {
+  stopBalanceAutoRefresh();
   const baseUrl = keepBaseUrl ? state.baseUrl : defaultState.baseUrl;
   Object.assign(state, { ...defaultState, baseUrl });
   persistState();
@@ -198,7 +205,48 @@ function setView(view) {
   el.adminView.classList.toggle('hidden', view !== 'admin');
   el.viewClientBtn.classList.toggle('active-view', view === 'client');
   el.viewAdminBtn.classList.toggle('active-view', view === 'admin');
+  syncBalanceAutoRefreshState();
   persistState();
+}
+
+async function refreshClientBalanceValue() {
+  if (!state.token || !state.accountId) {
+    return;
+  }
+
+  const payload = await apiCall(`/api/v1/accounts/${state.accountId}`, 'GET');
+  el.balanceValue.textContent = `S/ ${Number(payload.balance || 0).toFixed(2)}`;
+}
+
+function stopBalanceAutoRefresh() {
+  if (balanceAutoRefreshTimer) {
+    clearInterval(balanceAutoRefreshTimer);
+    balanceAutoRefreshTimer = null;
+  }
+}
+
+function syncBalanceAutoRefreshState() {
+  if (el.balanceAutoIndicator) {
+    el.balanceAutoIndicator.classList.toggle('hidden', !state.balanceAutoRefresh);
+  }
+
+  const shouldRun = Boolean(state.balanceAutoRefresh && state.activeView === 'client' && state.token && state.accountId);
+  if (!shouldRun) {
+    stopBalanceAutoRefresh();
+    return;
+  }
+
+  if (balanceAutoRefreshTimer) {
+    return;
+  }
+
+  balanceAutoRefreshTimer = setInterval(async () => {
+    try {
+      await refreshClientBalanceValue();
+    } catch (_error) {
+      // Keep auto-refresh resilient without interrupting user actions.
+    }
+  }, BALANCE_AUTO_REFRESH_MS);
 }
 
 function setDefaultDate() {
@@ -219,15 +267,40 @@ function renderResponse(status, payload) {
   el.responseBox.textContent = JSON.stringify(payload, null, 2);
 }
 
+function hasCustomModal() {
+  return Boolean(
+    el.actionModal
+      && el.actionModalCard
+      && el.actionModalTitle
+      && el.actionModalMessage
+      && el.actionModalConfirmBtn
+      && el.actionModalCancelBtn
+  );
+}
+
 function lockBodyScroll() {
+  if (!hasCustomModal()) {
+    return;
+  }
   document.body.classList.add('modal-open');
 }
 
 function unlockBodyScroll() {
+  if (!hasCustomModal()) {
+    return;
+  }
   document.body.classList.remove('modal-open');
 }
 
 function resolveActionModal(confirmed) {
+  if (!hasCustomModal()) {
+    if (modalDecisionResolver) {
+      modalDecisionResolver(confirmed);
+      modalDecisionResolver = null;
+    }
+    return;
+  }
+
   if (modalDecisionResolver) {
     modalDecisionResolver(confirmed);
     modalDecisionResolver = null;
@@ -244,6 +317,16 @@ function resolveActionModal(confirmed) {
 }
 
 function openActionModal({ title, message, confirmText, cancelText, tone = '', showCancel = true }) {
+  if (!hasCustomModal()) {
+    if (showCancel) {
+      const confirmed = window.confirm(message || title || 'Confirmar operacion');
+      return Promise.resolve(confirmed);
+    }
+
+    window.alert(message || title || 'Operacion no completada');
+    return Promise.resolve(true);
+  }
+
   if (modalCloseTimer) {
     clearTimeout(modalCloseTimer);
     modalCloseTimer = null;
@@ -963,18 +1046,38 @@ async function refreshAdminDashboard() {
 }
 
 function bindEvents() {
-  el.actionModalConfirmBtn.addEventListener('click', () => resolveActionModal(true));
-  el.actionModalCancelBtn.addEventListener('click', () => resolveActionModal(false));
-  el.actionModal.addEventListener('click', (event) => {
-    if (event.target === el.actionModal) {
-      resolveActionModal(false);
-    }
-  });
-  document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !el.actionModal.classList.contains('hidden')) {
-      resolveActionModal(false);
-    }
-  });
+  if (hasCustomModal()) {
+    el.actionModalConfirmBtn.addEventListener('click', () => resolveActionModal(true));
+    el.actionModalCancelBtn.addEventListener('click', () => resolveActionModal(false));
+    el.actionModal.addEventListener('click', (event) => {
+      if (event.target === el.actionModal) {
+        resolveActionModal(false);
+      }
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && !el.actionModal.classList.contains('hidden')) {
+        resolveActionModal(false);
+      }
+    });
+  }
+
+  if (el.refreshBalanceBtn) {
+    el.refreshBalanceBtn.addEventListener('click', async () => {
+      try {
+        await refreshClientBalanceValue();
+      } catch (error) {
+        renderResponse(422, { errors: error.message });
+      }
+    });
+  }
+
+  if (el.autoRefreshBalanceToggle) {
+    el.autoRefreshBalanceToggle.addEventListener('change', () => {
+      state.balanceAutoRefresh = Boolean(el.autoRefreshBalanceToggle.checked);
+      persistState();
+      syncBalanceAutoRefreshState();
+    });
+  }
 
   document.getElementById('baseConfigForm').addEventListener('submit', (event) => {
     event.preventDefault();
@@ -1660,6 +1763,12 @@ function hydrateInputs() {
   if (state.adminInspectAccountLookup) {
     el.adminLookupAccountId.value = state.adminInspectAccountLookup;
   }
+  if (el.autoRefreshBalanceToggle) {
+    el.autoRefreshBalanceToggle.checked = Boolean(state.balanceAutoRefresh);
+  }
+  if (el.balanceAutoIndicator) {
+    el.balanceAutoIndicator.classList.toggle('hidden', !state.balanceAutoRefresh);
+  }
   updateAdminLoanRateHintFromAmount();
   updatePendingPaginationUi();
   updateTransactionsPaginationUi();
@@ -1691,6 +1800,7 @@ async function init() {
       }
     }
     setView(state.activeView || 'client');
+    syncBalanceAutoRefreshState();
   } catch (_error) {
     setView('client');
     renderResponse(200, { message: 'Listo para iniciar sesion y operar.' });

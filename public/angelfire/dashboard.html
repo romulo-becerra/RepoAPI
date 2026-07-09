@@ -76,6 +76,12 @@
             <article class="kpi">
               <p>Saldo actual</p>
               <h3 id="balanceValue" data-testid="balance-value">S/ 0.00</h3>
+              <span id="balanceAutoIndicator" class="auto-indicator hidden" data-testid="balance-auto-indicator">Auto ON</span>
+              <button id="refreshBalanceBtn" class="btn ghost mini" type="button" data-testid="refresh-balance-btn">Actualizar saldo</button>
+              <label class="kpi-toggle" for="autoRefreshBalanceToggle">
+                <input id="autoRefreshBalanceToggle" type="checkbox" data-testid="auto-refresh-balance-toggle" />
+                Auto-actualizar cada 15s
+              </label>
             </article>
             <article class="kpi">
               <p>Cuenta</p>

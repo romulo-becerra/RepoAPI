@@ -329,6 +329,37 @@ select {
   font-size: 1.24rem;
 }
 
+.auto-indicator {
+  margin-top: 0.4rem;
+  width: fit-content;
+  border-radius: 999px;
+  border: 1px solid #8fd8ca;
+  background: #d8f4ee;
+  color: #0a4a42;
+  padding: 0.12rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.kpi .btn {
+  margin-top: 0.45rem;
+  width: fit-content;
+}
+
+.kpi-toggle {
+  margin-top: 0.45rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--ink-700);
+}
+
+.kpi-toggle input {
+  margin: 0;
+}
+
 .row-actions {
   display: flex;
   gap: 0.5rem;
