@@ -3,6 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>AngelFire | Core Banking Console</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -10,7 +13,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=20260709-2" />
   </head>
   <body>
     <div class="layout-shell">
@@ -77,7 +80,7 @@
               <p>Saldo actual</p>
               <h3 id="balanceValue" data-testid="balance-value">S/ 0.00</h3>
               <span id="balanceAutoIndicator" class="auto-indicator hidden" data-testid="balance-auto-indicator">Auto ON</span>
-              <button id="refreshBalanceBtn" class="btn ghost mini" type="button" data-testid="refresh-balance-btn">Actualizar saldo</button>
+              <button id="refreshBalanceBtn" class="btn mini" type="button" data-testid="refresh-balance-btn">Actualizar saldo</button>
               <label class="kpi-toggle" for="autoRefreshBalanceToggle">
                 <input id="autoRefreshBalanceToggle" type="checkbox" data-testid="auto-refresh-balance-toggle" />
                 Auto-actualizar cada 15s
@@ -512,6 +515,6 @@
         </div>
       </div>
     </div>
-    <script src="app.js"></script>
+    <script src="app.js?v=20260709-2"></script>
   </body>
 </html>
