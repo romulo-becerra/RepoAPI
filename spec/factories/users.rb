@@ -15,7 +15,7 @@ FactoryBot.define do
   factory :user do
     first_name { "Admin" }
     last_name  { "User" }
-    email { "email@example.com" }
-    pin_digest { "1234" }
+    sequence(:email) { |n| "email#{n}@example.com" }
+    pin { "1234" }
   end
 end

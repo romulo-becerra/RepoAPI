@@ -26,6 +26,16 @@ class RecipientsController < ApplicationController
     render json: { message: 'Destinatario eliminado exitosamente' }
   end
 
+  def search
+    clabe = params[:clabe]
+    return render json: { errors: 'CLABE requerida' }, status: :bad_request if clabe.blank?
+
+    @recipient = current_user.recipients.find_by(account_id: Account.find_by(clabe: clabe)&.id)
+    return render json: { errors: 'Destinatario no encontrado' }, status: :not_found unless @recipient
+
+    render json: @recipient, status: :ok
+  end
+
   private
 
   def recipient_params

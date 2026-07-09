@@ -13,15 +13,25 @@ Rails.application.routes.draw do
         resources :transactions, only: [:index, :create]
       end
       resources :recipients, only: %i[index create destroy]
-      resources :services, only: [:index]
+      resources :services, only: [:index, :show]
       post 'accounts/:id/pay_service', to: 'accounts#pay_service'
+      post 'accounts/:id/transfer', to: 'accounts#transfer'
+      get 'accounts/:id/balance', to: 'accounts#balance'
+      get 'accounts/:id/summary', to: 'accounts#summary'
+      get 'recipients/search', to: 'recipients#search'
+      post 'logout', to: 'users#logout'
   
       post 'register', to: 'users#register'
       post 'login', to: 'users#login'
   
       get '/accounts/:account_id/transactions', to: 'transactions#index'
 
-      resources :users, only: [:update]
+      resources :users, only: [:update] do
+        member do
+          put :pin
+          get :profile
+        end
+      end
     end
   end
   

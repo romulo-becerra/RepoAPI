@@ -43,6 +43,33 @@ class UsersController < ApplicationController
     end
   end
 
+  def pin
+    @user = User.find_by(id: params[:id])
+    return render json: { errors: 'Usuario no encontrado' }, status: :not_found unless @user && @user.id == @current_user.id
+
+    if @user.authenticate_pin(params[:current_pin])
+      @user.pin = params[:new_pin]
+      if @user.save
+        render json: { message: 'PIN actualizado correctamente' }, status: :ok
+      else
+        render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+      end
+    else
+      render json: { errors: 'PIN actual incorrecto' }, status: :unauthorized
+    end
+  end
+
+  def profile
+    @user = User.find_by(id: params[:id])
+    return render json: { errors: 'Usuario no encontrado' }, status: :not_found unless @user && @user.id == @current_user.id
+
+    render json: { user: { id: @user.id, first_name: @user.first_name, last_name: @user.last_name, email: @user.email } }, status: :ok
+  end
+
+  def logout
+    render json: { message: 'Sesión cerrada correctamente' }, status: :ok
+  end
+
   private
 
   def registration_params

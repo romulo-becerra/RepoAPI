@@ -46,6 +46,30 @@ class AccountsController < ApplicationController
     perform_transfer(@source_account, service.account, @amount, description)
   end
 
+  def balance
+    @account = current_user.accounts.find_by(id: params[:id])
+    return render json: { errors: 'Cuenta no encontrada' }, status: :not_found unless @account
+
+    render json: { account_id: @account.id, balance: @account.balance }, status: :ok
+  end
+
+  def summary
+    @account = current_user.accounts.find_by(id: params[:id])
+    return render json: { errors: 'Cuenta no encontrada' }, status: :not_found unless @account
+
+    transactions = @account.transactions.where(status: :completed)
+    income = transactions.where(transaction_type: %i[deposit transfer service_payment]).sum(&:amount)
+    expense = transactions.where(transaction_type: :withdraw).sum(&:amount)
+
+    render json: {
+      account_id: @account.id,
+      balance: @account.balance,
+      income: income,
+      expense: expense,
+      month: Date.current.strftime('%Y-%m')
+    }, status: :ok
+  end
+
   private
 
   def account_params
