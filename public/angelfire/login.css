@@ -1,0 +1,167 @@
+:root {
+  --bg-900: #081a24;
+  --bg-700: #113145;
+  --panel: #ffffff;
+  --line: #d8e3ea;
+  --ink-900: #112531;
+  --ink-700: #4a6070;
+  --accent-700: #0a7067;
+  --accent-600: #0c8a7f;
+  --warn-600: #9f5d16;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: 'Manrope', sans-serif;
+  color: var(--ink-900);
+  background:
+    radial-gradient(circle at 20% 20%, #184c68 0%, transparent 40%),
+    radial-gradient(circle at 90% 10%, #327877 0%, transparent 35%),
+    linear-gradient(140deg, var(--bg-900), var(--bg-700));
+}
+
+.auth-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 1.2rem;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 1rem;
+}
+
+.brand-panel {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  background: rgba(8, 26, 36, 0.45);
+  color: #dfeaf0;
+  padding: 1.2rem;
+}
+
+.tag {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.75rem;
+  color: #8fd8cf;
+}
+
+h1 {
+  margin: 0.2rem 0 0.6rem;
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+.copy {
+  margin: 0;
+  max-width: 56ch;
+  color: #bfd5df;
+}
+
+.tips {
+  margin-top: 1rem;
+  padding-left: 1.1rem;
+  color: #d8eaef;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.forms-panel {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.card {
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+  padding: 0.95rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.card.compact {
+  grid-template-columns: 1fr auto;
+  align-items: end;
+}
+
+label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink-700);
+}
+
+input {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.58rem 0.65rem;
+  font-family: inherit;
+}
+
+.btn {
+  border: 0;
+  border-radius: 11px;
+  padding: 0.6rem 0.8rem;
+  cursor: pointer;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(120deg, var(--accent-700), var(--accent-600));
+}
+
+.btn.alt {
+  background: linear-gradient(120deg, #8b5b1c, var(--warn-600));
+}
+
+.btn.ghost {
+  border: 1px solid var(--line);
+  color: var(--ink-900);
+  background: #fff;
+}
+
+.row-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.account-card {
+  border-left: 5px solid #0c8a7f;
+}
+
+.mono,
+pre {
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+pre {
+  margin: 0;
+  border-radius: 12px;
+  background: #132733;
+  color: #d6f4ef;
+  padding: 0.75rem;
+  max-height: 220px;
+  overflow: auto;
+  font-size: 0.77rem;
+}
+
+@media (max-width: 980px) {
+  .auth-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .card.compact,
+  .row-actions {
+    grid-template-columns: 1fr;
+    display: grid;
+  }
+}

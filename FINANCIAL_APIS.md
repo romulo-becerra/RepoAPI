@@ -8,17 +8,30 @@ Autorizacion: Authorization: Bearer TOKEN (excepto register/login/health)
 
 Se agrego una interfaz UI para operar la plataforma consumiendo las mismas APIs.
 
-- Ruta: /angelfire/index.html
+- Ruta inicial (login/registro): /angelfire/ (redirige a /angelfire/login.html)
+- Ruta panel operativo (post-login): /angelfire/dashboard.html
 - Archivos UI:
+  - public/angelfire/login.html
+  - public/angelfire/login.css
+  - public/angelfire/login.js
+  - public/angelfire/dashboard.html
   - public/angelfire/index.html
   - public/angelfire/styles.css
   - public/angelfire/app.js
 
 Caracteristicas:
-- Operaciones rapidas para registro, login, depositos, retiros y prestamos.
-- API Explorer con todos los endpoints del sistema.
-- Manejo de tokens y IDs de sesion desde la misma UI.
+- Flujo en 2 pantallas: login/registro -> panel operativo.
+- Login de usuario y login admin.
+- Operaciones financieras con refresco de balance en vivo: depositos, retiros, pago de servicios, prestamos.
+- Gestion de perfil del usuario y cambio de PIN desde el panel.
+- Dashboard con estado de cuenta, prestamo y movimientos recientes.
+- Manejo de sesion y rol desde la misma UI.
 - Selectores data-testid para futura automatizacion con Playwright.
+
+Admin semilla (db:seed):
+- Email: admin@angelfire.local
+- Cuenta sugerida: 9000000001
+- PIN: vacio (UI usa fallback 1234) o 1234
 
 ## 1. Salud y autenticacion
 
@@ -33,7 +46,6 @@ Body:
   "first_name": "Ana",
   "last_name": "Lopez",
   "email": "ana@example.com",
-  "phone": "+51999123456",
   "pin": "1234"
 }
 

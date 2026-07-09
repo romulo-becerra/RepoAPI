@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AngelFire | Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="login.css" />
+  </head>
+  <body>
+    <main class="auth-shell">
+      <section class="brand-panel">
+        <p class="tag">Institucion Financiera</p>
+        <h1>AngelFire</h1>
+        <p class="copy">
+          Inicia sesion con numero de cuenta y PIN. Si aun no tienes cuenta, registrate y el sistema
+          mostrara tu account_number para ingresar al panel operativo.
+        </p>
+        <ul class="tips">
+          <li>Admin sugerido: account_number 9000000001</li>
+          <li>PIN admin: vacio o 1234</li>
+          <li>Luego del login podras depositar, retirar, pagar servicios, gestionar prestamos y actualizar perfil.</li>
+        </ul>
+      </section>
+
+      <section class="forms-panel">
+        <form id="baseForm" class="card compact">
+          <label>Base URL API
+            <input id="baseUrl" type="url" value="http://localhost:3001" data-testid="auth-base-url" required />
+          </label>
+          <button class="btn ghost" type="submit" data-testid="auth-save-base">Guardar base URL</button>
+        </form>
+
+        <form id="loginForm" class="card">
+          <h2>Login</h2>
+          <input id="loginAccountNumber" placeholder="Numero de cuenta" required data-testid="auth-login-account-number" />
+          <input id="loginPin" placeholder="PIN" data-testid="auth-login-pin" />
+          <div class="row-actions">
+            <button class="btn" type="submit" data-testid="auth-login-submit">Ingresar</button>
+            <button class="btn alt" id="adminLoginBtn" type="button" data-testid="auth-admin-login-submit">Ingresar admin</button>
+          </div>
+        </form>
+
+        <form id="registerForm" class="card">
+          <h2>Registro</h2>
+          <input id="regFirstName" placeholder="First name" required data-testid="auth-register-first-name" />
+          <input id="regLastName" placeholder="Last name" required data-testid="auth-register-last-name" />
+          <input id="regEmail" type="email" placeholder="email@example.com" required data-testid="auth-register-email" />
+          <input id="regPin" placeholder="PIN 4 digitos" value="1234" required data-testid="auth-register-pin" />
+          <button class="btn" type="submit" data-testid="auth-register-submit">Registrar e ingresar</button>
+        </form>
+
+        <section class="card account-card" id="accountCard" aria-live="polite">
+          <h2>Cuenta asignada</h2>
+          <p>Account Number:</p>
+          <p id="createdAccountNumber" class="mono">-</p>
+          <button id="goDashboardBtn" class="btn ghost" type="button" data-testid="auth-go-dashboard">Ir al panel</button>
+        </section>
+
+        <section class="card response-card">
+          <h2>Respuesta API</h2>
+          <p id="responseStatus">Status: -</p>
+          <pre id="responseBox" data-testid="auth-response-box">Listo para autenticar.</pre>
+        </section>
+      </section>
+    </main>
+    <script src="login.js"></script>
+  </body>
+</html>
