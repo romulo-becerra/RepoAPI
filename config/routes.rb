@@ -5,34 +5,62 @@ Rails.application.routes.draw do
   # Can be used by load balancers and uptime monitors to verify that the app is live.
   get "up" => "rails/health#show", as: :rails_health_check
 
-  get '/' => 'users#index'
+  get "/" => "users#index"
 
   scope :api do
     scope :v1 do
       resources :accounts, only: %i[show create index] do
-        resources :transactions, only: [:index, :create]
+        resources :transactions, only: [ :index, :create ]
+        resources :loans, only: %i[index show create] do
+          member do
+            post :pay
+            get :installments
+          end
+        end
       end
       resources :recipients, only: %i[index create destroy]
-      resources :services, only: [:index, :show]
-      post 'accounts/:id/pay_service', to: 'accounts#pay_service'
-      post 'accounts/:id/transfer', to: 'accounts#transfer'
-      get 'accounts/:id/balance', to: 'accounts#balance'
-      get 'accounts/:id/summary', to: 'accounts#summary'
-      get 'recipients/search', to: 'recipients#search'
-      post 'logout', to: 'users#logout'
-  
-      post 'register', to: 'users#register'
-      post 'login', to: 'users#login'
-  
-      get '/accounts/:account_id/transactions', to: 'transactions#index'
+      resources :services, only: [ :index, :show ]
+      post "accounts/:id/pay_service", to: "accounts#pay_service"
+      post "accounts/:id/transfer", to: "accounts#transfer"
+      post "accounts/:id/deposit", to: "accounts#deposit"
+      post "accounts/:id/withdraw", to: "accounts#withdraw"
+      get "accounts/:id/balance", to: "accounts#balance"
+      get "accounts/:id/summary", to: "accounts#summary"
+      get "recipients/search", to: "recipients#search"
+      post "logout", to: "users#logout"
 
-      resources :users, only: [:update] do
+      scope :atm do
+        post "accounts/:id/deposit", to: "atm_operations#deposit"
+        post "accounts/:id/withdraw", to: "atm_operations#withdraw"
+        get "accounts/:id/balance", to: "atm_operations#balance"
+        get "accounts/:id/statement", to: "atm_operations#statement"
+      end
+
+      namespace :manager do
+        get "reports/overview", to: "reports#overview"
+        get "reports/loans", to: "reports#loans"
+        get "reports/accounts_activity", to: "reports#accounts_activity"
+        resources :users, only: [ :index, :create, :destroy ]
+
+        post "loans/:id/cancel", to: "loans#cancel"
+      end
+
+      post "register", to: "users#register"
+      post "login", to: "users#login"
+
+      get "/accounts/:account_id/transactions", to: "transactions#index"
+
+      resources :users, only: [ :update ] do
         member do
           put :pin
           get :profile
+          get :address, to: "user_addresses#show"
+          put :address, to: "user_addresses#upsert"
+          post :files, to: "user_files#create"
+          get :files, to: "user_files#index"
+          delete "files/:file_id", to: "user_files#destroy"
         end
       end
     end
   end
-  
 end

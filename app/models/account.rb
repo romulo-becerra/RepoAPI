@@ -14,38 +14,50 @@
 #
 class Account < ApplicationRecord
   belongs_to :user, optional: true
-  has_many :transactions
+  has_many :transactions, dependent: :destroy
+  has_many :recipients, dependent: :destroy
+  has_many :loans, dependent: :destroy
 
   after_create :set_default, if: :default?
-  
+
   before_validation :generate_clabe, on: :create
   before_validation :generate_account_number, on: :create
-  
+
   validates :clabe, presence: true, uniqueness: true
   validates :account_number, presence: true, uniqueness: true
-  
+
   enum :account_type, { user: 0, service: 1 }, default: :user
 
   def transfer!(recipient_account, amount, description = nil)
     TransactionService.new.transfer!(self, recipient_account, amount, description)
   end
-  
+
   def default?
     default
   end
 
   def withdraw!(amount)
-    self.balance -= amount
+    value = amount.to_i
+    raise StandardError, "El monto debe ser mayor a cero" if value <= 0
+    raise StandardError, "Fondos insuficientes en la cuenta" if balance < value
+
+    self.balance -= value
     save!
   end
 
   def deposit!(amount)
-    self.balance += amount
+    value = amount.to_i
+    raise StandardError, "El monto debe ser mayor a cero" if value <= 0
+
+    self.balance += value
     save!
   end
 
   def service_payment!(amount)
-    self.balance += amount
+    value = amount.to_i
+    raise StandardError, "El monto debe ser mayor a cero" if value <= 0
+
+    self.balance += value
     save!
   end
 

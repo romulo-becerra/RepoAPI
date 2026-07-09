@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AngelFire | Banca Digital</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Prata&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-orb bg-orb-a"></div>
+    <div class="bg-orb bg-orb-b"></div>
+
+    <header class="hero">
+      <div class="brand-wrap">
+        <p class="eyebrow">Institucion Financiera</p>
+        <h1>AngelFire</h1>
+        <p class="subtitle">Opera tus cuentas, prestamos, servicios y gestion administrativa desde una sola interfaz.</p>
+      </div>
+      <div class="status-card" data-testid="session-status">
+        <h2>Sesion</h2>
+        <p id="statusSummary">Sin autenticar</p>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel glass" aria-label="Configuracion principal">
+        <h2>Configuracion API</h2>
+        <form id="configForm" class="stack">
+          <label>Base URL
+            <input id="baseUrl" type="url" value="http://localhost:3001" required data-testid="base-url" />
+          </label>
+          <label>Token usuario
+            <input id="token" type="text" placeholder="Bearer token" data-testid="user-token" />
+          </label>
+          <label>Token gerente
+            <input id="managerToken" type="text" placeholder="Bearer manager token" data-testid="manager-token" />
+          </label>
+          <div class="grid two">
+            <label>User ID
+              <input id="userId" type="text" data-testid="user-id" />
+            </label>
+            <label>Account ID
+              <input id="accountId" type="text" data-testid="account-id" />
+            </label>
+            <label>Loan ID
+              <input id="loanId" type="text" data-testid="loan-id" />
+            </label>
+            <label>Managed User ID
+              <input id="managedUserId" type="text" data-testid="managed-user-id" />
+            </label>
+            <label>Recipient ID
+              <input id="recipientId" type="text" data-testid="recipient-id" />
+            </label>
+            <label>File ID
+              <input id="fileId" type="text" data-testid="file-id" />
+            </label>
+          </div>
+          <button class="btn primary" type="submit" data-testid="save-config">Guardar configuracion</button>
+        </form>
+      </section>
+
+      <section class="panel glass" aria-label="Operaciones rapidas">
+        <div class="panel-head">
+          <h2>Operaciones Rapidas</h2>
+          <p>Flujos usados con mayor frecuencia.</p>
+        </div>
+
+        <div class="quick-grid">
+          <form id="registerForm" class="card">
+            <h3>Registrar usuario</h3>
+            <input id="regFirstName" placeholder="First name" required data-testid="register-first-name" />
+            <input id="regLastName" placeholder="Last name" required data-testid="register-last-name" />
+            <input id="regEmail" type="email" placeholder="email@example.com" required data-testid="register-email" />
+            <input id="regPin" placeholder="PIN" value="1234" required data-testid="register-pin" />
+            <button class="btn" type="submit" data-testid="register-submit">Registrar</button>
+          </form>
+
+          <form id="loginForm" class="card">
+            <h3>Login</h3>
+            <input id="loginAccountNumber" placeholder="Account number" required data-testid="login-account-number" />
+            <input id="loginPin" placeholder="PIN" value="1234" required data-testid="login-pin" />
+            <button class="btn" type="submit" data-testid="login-submit">Ingresar</button>
+          </form>
+
+          <form id="depositForm" class="card">
+            <h3>Deposito</h3>
+            <input id="depositAmount" type="number" min="1" value="100" required data-testid="deposit-amount" />
+            <input id="depositDescription" value="Deposito UI AngelFire" data-testid="deposit-description" />
+            <button class="btn" type="submit" data-testid="deposit-submit">Depositar</button>
+          </form>
+
+          <form id="withdrawForm" class="card">
+            <h3>Retiro</h3>
+            <input id="withdrawAmount" type="number" min="1" value="50" required data-testid="withdraw-amount" />
+            <input id="withdrawDescription" value="Retiro UI AngelFire" data-testid="withdraw-description" />
+            <button class="btn" type="submit" data-testid="withdraw-submit">Retirar</button>
+          </form>
+
+          <form id="createLoanForm" class="card">
+            <h3>Crear prestamo</h3>
+            <input id="loanAmount" type="number" min="1" value="120000" required data-testid="loan-amount" />
+            <input id="loanTermMonths" type="number" min="1" value="24" required data-testid="loan-term-months" />
+            <input id="loanFirstDueDate" type="date" required data-testid="loan-first-due-date" />
+            <button class="btn" type="submit" data-testid="loan-create-submit">Crear prestamo</button>
+          </form>
+
+          <form id="payLoanForm" class="card">
+            <h3>Pagar prestamo</h3>
+            <input id="payLoanAmount" type="number" min="1" value="1000" required data-testid="loan-pay-amount" />
+            <button class="btn" type="submit" data-testid="loan-pay-submit">Pagar</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="panel glass" aria-label="Explorador API">
+        <div class="panel-head">
+          <h2>API Explorer</h2>
+          <p>Todas las operaciones disponibles por endpoint.</p>
+        </div>
+
+        <form id="explorerForm" class="stack">
+          <label>Operacion
+            <select id="operationSelect" data-testid="operation-select"></select>
+          </label>
+          <div id="operationInfo" class="hint"></div>
+          <label>Path final
+            <input id="resolvedPath" readonly data-testid="resolved-path" />
+          </label>
+          <label>Body JSON
+            <textarea id="requestBody" rows="8" data-testid="request-body"></textarea>
+          </label>
+          <label id="fileInputWrap" class="hidden">Archivo
+            <input id="requestFile" type="file" data-testid="request-file" />
+          </label>
+          <button class="btn accent" type="submit" data-testid="run-operation">Ejecutar operacion</button>
+        </form>
+      </section>
+
+      <section class="panel glass" aria-label="Respuesta API">
+        <div class="panel-head">
+          <h2>Respuesta</h2>
+          <p>Detalle para depuracion y trazabilidad.</p>
+        </div>
+        <div class="response-meta">
+          <span id="responseStatus">Status: -</span>
+          <span id="responseTime">Tiempo: -</span>
+        </div>
+        <pre id="responseBox" data-testid="response-box">Esperando ejecucion...</pre>
+      </section>
+    </main>
+
+    <footer class="footnote">
+      <p>AngelFire UI lista para automatizacion E2E con Playwright (selectores data-testid incluidos).</p>
+      <p>Ruta de acceso: /angelfire/index.html</p>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>

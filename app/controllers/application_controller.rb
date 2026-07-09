@@ -5,6 +5,12 @@ class ApplicationController < ActionController::API
 
   private
 
+  def require_manager!
+    return if current_user&.manager?
+
+    render json: { errors: 'Acceso restringido a rol gerente' }, status: :forbidden
+  end
+
   def authenticate_request
      header = request.headers['Authorization']
      if header.present?

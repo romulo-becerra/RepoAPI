@@ -1,8 +1,9 @@
-json.message 'Usuario registrado exitosamente'
+json.message "Usuario registrado exitosamente"
 json.token @token
 
 json.user do
   json.extract! @user, :id, :first_name, :last_name, :email
+  json.role @user.role
 end
 
 json.account do

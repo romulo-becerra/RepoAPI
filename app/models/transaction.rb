@@ -14,16 +14,31 @@
 class Transaction < ApplicationRecord
   belongs_to :account
 
-  enum :status, [:pending, :completed, :failed]
-  enum :transaction_type, [:deposit, :withdraw, :transfer, :service_payment]
+  enum :status, [ :pending, :completed, :failed ]
+  enum :transaction_type, [ :deposit, :withdraw, :transfer, :service_payment, :loan_payment, :atm_deposit, :atm_withdrawal ]
 
-  after_create :update_balances, if: :pending?
+  after_create :finalize_transaction, if: :pending?
 
   private
 
-  def update_balances
-    return account.deposit!(amount) if deposit?
-    return account.withdraw!(amount) if withdraw?
-    return account.service_payment!(amount) if service_payment?
+  def finalize_transaction
+    if deposit?
+      account.deposit!(amount)
+    elsif withdraw?
+      account.withdraw!(amount)
+    elsif loan_payment?
+      account.withdraw!(amount)
+    elsif atm_deposit?
+      account.deposit!(amount)
+    elsif atm_withdrawal?
+      account.withdraw!(amount)
+    elsif service_payment?
+      account.service_payment!(amount)
+    end
+
+    update_column(:status, Transaction.statuses[:completed])
+  rescue StandardError
+    update_column(:status, Transaction.statuses[:failed]) if persisted?
+    raise
   end
 end

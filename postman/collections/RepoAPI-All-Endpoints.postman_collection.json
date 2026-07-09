@@ -1,0 +1,922 @@
+{
+  "info": {
+    "_postman_id": "6fd6794b-4209-4ec8-8d44-e42c0a8c8b11",
+    "name": "RepoAPI - All Endpoints",
+    "description": "Coleccion unificada con todos los endpoints definidos en config/routes.rb.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/up",
+              "host": ["{{baseUrl}}"],
+              "path": ["up"]
+            }
+          }
+        },
+        {
+          "name": "Root",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"API\",\n  \"last_name\": \"User\",\n  \"email\": \"api.user+{{$timestamp}}@example.com\",\n  \"phone\": \"{{phone}}\",\n  \"pin\": \"{{pin}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "register"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.token) pm.environment.set('token', j.token);",
+                  "if (j.user && j.user.id) pm.environment.set('user_id', j.user.id);",
+                  "if (j.account && j.account.id) pm.environment.set('account_id', j.account.id);",
+                  "if (j.account && j.account.account_number) pm.environment.set('account_number', j.account.account_number);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"account_number\": \"{{account_number}}\",\n  \"pin\": \"{{pin}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.token) pm.environment.set('token', j.token);",
+                  "if (j.user && j.user.id) pm.environment.set('user_id', j.user.id);",
+                  "if (j.account && j.account.id) pm.environment.set('account_id', j.account.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Accounts",
+      "item": [
+        {
+          "name": "Create Account",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "accounts"]
+            }
+          }
+        },
+        {
+          "name": "List Accounts",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/accounts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "accounts"]
+            }
+          }
+        },
+        {
+          "name": "Get Account",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/accounts/{{account_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "accounts", "{{account_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Deposit",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 1000,\n  \"description\": \"Deposito de prueba\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/accounts/{{account_id}}/deposit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "accounts", "{{account_id}}", "deposit"]
+            }
+          }
+        },
+        {
+          "name": "Withdraw",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 200,\n  \"description\": \"Retiro de prueba\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/accounts/{{account_id}}/withdraw",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "accounts", "{{account_id}}", "withdraw"]
+            }
+          }
+        },
+        {
+          "name": "Balance",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/accounts/{{account_id}}/balance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "accounts", "{{account_id}}", "balance"]
+            }
+          }
+        },
+        {
+          "name": "Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/accounts/{{account_id}}/summary",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "accounts", "{{account_id}}", "summary"]
+            }
+          }
+        },
+        {
+          "name": "Transfer",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipient_account_number\": \"00000000\",\n  \"amount\": 50,\n  \"description\": \"Transferencia de prueba\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/accounts/{{account_id}}/transfer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "accounts", "{{account_id}}", "transfer"]
+            }
+          }
+        },
+        {
+          "name": "Pay Service",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"service_id\": {{service_id}},\n  \"amount\": 100\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/accounts/{{account_id}}/pay_service",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "accounts", "{{account_id}}", "pay_service"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "List Account Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/accounts/{{account_id}}/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "accounts", "{{account_id}}", "transactions"]
+            }
+          }
+        },
+        {
+          "name": "Create Account Transaction",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipient_account_number\": \"00000000\",\n  \"amount\": 25,\n  \"description\": \"Transaccion de prueba\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/accounts/{{account_id}}/transactions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "accounts", "{{account_id}}", "transactions"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Loans",
+      "item": [
+        {
+          "name": "Create Loan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 120000,\n  \"term_months\": 24,\n  \"first_due_date\": \"2026-08-15\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/accounts/{{account_id}}/loans",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "accounts", "{{account_id}}", "loans"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.loan && j.loan.id) pm.environment.set('loan_id', j.loan.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Loans",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/accounts/{{account_id}}/loans",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "accounts", "{{account_id}}", "loans"]
+            }
+          }
+        },
+        {
+          "name": "Get Loan",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/accounts/{{account_id}}/loans/{{loan_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "accounts", "{{account_id}}", "loans", "{{loan_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Pay Loan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"amount\": 5000\n}" },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/accounts/{{account_id}}/loans/{{loan_id}}/pay",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "accounts", "{{account_id}}", "loans", "{{loan_id}}", "pay"]
+            }
+          }
+        },
+        {
+          "name": "Get Loan Installments",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/accounts/{{account_id}}/loans/{{loan_id}}/installments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "accounts", "{{account_id}}", "loans", "{{loan_id}}", "installments"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Recipients",
+      "item": [
+        {
+          "name": "List Recipients",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/recipients",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "recipients"]
+            }
+          }
+        },
+        {
+          "name": "Create Recipient",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"account_number\": \"00000000\",\n  \"name\": \"Destino Test\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/recipients",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "recipients"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.recipient && j.recipient.id) pm.environment.set('recipient_id', j.recipient.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Delete Recipient",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/recipients/{{recipient_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "recipients", "{{recipient_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Search Recipients",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/recipients/search?q=test",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "recipients", "search"],
+              "query": [{ "key": "q", "value": "test" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "item": [
+        {
+          "name": "List Services",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/services",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "services"]
+            }
+          }
+        },
+        {
+          "name": "Get Service",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/services/{{service_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "services", "{{service_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "ATM",
+      "item": [
+        {
+          "name": "ATM Deposit",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pin\": \"{{pin}}\",\n  \"amount\": 1000,\n  \"description\": \"Deposito ATM\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/atm/accounts/{{account_id}}/deposit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "atm", "accounts", "{{account_id}}", "deposit"]
+            }
+          }
+        },
+        {
+          "name": "ATM Withdraw",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pin\": \"{{pin}}\",\n  \"amount\": 150,\n  \"description\": \"Retiro ATM\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/atm/accounts/{{account_id}}/withdraw",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "atm", "accounts", "{{account_id}}", "withdraw"]
+            }
+          }
+        },
+        {
+          "name": "ATM Balance",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/atm/accounts/{{account_id}}/balance?pin={{pin}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "atm", "accounts", "{{account_id}}", "balance"],
+              "query": [{ "key": "pin", "value": "{{pin}}" }]
+            }
+          }
+        },
+        {
+          "name": "ATM Statement",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/atm/accounts/{{account_id}}/statement?pin={{pin}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "atm", "accounts", "{{account_id}}", "statement"],
+              "query": [{ "key": "pin", "value": "{{pin}}" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Manager",
+      "item": [
+        {
+          "name": "Reports Overview",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{manager_token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manager/reports/overview",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manager", "reports", "overview"]
+            }
+          }
+        },
+        {
+          "name": "Reports Loans",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{manager_token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manager/reports/loans?status=active",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manager", "reports", "loans"],
+              "query": [{ "key": "status", "value": "active" }]
+            }
+          }
+        },
+        {
+          "name": "Reports Accounts Activity",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{manager_token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manager/reports/accounts_activity?days=30",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manager", "reports", "accounts_activity"],
+              "query": [{ "key": "days", "value": "30" }]
+            }
+          }
+        },
+        {
+          "name": "Manager List Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{manager_token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manager/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manager", "users"]
+            }
+          }
+        },
+        {
+          "name": "Manager Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{manager_token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Managed\",\n  \"last_name\": \"User\",\n  \"email\": \"managed.user+{{$timestamp}}@example.com\",\n  \"phone\": \"+51997123456\",\n  \"pin\": \"1234\",\n  \"role\": \"customer\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manager/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manager", "users"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.user && j.user.id) pm.environment.set('managed_user_id', j.user.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Manager Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{manager_token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manager/users/{{managed_user_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manager", "users", "{{managed_user_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Manager Cancel Loan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{manager_token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/manager/loans/{{loan_id}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "manager", "loans", "{{loan_id}}", "cancel"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Updated\",\n  \"last_name\": \"User\",\n  \"phone\": \"+51999111222\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{user_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{user_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update PIN",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pin\": \"1234\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{user_id}}/pin",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{user_id}}", "pin"]
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{user_id}}/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{user_id}}", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Upsert Address",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"country\": \"Peru\",\n  \"city\": \"Lima\",\n  \"province\": \"Lima\",\n  \"street\": \"Av Central\",\n  \"street_number\": \"123\",\n  \"district\": \"Miraflores\",\n  \"postal_code\": \"15074\",\n  \"reference\": \"Frente al parque\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{user_id}}/address",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{user_id}}", "address"]
+            }
+          }
+        },
+        {
+          "name": "Get Address",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{user_id}}/address",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{user_id}}", "address"]
+            }
+          }
+        },
+        {
+          "name": "Upload File",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "file", "type": "file", "src": "" }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{user_id}}/files",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{user_id}}", "files"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "var j = pm.response.json();",
+                  "if (j.file && j.file.id) pm.environment.set('file_id', j.file.id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "List Files",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{user_id}}/files",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{user_id}}", "files"]
+            }
+          }
+        },
+        {
+          "name": "Delete File",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "Accept", "value": "application/json" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/{{user_id}}/files/{{file_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "{{user_id}}", "files", "{{file_id}}"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3001" },
+    { "key": "token", "value": "" },
+    { "key": "manager_token", "value": "" },
+    { "key": "user_id", "value": "" },
+    { "key": "account_id", "value": "" },
+    { "key": "account_number", "value": "" },
+    { "key": "recipient_id", "value": "" },
+    { "key": "loan_id", "value": "" },
+    { "key": "service_id", "value": "1" },
+    { "key": "file_id", "value": "" },
+    { "key": "managed_user_id", "value": "" },
+    { "key": "pin", "value": "1234" },
+    { "key": "phone", "value": "+51999123456" }
+  ]
+}
