@@ -17,6 +17,11 @@ const defaultState = {
   txFilter: 'all',
   adminUsersPage: 1,
   adminUsersPerPage: 10,
+  adminPlanPage: 1,
+  adminPlanPerPage: 10,
+  adminInspectAccountLookup: '',
+  adminInspectLoanId: '',
+  adminInspectUserId: '',
   activeView: 'client',
   auditLog: []
 };
@@ -26,6 +31,7 @@ let pendingInstallmentsCache = [];
 let pendingPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
 let txPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
 let adminUsersPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
+let adminPlanPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
 
 const el = {
   baseUrl: document.getElementById('baseUrl'),
@@ -67,6 +73,15 @@ const el = {
   adminUsersNextPageBtn: document.getElementById('adminUsersNextPageBtn'),
   adminUsersPageInfo: document.getElementById('adminUsersPageInfo'),
   adminUsersRows: document.getElementById('adminUsersRows'),
+  adminLookupAccountId: document.getElementById('adminLookupAccountId'),
+  adminAccountSummary: document.getElementById('adminAccountSummary'),
+  adminInspectLoanId: document.getElementById('adminInspectLoanId'),
+  adminPlanPerPage: document.getElementById('adminPlanPerPage'),
+  adminPlanPrevBtn: document.getElementById('adminPlanPrevBtn'),
+  adminPlanNextBtn: document.getElementById('adminPlanNextBtn'),
+  adminPlanPageInfo: document.getElementById('adminPlanPageInfo'),
+  adminInstallmentsRows: document.getElementById('adminInstallmentsRows'),
+  adminUserFilesRows: document.getElementById('adminUserFilesRows'),
   userFilesRows: document.getElementById('userFilesRows'),
   userFileInput: document.getElementById('userFileInput'),
   adminAuditLog: document.getElementById('adminAuditLog'),
@@ -233,6 +248,14 @@ function updateAdminUsersPaginationUi() {
   el.adminUsersNextPageBtn.disabled = !adminUsersPaginationMeta.has_next;
 }
 
+function updateAdminPlanPaginationUi() {
+  const page = adminPlanPaginationMeta.page || 1;
+  const totalPages = adminPlanPaginationMeta.total_pages || 1;
+  el.adminPlanPageInfo.textContent = `${page} / ${totalPages}`;
+  el.adminPlanPrevBtn.disabled = !adminPlanPaginationMeta.has_prev;
+  el.adminPlanNextBtn.disabled = !adminPlanPaginationMeta.has_next;
+}
+
 function signedAmountByMovement(tx) {
   const value = Number(tx.amount || 0).toFixed(2);
   if (tx.movement_kind === 'debit') {
@@ -304,6 +327,20 @@ function formatFileSize(bytes) {
     return `${(value / 1024).toFixed(1)} KB`;
   }
   return `${(value / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function renderAdminInstallments(rows) {
+  if (!rows || rows.length === 0) {
+    el.adminInstallmentsRows.innerHTML = '<tr><td colspan="6">Sin plan cargado</td></tr>';
+    return;
+  }
+
+  el.adminInstallmentsRows.innerHTML = rows
+    .map(
+      (item) =>
+        `<tr><td>${item.installment_number}</td><td>${item.due_date || '-'}</td><td>${Number(item.amount || 0).toFixed(2)}</td><td>${Number(item.principal_amount || 0).toFixed(2)}</td><td>${Number(item.interest_amount || 0).toFixed(2)}</td><td>${item.status || '-'}</td></tr>`
+    )
+    .join('');
 }
 
 function updateLoanPaymentSummary() {
@@ -560,6 +597,132 @@ async function refreshUserFiles() {
         `<tr><td>${file.id}</td><td>${file.original_filename}</td><td>${file.content_type}</td><td>${formatFileSize(file.file_size)}</td><td>${file.created_at || '-'}</td></tr>`
     )
     .join('');
+}
+
+async function refreshAdminFilesForSelectedUser() {
+  const userId = state.adminInspectUserId;
+  if (!userId) {
+    el.adminUserFilesRows.innerHTML = '<tr><td colspan="5">Selecciona una cuenta para ver archivos</td></tr>';
+    return;
+  }
+
+  const payload = await apiCall(`/api/v1/users/${userId}/files`, 'GET', null, 'manager');
+  const files = payload.files || [];
+
+  if (files.length === 0) {
+    el.adminUserFilesRows.innerHTML = '<tr><td colspan="5">Sin archivos</td></tr>';
+    return;
+  }
+
+  el.adminUserFilesRows.innerHTML = files
+    .map(
+      (file) =>
+        `<tr><td>${file.id}</td><td>${file.original_filename}</td><td>${file.content_type}</td><td>${formatFileSize(file.file_size)}</td><td>${file.created_at || '-'}</td></tr>`
+    )
+    .join('');
+}
+
+async function refreshAdminLoanInstallments() {
+  if (!state.adminInspectAccountLookup || !state.adminInspectLoanId) {
+    renderAdminInstallments([]);
+    adminPlanPaginationMeta = { page: 1, per_page: Number(state.adminPlanPerPage || 10), total: 0, total_pages: 1, has_prev: false, has_next: false };
+    updateAdminPlanPaginationUi();
+    return;
+  }
+
+  const page = Number(state.adminPlanPage || 1);
+  const perPage = Number(state.adminPlanPerPage || 10);
+  const payload = await apiCall(
+    `/api/v1/manager/accounts/${state.adminInspectAccountLookup}/loans/${state.adminInspectLoanId}/installments?page=${page}&per_page=${perPage}`,
+    'GET',
+    null,
+    'manager'
+  );
+
+  adminPlanPaginationMeta = {
+    page: Number(payload.page || page),
+    per_page: Number(payload.per_page || perPage),
+    total: Number(payload.total || 0),
+    total_pages: Number(payload.total_pages || 1),
+    has_prev: Boolean(payload.has_prev),
+    has_next: Boolean(payload.has_next)
+  };
+  state.adminPlanPage = adminPlanPaginationMeta.page;
+  state.adminPlanPerPage = adminPlanPaginationMeta.per_page;
+  persistState();
+
+  renderAdminInstallments(payload.installments || []);
+  updateAdminPlanPaginationUi();
+}
+
+async function refreshAdminAccountSummary(accountLookup) {
+  const payload = await apiCall(`/api/v1/manager/accounts/${accountLookup}/summary`, 'GET', null, 'manager');
+  state.adminInspectAccountLookup = String(accountLookup);
+  state.adminInspectUserId = payload.user_id ? String(payload.user_id) : '';
+
+  const loans = payload.loans || [];
+  el.adminAccountSummary.textContent = `Cuenta #${payload.account_number} | Saldo: S/ ${Number(payload.balance || 0).toFixed(2)} | Usuario: ${payload.user_name || '-'} | Prestamos: ${loans.length}`;
+
+  el.adminInspectLoanId.innerHTML = '';
+  if (loans.length === 0) {
+    const option = document.createElement('option');
+    option.value = '';
+    option.textContent = 'Sin prestamos';
+    el.adminInspectLoanId.append(option);
+    state.adminInspectLoanId = '';
+  } else {
+    loans.forEach((loan) => {
+      const option = document.createElement('option');
+      option.value = String(loan.id);
+      option.textContent = `#${loan.id} | ${loan.status} | Monto ${Number(loan.amount || 0).toFixed(2)} | Pendiente ${Number(loan.outstanding_principal || 0).toFixed(2)}`;
+      el.adminInspectLoanId.append(option);
+    });
+    state.adminInspectLoanId = payload.active_loan_id ? String(payload.active_loan_id) : String(loans[0].id);
+    el.adminInspectLoanId.value = state.adminInspectLoanId;
+  }
+
+  state.adminPlanPage = 1;
+  persistState();
+  await refreshAdminLoanInstallments();
+  await refreshAdminFilesForSelectedUser();
+}
+
+async function downloadAdminLoanPlan() {
+  if (!state.adminInspectAccountLookup || !state.adminInspectLoanId) {
+    throw new Error('Debes consultar cuenta y seleccionar un prestamo.');
+  }
+
+  const response = await fetch(
+    `${state.baseUrl}/api/v1/manager/accounts/${state.adminInspectAccountLookup}/loans/${state.adminInspectLoanId}/installments/download`,
+    {
+      method: 'GET',
+      headers: {
+        Accept: 'text/csv',
+        Authorization: `Bearer ${state.managerToken || state.token}`
+      }
+    }
+  );
+
+  if (!response.ok) {
+    const text = await response.text();
+    let payload;
+    try {
+      payload = text ? JSON.parse(text) : {};
+    } catch (_error) {
+      payload = { raw: text };
+    }
+    throw new Error(payload.errors || 'No se pudo descargar el plan de pagos.');
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `loan_${state.adminInspectLoanId}_installments.csv`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 async function uploadUserFile() {
@@ -996,6 +1159,93 @@ function bindEvents() {
     }
   });
 
+  document.getElementById('adminAccountLookupForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!hasManagerAccess()) {
+      renderResponse(403, { errors: 'Operacion restringida a manager.' });
+      return;
+    }
+
+    const lookup = el.adminLookupAccountId.value.trim();
+    if (!lookup) {
+      renderResponse(422, { errors: 'Debes indicar account ID o numero de cuenta.' });
+      return;
+    }
+
+    try {
+      await refreshAdminAccountSummary(lookup);
+      pushAudit(`Consulta de cuenta admin lookup=${lookup}`);
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  el.adminInspectLoanId.addEventListener('change', async () => {
+    state.adminInspectLoanId = el.adminInspectLoanId.value;
+    state.adminPlanPage = 1;
+    persistState();
+    try {
+      await refreshAdminLoanInstallments();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  el.adminPlanPerPage.addEventListener('change', async () => {
+    state.adminPlanPerPage = Number(el.adminPlanPerPage.value || 10);
+    state.adminPlanPage = 1;
+    persistState();
+    try {
+      await refreshAdminLoanInstallments();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  el.adminPlanPrevBtn.addEventListener('click', async () => {
+    if (state.adminPlanPage <= 1) {
+      return;
+    }
+    state.adminPlanPage -= 1;
+    persistState();
+    try {
+      await refreshAdminLoanInstallments();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  el.adminPlanNextBtn.addEventListener('click', async () => {
+    const totalPages = adminPlanPaginationMeta.total_pages || 1;
+    if (state.adminPlanPage >= totalPages) {
+      return;
+    }
+    state.adminPlanPage += 1;
+    persistState();
+    try {
+      await refreshAdminLoanInstallments();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('adminPlanDownloadBtn').addEventListener('click', async () => {
+    try {
+      await downloadAdminLoanPlan();
+      renderResponse(200, { message: 'Plan de pagos descargado correctamente.' });
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('refreshAdminFilesBtn').addEventListener('click', async () => {
+    try {
+      await refreshAdminFilesForSelectedUser();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
   el.adminUsersPerPage.addEventListener('change', async () => {
     state.adminUsersPerPage = Number(el.adminUsersPerPage.value || 10);
     state.adminUsersPage = 1;
@@ -1204,10 +1454,18 @@ function hydrateInputs() {
   el.adminUsersPerPage.value = String([10, 20, 50].includes(adminUsersPerPage) ? adminUsersPerPage : 10);
   state.adminUsersPerPage = Number(el.adminUsersPerPage.value);
   state.adminUsersPage = Number(state.adminUsersPage || 1);
+  const adminPlanPerPage = Number(state.adminPlanPerPage || 10);
+  el.adminPlanPerPage.value = String([10, 20, 50].includes(adminPlanPerPage) ? adminPlanPerPage : 10);
+  state.adminPlanPerPage = Number(el.adminPlanPerPage.value);
+  state.adminPlanPage = Number(state.adminPlanPage || 1);
+  if (state.adminInspectAccountLookup) {
+    el.adminLookupAccountId.value = state.adminInspectAccountLookup;
+  }
   updateAdminLoanRateHintFromAmount();
   updatePendingPaginationUi();
   updateTransactionsPaginationUi();
   updateAdminUsersPaginationUi();
+  updateAdminPlanPaginationUi();
   renderAuditLog();
   updateHeader();
 }
@@ -1229,6 +1487,9 @@ async function init() {
     await refreshUserFiles();
     if (hasManagerAccess()) {
       await refreshAdminDashboard();
+      if (state.adminInspectAccountLookup) {
+        await refreshAdminAccountSummary(state.adminInspectAccountLookup);
+      }
     }
     setView(state.activeView || 'client');
   } catch (_error) {

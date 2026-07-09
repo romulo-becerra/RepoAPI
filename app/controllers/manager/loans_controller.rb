@@ -1,7 +1,10 @@
+require "csv"
+
 module Manager
   class LoansController < ApplicationController
     before_action :require_manager!
-    before_action :set_account, only: %i[preview create_for_account]
+    before_action :set_account, only: %i[preview create_for_account installments download_installments]
+    before_action :set_account_loan, only: %i[installments download_installments]
 
     def preview
       amount = BigDecimal(loan_params[:amount].to_s)
@@ -88,7 +91,63 @@ module Manager
       }, status: :ok
     end
 
+    def installments
+      per_page = [params[:per_page].to_i, 1].max
+      per_page = 50 if per_page > 50
+      per_page = 10 if per_page.zero?
+
+      installments_scope = @loan.loan_installments.order(:installment_number)
+      total = installments_scope.count
+      total_pages = (total.to_f / per_page).ceil
+      total_pages = 1 if total_pages.zero?
+
+      page = [params[:page].to_i, 1].max
+      page = total_pages if page > total_pages
+
+      installments = installments_scope.offset((page - 1) * per_page).limit(per_page)
+
+      render json: {
+        account_id: @account.id,
+        loan_id: @loan.id,
+        page: page,
+        per_page: per_page,
+        total: total,
+        total_pages: total_pages,
+        has_prev: page > 1,
+        has_next: page < total_pages,
+        installments: installments.map { |item| serialize_installment(item) }
+      }, status: :ok
+    end
+
+    def download_installments
+      csv_data = CSV.generate(headers: true) do |csv|
+        csv << ["installment_number", "due_date", "amount", "principal_amount", "interest_amount", "status", "paid_at"]
+        @loan.loan_installments.order(:installment_number).each do |item|
+          csv << [
+            item.installment_number,
+            item.due_date,
+            item.amount.to_f,
+            item.principal_amount.to_f,
+            item.interest_amount.to_f,
+            item.status,
+            item.paid_at
+          ]
+        end
+      end
+
+      send_data csv_data,
+                filename: "loan_#{@loan.id}_installments.csv",
+                type: "text/csv; charset=utf-8"
+    end
+
     private
+
+    def set_account_loan
+      @loan = @account.loans.find_by(id: params[:loan_id])
+      return if @loan
+
+      render json: { errors: "Préstamo no encontrado para la cuenta" }, status: :not_found
+    end
 
     def set_account
       lookup = params[:account_id].to_s.strip
@@ -136,6 +195,19 @@ module Manager
           projected_remaining_principal: [ remaining_principal, BigDecimal("0") ].max.to_f
         }
       end
+    end
+
+    def serialize_installment(item)
+      {
+        id: item.id,
+        installment_number: item.installment_number,
+        due_date: item.due_date,
+        amount: item.amount.to_f,
+        principal_amount: item.principal_amount.to_f,
+        interest_amount: item.interest_amount.to_f,
+        status: item.status,
+        paid_at: item.paid_at
+      }
     end
   end
 end

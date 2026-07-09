@@ -356,6 +356,69 @@
 
           <section class="panel table-panel">
             <div class="table-header">
+              <h2>Consulta de cuenta y prestamo</h2>
+            </div>
+            <form id="adminAccountLookupForm" class="row-actions">
+              <input id="adminLookupAccountId" placeholder="Account ID o numero de cuenta *" required data-testid="admin-lookup-account-id" />
+              <button class="btn" type="submit" data-testid="admin-lookup-submit">Consultar cuenta</button>
+            </form>
+            <p id="adminAccountSummary" data-testid="admin-account-summary">Sin cuenta seleccionada.</p>
+            <div class="row-actions">
+              <label>Prestamo
+                <select id="adminInspectLoanId" data-testid="admin-inspect-loan-id"></select>
+              </label>
+              <label>Ver
+                <select id="adminPlanPerPage" data-testid="admin-plan-per-page">
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                </select>
+              </label>
+              <button id="adminPlanPrevBtn" class="btn ghost mini" type="button" data-testid="admin-plan-prev">Anterior</button>
+              <span id="adminPlanPageInfo" data-testid="admin-plan-page-info">1 / 1</span>
+              <button id="adminPlanNextBtn" class="btn ghost mini" type="button" data-testid="admin-plan-next">Siguiente</button>
+              <button id="adminPlanDownloadBtn" class="btn ghost" type="button" data-testid="admin-plan-download">Descargar plan CSV</button>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Vence</th>
+                  <th>Monto</th>
+                  <th>Capital</th>
+                  <th>Interes</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="adminInstallmentsRows" data-testid="admin-installments-rows">
+                <tr><td colspan="6">Sin plan cargado</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel table-panel">
+            <div class="table-header">
+              <h2>Archivos del usuario (admin)</h2>
+              <button id="refreshAdminFilesBtn" class="btn ghost" type="button" data-testid="refresh-admin-files">Actualizar archivos</button>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Archivo</th>
+                  <th>Tipo</th>
+                  <th>Tamaño</th>
+                  <th>Fecha</th>
+                </tr>
+              </thead>
+              <tbody id="adminUserFilesRows" data-testid="admin-user-files-rows">
+                <tr><td colspan="5">Sin archivos</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel table-panel">
+            <div class="table-header">
               <h2>Usuarios del sistema</h2>
               <div class="pager-controls">
                 <label>Ver

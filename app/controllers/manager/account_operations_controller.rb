@@ -3,6 +3,32 @@ module Manager
     before_action :require_manager!
     before_action :set_account
 
+    def summary
+      loans = @account.loans.order(created_at: :desc)
+      active_loan = loans.find(&:active?)
+
+      render json: {
+        account_id: @account.id,
+        account_number: @account.account_number,
+        user_id: @account.user_id,
+        user_name: @account.user ? "#{@account.user.first_name} #{@account.user.last_name}".strip : nil,
+        balance: @account.balance.to_f,
+        active_loan_id: active_loan&.id,
+        loans: loans.map do |loan|
+          {
+            id: loan.id,
+            amount: loan.amount.to_f,
+            annual_interest_rate: loan.annual_interest_rate.to_f,
+            term_months: loan.term_months,
+            monthly_payment: loan.monthly_payment.to_f,
+            outstanding_principal: loan.outstanding_principal.to_f,
+            status: loan.status,
+            first_due_date: loan.first_due_date
+          }
+        end
+      }, status: :ok
+    end
+
     def deposit
       transaction = TransactionService.new.deposit!(
         @account,
