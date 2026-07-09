@@ -17,12 +17,17 @@ const defaultState = {
 const state = loadState();
 
 const el = {
-  baseUrl: document.getElementById('baseUrl'),
   responseStatus: document.getElementById('responseStatus'),
   responseBox: document.getElementById('responseBox'),
   loginAccountNumber: document.getElementById('loginAccountNumber'),
   loginPin: document.getElementById('loginPin'),
-  createdAccountNumber: document.getElementById('createdAccountNumber')
+  createdAccountNumber: document.getElementById('createdAccountNumber'),
+  registerForm: document.getElementById('registerForm'),
+  showRegisterBtn: document.getElementById('showRegisterBtn'),
+  hideRegisterBtn: document.getElementById('hideRegisterBtn'),
+  regPin: document.getElementById('regPin'),
+  toggleLoginPinBtn: document.getElementById('toggleLoginPinBtn'),
+  toggleRegisterPinBtn: document.getElementById('toggleRegisterPinBtn')
 };
 
 function loadState() {
@@ -85,6 +90,17 @@ function setSession(payload, isAdminIntent = false) {
   persistState();
 }
 
+function togglePinVisibility(input, button) {
+  const nextType = input.type === 'password' ? 'text' : 'password';
+  input.type = nextType;
+  button.textContent = nextType === 'password' ? 'Ver PIN' : 'Ocultar PIN';
+}
+
+function showRegisterForm(show) {
+  el.registerForm.classList.toggle('hidden', !show);
+  el.showRegisterBtn.classList.toggle('hidden', show);
+}
+
 async function performLogin(isAdminIntent = false) {
   const accountNumber = el.loginAccountNumber.value.trim();
   const pin = el.loginPin.value.trim() || '1234';
@@ -104,13 +120,6 @@ async function performLogin(isAdminIntent = false) {
 }
 
 function bindEvents() {
-  document.getElementById('baseForm').addEventListener('submit', (event) => {
-    event.preventDefault();
-    state.baseUrl = el.baseUrl.value.trim();
-    persistState();
-    renderResponse(200, { message: 'Base URL guardada.' });
-  });
-
   document.getElementById('loginForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     try {
@@ -145,21 +154,25 @@ function bindEvents() {
       el.loginAccountNumber.value = createdAccountNumber || '';
       el.loginPin.value = pin;
 
-      if (createdAccountNumber) {
-        const loginPayload = await apiCall('/api/v1/login', 'POST', {
-          account_number: createdAccountNumber,
-          pin
-        });
-        setSession(loginPayload, false);
-      }
-
       renderResponse(201, {
-        message: 'Usuario registrado. Cuenta creada y sesion iniciada.',
+        message: 'Usuario registrado correctamente. Usa este account_number para hacer login.',
         account_number: createdAccountNumber
       });
+      showRegisterForm(false);
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
+  });
+
+  el.showRegisterBtn.addEventListener('click', () => showRegisterForm(true));
+  el.hideRegisterBtn.addEventListener('click', () => showRegisterForm(false));
+
+  el.toggleLoginPinBtn.addEventListener('click', () => {
+    togglePinVisibility(el.loginPin, el.toggleLoginPinBtn);
+  });
+
+  el.toggleRegisterPinBtn.addEventListener('click', () => {
+    togglePinVisibility(el.regPin, el.toggleRegisterPinBtn);
   });
 
   document.getElementById('goDashboardBtn').addEventListener('click', () => {
@@ -168,11 +181,16 @@ function bindEvents() {
 }
 
 function init() {
-  el.baseUrl.value = state.baseUrl;
+  if (state.token) {
+    window.location.href = '/angelfire/dashboard.html';
+    return;
+  }
+
   if (state.accountNumber) {
     el.loginAccountNumber.value = state.accountNumber;
     el.createdAccountNumber.textContent = state.accountNumber;
   }
+  showRegisterForm(false);
   bindEvents();
 }
 

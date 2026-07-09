@@ -43,7 +43,7 @@ class LoanService
       )
 
       build_installments!(loan, monthly_rate, monthly_payment)
-      @account.deposit!(@amount.to_i)
+      @account.deposit!(@amount)
 
       loan
     end
@@ -52,7 +52,6 @@ class LoanService
   def apply_payment!(loan, amount:, paid_on: nil)
     payment_left = BigDecimal(amount.to_s)
     raise LoanError, "El monto a pagar debe ser mayor que cero" if payment_left <= 0
-    raise LoanError, "El monto a pagar debe ser un número entero" unless payment_left.frac.zero?
 
     paid_at = paid_on.present? ? Time.zone.parse(paid_on.to_s) : Time.current
     raise LoanError, "La fecha de pago es inválida" if paid_at.nil?
@@ -72,7 +71,7 @@ class LoanService
 
       payment_transaction = TransactionService.new.loan_payment!(
         loan.account,
-        payment_left.to_i,
+        payment_left,
         "Pago de préstamo ##{loan.id}"
       )
 

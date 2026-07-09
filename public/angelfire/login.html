@@ -22,37 +22,40 @@
           mostrara tu account_number para ingresar al panel operativo.
         </p>
         <ul class="tips">
-          <li>Admin sugerido: account_number 9000000001</li>
-          <li>PIN admin: vacio o 1234</li>
-          <li>Luego del login podras depositar, retirar, pagar servicios, gestionar prestamos y actualizar perfil.</li>
+          <li>El login usa account_number + PIN.</li>
+          <li>Si no tienes cuenta, puedes abrir el formulario de registro.</li>
+          <li>Tras ingresar, veras tu nombre y account_number en el panel.</li>
         </ul>
       </section>
 
       <section class="forms-panel">
-        <form id="baseForm" class="card compact">
-          <label>Base URL API
-            <input id="baseUrl" type="url" value="http://localhost:3001" data-testid="auth-base-url" required />
-          </label>
-          <button class="btn ghost" type="submit" data-testid="auth-save-base">Guardar base URL</button>
-        </form>
-
         <form id="loginForm" class="card">
           <h2>Login</h2>
           <input id="loginAccountNumber" placeholder="Numero de cuenta" required data-testid="auth-login-account-number" />
-          <input id="loginPin" placeholder="PIN" data-testid="auth-login-pin" />
+          <div class="pin-row">
+            <input id="loginPin" type="password" placeholder="PIN" data-testid="auth-login-pin" />
+            <button class="btn ghost mini" id="toggleLoginPinBtn" type="button" data-testid="auth-toggle-login-pin">Ver PIN</button>
+          </div>
           <div class="row-actions">
             <button class="btn" type="submit" data-testid="auth-login-submit">Ingresar</button>
             <button class="btn alt" id="adminLoginBtn" type="button" data-testid="auth-admin-login-submit">Ingresar admin</button>
           </div>
+          <button class="btn ghost" id="showRegisterBtn" type="button" data-testid="auth-show-register">No tengo cuenta, registrarme</button>
         </form>
 
-        <form id="registerForm" class="card">
+        <form id="registerForm" class="card hidden">
           <h2>Registro</h2>
           <input id="regFirstName" placeholder="First name" required data-testid="auth-register-first-name" />
           <input id="regLastName" placeholder="Last name" required data-testid="auth-register-last-name" />
           <input id="regEmail" type="email" placeholder="email@example.com" required data-testid="auth-register-email" />
-          <input id="regPin" placeholder="PIN 4 digitos" value="1234" required data-testid="auth-register-pin" />
-          <button class="btn" type="submit" data-testid="auth-register-submit">Registrar e ingresar</button>
+          <div class="pin-row">
+            <input id="regPin" type="password" placeholder="PIN 4 digitos" value="1234" required data-testid="auth-register-pin" />
+            <button class="btn ghost mini" id="toggleRegisterPinBtn" type="button" data-testid="auth-toggle-register-pin">Ver PIN</button>
+          </div>
+          <div class="row-actions">
+            <button class="btn" type="submit" data-testid="auth-register-submit">Registrar</button>
+            <button class="btn ghost" id="hideRegisterBtn" type="button" data-testid="auth-hide-register">Cancelar</button>
+          </div>
         </form>
 
         <section class="card account-card" id="accountCard" aria-live="polite">

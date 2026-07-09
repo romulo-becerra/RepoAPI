@@ -10,8 +10,9 @@ class TransactionService
 
     ActiveRecord::Base.transaction do
       recipient_type = recipient_account.account_type.to_sym
-      transaction_type_dest = recipient_type == :service ? :service_payment : :deposit
-      make_transaction(normalized_amount, origin_account, :withdraw, description)
+      transaction_type_origin = recipient_type == :service ? :service_payment : :transfer
+      transaction_type_dest = :deposit
+      make_transaction(normalized_amount, origin_account, transaction_type_origin, description)
       make_transaction(normalized_amount, recipient_account, transaction_type_dest, description)
     end
   end
@@ -40,9 +41,8 @@ class TransactionService
   def normalize_amount(amount)
     decimal_amount = BigDecimal(amount.to_s)
     raise InvalidAmountError, "Amount must be greater than 0" if decimal_amount <= 0
-    raise InvalidAmountError, "Amount must be an integer number" unless decimal_amount.frac.zero?
 
-    decimal_amount.to_i
+    decimal_amount.round(2)
   end
 
   def validate_account_and_amount(account, amount)

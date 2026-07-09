@@ -19,12 +19,6 @@
         <p class="sidebar-copy">Core Banking Console</p>
 
         <section class="sidebar-card">
-          <h2>Admin por defecto</h2>
-          <p>Cuenta sugerida: 9000000001</p>
-          <p>PIN: vacio o 1234</p>
-        </section>
-
-        <section class="sidebar-card">
           <h2>Sesion actual</h2>
           <p id="statusSummary" data-testid="session-status">Sin autenticar</p>
           <p id="statusRole">Rol: -</p>
@@ -54,6 +48,11 @@
           <div>
             <p class="eyebrow">Plataforma financiera</p>
             <h1>Panel Operativo</h1>
+            <div class="header-links">
+              <button class="btn ghost mini" id="showProfileSectionBtn" type="button" data-testid="show-profile-section">Actualizar datos</button>
+              <button class="btn ghost mini" id="showSecuritySectionBtn" type="button" data-testid="show-security-section">Cambiar PIN</button>
+              <button class="btn ghost mini" id="hideAccountSectionBtn" type="button" data-testid="hide-account-section">Ocultar seccion</button>
+            </div>
           </div>
           <form id="baseConfigForm" class="base-config">
             <label>Base URL
@@ -63,27 +62,6 @@
             <button class="btn ghost" id="logoutBtn" type="button" data-testid="logout-btn">Cerrar sesion</button>
           </form>
         </header>
-
-        <section class="grid-auth">
-          <form id="registerForm" class="panel">
-            <h2>Registro de cliente</h2>
-            <input id="regFirstName" placeholder="First name" required data-testid="register-first-name" />
-            <input id="regLastName" placeholder="Last name" required data-testid="register-last-name" />
-            <input id="regEmail" type="email" placeholder="cliente@example.com" required data-testid="register-email" />
-            <input id="regPin" placeholder="PIN 4 digitos" value="1234" required data-testid="register-pin" />
-            <button class="btn" type="submit" data-testid="register-submit">Registrar cliente</button>
-          </form>
-
-          <form id="loginForm" class="panel">
-            <h2>Ingreso al sistema</h2>
-            <input id="loginAccountNumber" placeholder="Numero de cuenta" required data-testid="login-account-number" />
-            <input id="loginPin" placeholder="PIN (opcional para admin)" data-testid="login-pin" />
-            <div class="row-actions">
-              <button class="btn" type="submit" data-testid="login-submit">Ingresar usuario</button>
-              <button class="btn alt" id="adminLoginBtn" type="button" data-testid="admin-login-submit">Ingresar admin</button>
-            </div>
-          </form>
-        </section>
 
         <section class="view-switch panel">
           <h2>Vistas del sistema</h2>
@@ -135,24 +113,81 @@
               <input id="serviceDescription" value="Pago de servicio AngelFire" data-testid="service-description" />
               <button class="btn" type="submit" data-testid="pay-service-submit">Pagar servicio</button>
             </form>
-
-            <form id="createLoanForm" class="panel">
-              <h2>Nuevo prestamo</h2>
-              <input id="loanAmount" type="number" min="1" value="12000" required data-testid="loan-amount" />
-              <input id="loanTermMonths" type="number" min="1" value="12" required data-testid="loan-term-months" />
-              <input id="loanFirstDueDate" type="date" required data-testid="loan-first-due-date" />
-              <button class="btn" type="submit" data-testid="loan-create-submit">Crear prestamo</button>
-            </form>
-
-            <form id="payLoanForm" class="panel">
-              <h2>Pagar prestamo</h2>
-              <input id="loanId" placeholder="Loan ID" required data-testid="loan-id" />
-              <input id="payLoanAmount" type="number" min="1" value="500" required data-testid="loan-pay-amount" />
-              <button class="btn" type="submit" data-testid="loan-pay-submit">Pagar cuota</button>
-            </form>
           </section>
 
-          <section class="operations-grid">
+          <section class="panel table-panel">
+            <div class="table-header">
+              <h2>Plan de pagos del prestamo</h2>
+              <button id="refreshInstallmentsBtn" class="btn ghost" type="button" data-testid="refresh-installments">Actualizar cuotas</button>
+            </div>
+            <p id="loanMonthlySummary" data-testid="loan-monthly-summary">No hay prestamo activo.</p>
+
+            <form id="payLoanForm" class="panel compact-panel">
+              <h3>Pagar prestamo</h3>
+              <p id="nextPendingInstallmentAmount" data-testid="next-pending-installment">Proxima cuota pendiente: -</p>
+              <div class="row-actions">
+                <label>Cuotas a pagar
+                  <input id="loanInstallmentsToPay" type="number" min="1" value="1" data-testid="loan-installments-to-pay" />
+                </label>
+                <button id="loanCalculateAmountBtn" class="btn ghost" type="button" data-testid="loan-calc-amount">Calcular monto</button>
+              </div>
+              <input id="payLoanAmount" type="number" min="0.01" step="0.01" value="1.00" required data-testid="loan-pay-amount" />
+              <button class="btn" type="submit" data-testid="loan-pay-submit">Pagar cuotas</button>
+            </form>
+
+            <div class="installments-grid">
+              <div>
+                <div class="table-header compact">
+                  <h3>Cuotas pendientes</h3>
+                  <div class="pager-controls">
+                    <label>Ver
+                      <select id="pendingInstallmentsPerPage" data-testid="pending-per-page">
+                        <option value="10">10</option>
+                        <option value="20">20</option>
+                        <option value="50">50</option>
+                      </select>
+                    </label>
+                    <button id="pendingPrevPageBtn" class="btn ghost mini" type="button" data-testid="pending-prev-page">Anterior</button>
+                    <span id="pendingInstallmentsPageInfo" data-testid="pending-page-info">1 / 1</span>
+                    <button id="pendingNextPageBtn" class="btn ghost mini" type="button" data-testid="pending-next-page">Siguiente</button>
+                  </div>
+                </div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Vence</th>
+                      <th>Monto</th>
+                      <th>Capital</th>
+                      <th>Interes</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pendingInstallmentsRows" data-testid="pending-installments-rows">
+                    <tr><td colspan="5">Sin datos</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div>
+                <h3>Cuotas pagadas</h3>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Pago</th>
+                      <th>Monto</th>
+                      <th>Capital</th>
+                      <th>Interes</th>
+                    </tr>
+                  </thead>
+                  <tbody id="paidInstallmentsRows" data-testid="paid-installments-rows">
+                    <tr><td colspan="5">Sin datos</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section id="accountMaintenanceSection" class="operations-grid hidden">
             <form id="updateProfileForm" class="panel">
               <h2>Actualizar datos</h2>
               <input id="profileFirstName" placeholder="First name" data-testid="profile-first-name" />
@@ -164,8 +199,8 @@
 
             <form id="changePinForm" class="panel">
               <h2>Cambiar PIN</h2>
-              <input id="currentPin" placeholder="PIN actual" required data-testid="current-pin" />
-              <input id="newPin" placeholder="Nuevo PIN" required data-testid="new-pin" />
+              <input id="currentPin" type="password" placeholder="PIN actual" required data-testid="current-pin" />
+              <input id="newPin" type="password" placeholder="Nuevo PIN" required data-testid="new-pin" />
               <button class="btn" type="submit" data-testid="change-pin-submit">Cambiar PIN</button>
             </form>
           </section>
@@ -173,7 +208,31 @@
           <section class="panel table-panel">
             <div class="table-header">
               <h2>Movimientos de cuenta</h2>
-              <button id="refreshDashboard" class="btn ghost" type="button" data-testid="refresh-dashboard">Actualizar</button>
+              <div class="pager-controls">
+                <label>Tipo
+                  <select id="txFilter" data-testid="tx-filter">
+                    <option value="all">Todos</option>
+                    <option value="debit">Debitos</option>
+                    <option value="credit">Creditos</option>
+                    <option value="deposit">Depositos</option>
+                    <option value="withdraw">Retiros</option>
+                    <option value="transfer">Transferencias</option>
+                    <option value="service_payment">Pago servicio</option>
+                    <option value="loan_payment">Pago prestamo</option>
+                  </select>
+                </label>
+                <label>Ver
+                  <select id="txPerPage" data-testid="tx-per-page">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                  </select>
+                </label>
+                <button id="txPrevPageBtn" class="btn ghost mini" type="button" data-testid="tx-prev-page">Anterior</button>
+                <span id="txPageInfo" data-testid="tx-page-info">1 / 1</span>
+                <button id="txNextPageBtn" class="btn ghost mini" type="button" data-testid="tx-next-page">Siguiente</button>
+                <button id="refreshDashboard" class="btn ghost" type="button" data-testid="refresh-dashboard">Actualizar</button>
+              </div>
             </div>
             <table>
               <thead>
@@ -227,6 +286,32 @@
               <button class="btn" type="submit" data-testid="admin-create-user-submit">Crear usuario</button>
             </form>
 
+            <form id="adminCreateLoanForm" class="panel">
+              <h2>Originar prestamo (admin)</h2>
+              <input id="adminLoanAccountId" placeholder="Account ID objetivo" required data-testid="admin-loan-account-id" />
+              <input id="adminLoanAmount" type="number" min="1" value="12000" required data-testid="admin-loan-amount" />
+              <input id="adminLoanTermMonths" type="number" min="1" value="12" required data-testid="admin-loan-term-months" />
+              <input id="adminLoanFirstDueDate" type="date" required data-testid="admin-loan-first-due-date" />
+              <div class="row-actions">
+                <button class="btn ghost" id="adminPreviewLoanBtn" type="button" data-testid="admin-preview-loan">Previsualizar plan</button>
+                <button class="btn" id="adminCreateLoanBtn" type="button" data-testid="admin-create-loan">Aplicar prestamo</button>
+              </div>
+              <p id="adminLoanRateHint" data-testid="admin-loan-rate-hint">Interes anual: -</p>
+            </form>
+
+            <form id="adminAccountOpsForm" class="panel">
+              <h2>Operar cuenta de usuario</h2>
+              <input id="adminTargetAccountId" placeholder="Account ID objetivo" required data-testid="admin-target-account-id" />
+              <input id="adminTargetLoanId" placeholder="Loan ID (solo pago prestamo)" data-testid="admin-target-loan-id" />
+              <input id="adminTargetAmount" type="number" min="1" value="100" required data-testid="admin-target-amount" />
+              <input id="adminTargetDescription" placeholder="Descripcion" value="Operacion ejecutada por gerente" data-testid="admin-target-description" />
+              <div class="row-actions">
+                <button class="btn" id="adminDepositTargetBtn" type="button" data-testid="admin-deposit-target">Depositar</button>
+                <button class="btn alt" id="adminWithdrawTargetBtn" type="button" data-testid="admin-withdraw-target">Retirar</button>
+                <button class="btn ghost" id="adminPayLoanTargetBtn" type="button" data-testid="admin-payloan-target">Pagar prestamo</button>
+              </div>
+            </form>
+
             <form id="adminDeleteUserForm" class="panel">
               <h2>Eliminar usuario</h2>
               <input id="adminDeleteUserId" placeholder="User ID" required data-testid="admin-delete-user-id" />
@@ -266,6 +351,26 @@
             <ul id="adminAuditLog" class="audit-list" data-testid="admin-audit-log">
               <li>Sin eventos de auditoria</li>
             </ul>
+          </section>
+
+          <section class="panel table-panel">
+            <div class="table-header">
+              <h2>Plan de pagos (previsualizacion admin)</h2>
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Vence</th>
+                  <th>Monto</th>
+                  <th>Capital</th>
+                  <th>Interes</th>
+                </tr>
+              </thead>
+              <tbody id="adminLoanPreviewRows" data-testid="admin-loan-preview-rows">
+                <tr><td colspan="5">Sin plan previsualizado</td></tr>
+              </tbody>
+            </table>
           </section>
         </section>
 

@@ -10,11 +10,19 @@ const defaultState = {
   fullName: '',
   role: '-',
   loanId: '',
+  pendingInstallmentsPage: 1,
+  pendingInstallmentsPerPage: 10,
+  txPage: 1,
+  txPerPage: 10,
+  txFilter: 'all',
   activeView: 'client',
   auditLog: []
 };
 
 const state = loadState();
+let pendingInstallmentsCache = [];
+let pendingPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
+let txPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
 
 const el = {
   baseUrl: document.getElementById('baseUrl'),
@@ -26,8 +34,22 @@ const el = {
   accountNumberValue: document.getElementById('accountNumberValue'),
   userNameValue: document.getElementById('userNameValue'),
   loanStateValue: document.getElementById('loanStateValue'),
+  loanMonthlySummary: document.getElementById('loanMonthlySummary'),
+  nextPendingInstallmentAmount: document.getElementById('nextPendingInstallmentAmount'),
+  pendingInstallmentsRows: document.getElementById('pendingInstallmentsRows'),
+  paidInstallmentsRows: document.getElementById('paidInstallmentsRows'),
+  payLoanAmount: document.getElementById('payLoanAmount'),
+  loanInstallmentsToPay: document.getElementById('loanInstallmentsToPay'),
+  pendingInstallmentsPerPage: document.getElementById('pendingInstallmentsPerPage'),
+  pendingInstallmentsPageInfo: document.getElementById('pendingInstallmentsPageInfo'),
+  pendingPrevPageBtn: document.getElementById('pendingPrevPageBtn'),
+  pendingNextPageBtn: document.getElementById('pendingNextPageBtn'),
+  txFilter: document.getElementById('txFilter'),
+  txPerPage: document.getElementById('txPerPage'),
+  txPrevPageBtn: document.getElementById('txPrevPageBtn'),
+  txNextPageBtn: document.getElementById('txNextPageBtn'),
+  txPageInfo: document.getElementById('txPageInfo'),
   txRows: document.getElementById('txRows'),
-  loanIdInput: document.getElementById('loanId'),
   serviceId: document.getElementById('serviceId'),
   viewClientBtn: document.getElementById('viewClientBtn'),
   viewAdminBtn: document.getElementById('viewAdminBtn'),
@@ -46,7 +68,13 @@ const el = {
   profileLastName: document.getElementById('profileLastName'),
   profileEmail: document.getElementById('profileEmail'),
   profilePhone: document.getElementById('profilePhone'),
-  logoutBtn: document.getElementById('logoutBtn')
+  logoutBtn: document.getElementById('logoutBtn'),
+  accountMaintenanceSection: document.getElementById('accountMaintenanceSection'),
+  showProfileSectionBtn: document.getElementById('showProfileSectionBtn'),
+  showSecuritySectionBtn: document.getElementById('showSecuritySectionBtn'),
+  hideAccountSectionBtn: document.getElementById('hideAccountSectionBtn'),
+  adminLoanRateHint: document.getElementById('adminLoanRateHint'),
+  adminLoanPreviewRows: document.getElementById('adminLoanPreviewRows')
 };
 
 function loadState() {
@@ -114,6 +142,19 @@ function updateHeader() {
   renderPermissions();
 }
 
+function toggleAccountMaintenance(mode) {
+  const show = mode === 'profile' || mode === 'security';
+  el.accountMaintenanceSection.classList.toggle('hidden', !show);
+
+  if (mode === 'profile') {
+    el.profileFirstName.focus();
+  }
+
+  if (mode === 'security') {
+    document.getElementById('currentPin').focus();
+  }
+}
+
 function setView(view) {
   if (view === 'admin' && !hasManagerAccess()) {
     renderResponse(403, { errors: 'La vista admin requiere autenticacion manager.' });
@@ -130,14 +171,116 @@ function setView(view) {
 
 function setDefaultDate() {
   const dateInput = document.getElementById('loanFirstDueDate');
+  const adminDateInput = document.getElementById('adminLoanFirstDueDate');
   const d = new Date();
   d.setMonth(d.getMonth() + 1);
-  dateInput.value = d.toISOString().slice(0, 10);
+  if (dateInput) {
+    dateInput.value = d.toISOString().slice(0, 10);
+  }
+  if (adminDateInput) {
+    adminDateInput.value = d.toISOString().slice(0, 10);
+  }
 }
 
 function renderResponse(status, payload) {
   el.responseStatus.textContent = `Status: ${status}`;
   el.responseBox.textContent = JSON.stringify(payload, null, 2);
+}
+
+function formatTransactionType(type) {
+  const labels = {
+    deposit: 'Deposito',
+    withdraw: 'Retiro',
+    transfer: 'Transferencia',
+    service_payment: 'Pago servicio',
+    loan_payment: 'Pago prestamo',
+    atm_deposit: 'Deposito ATM',
+    atm_withdrawal: 'Retiro ATM'
+  };
+  return labels[type] || type || '-';
+}
+
+function updatePendingPaginationUi() {
+  const page = pendingPaginationMeta.page || 1;
+  const totalPages = pendingPaginationMeta.total_pages || 1;
+  el.pendingInstallmentsPageInfo.textContent = `${page} / ${totalPages}`;
+  el.pendingPrevPageBtn.disabled = !pendingPaginationMeta.has_prev;
+  el.pendingNextPageBtn.disabled = !pendingPaginationMeta.has_next;
+}
+
+function updateTransactionsPaginationUi() {
+  const page = txPaginationMeta.page || 1;
+  const totalPages = txPaginationMeta.total_pages || 1;
+  el.txPageInfo.textContent = `${page} / ${totalPages}`;
+  el.txPrevPageBtn.disabled = !txPaginationMeta.has_prev;
+  el.txNextPageBtn.disabled = !txPaginationMeta.has_next;
+}
+
+function signedAmountByMovement(tx) {
+  const value = Number(tx.amount || 0).toFixed(2);
+  if (tx.movement_kind === 'debit') {
+    return `- ${value}`;
+  }
+
+  return `+ ${value}`;
+}
+
+function amountClassByMovement(tx) {
+  return tx.movement_kind === 'debit' ? 'tx-amount-debit' : 'tx-amount-credit';
+}
+
+function updateLoanPaymentSummary() {
+  if (!pendingInstallmentsCache || pendingInstallmentsCache.length === 0) {
+    el.nextPendingInstallmentAmount.textContent = 'Proxima cuota pendiente: -';
+    if (el.payLoanAmount.value === '' || Number(el.payLoanAmount.value) <= 0) {
+      el.payLoanAmount.value = '0';
+    }
+    return;
+  }
+
+  const nextInstallment = pendingInstallmentsCache[0];
+  el.nextPendingInstallmentAmount.textContent = `Proxima cuota pendiente: S/ ${Number(nextInstallment.amount || 0).toFixed(2)} (cuota #${nextInstallment.installment_number})`;
+}
+
+function calculatePendingInstallmentsAmount() {
+  const installmentsCount = Math.max(Number(el.loanInstallmentsToPay.value || 1), 1);
+  if (!pendingInstallmentsCache || pendingInstallmentsCache.length === 0) {
+    return 0;
+  }
+
+  return pendingInstallmentsCache
+    .slice(0, installmentsCount)
+    .reduce((acc, item) => acc + Number(item.amount || 0), 0);
+}
+
+async function calculateInstallmentsAmountFromApi(installmentsCount) {
+  const wanted = Math.max(Number(installmentsCount || 1), 1);
+  let collected = [];
+  let page = 1;
+
+  while (collected.length < wanted) {
+    const payload = await apiCall(
+      `/api/v1/accounts/${state.accountId}/loans/${state.loanId}/installments?page=${page}&per_page=50`,
+      'GET'
+    );
+
+    const currentPageItems = payload.pending_installments || [];
+    if (currentPageItems.length === 0) {
+      break;
+    }
+
+    collected = collected.concat(currentPageItems);
+    const meta = payload.pending_pagination || {};
+    if (!meta.has_next) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return collected
+    .slice(0, wanted)
+    .reduce((acc, item) => acc + Number(item.amount || 0), 0);
 }
 
 function buildAuthHeader(authType) {
@@ -206,28 +349,106 @@ async function refreshClientDashboard() {
     el.loanStateValue.textContent = `Activo | Pendiente: ${Number(accountPayload.loan.outstanding_principal || 0).toFixed(2)}`;
     if (accountPayload.loan.id) {
       state.loanId = String(accountPayload.loan.id);
-      el.loanIdInput.value = state.loanId;
     }
+    el.loanMonthlySummary.textContent = `Cuota mensual: S/ ${Number(accountPayload.loan.monthly_payment || 0).toFixed(2)} | Interes anual: ${Number(accountPayload.loan.annual_interest_rate || 0).toFixed(2)}% | Plazo: ${accountPayload.loan.term_months || '-'} meses`;
   } else {
     el.loanStateValue.textContent = 'Sin prestamo activo';
+    state.loanId = '';
+    el.loanMonthlySummary.textContent = 'No hay prestamo activo.';
+    el.pendingInstallmentsRows.innerHTML = '<tr><td colspan="5">Sin datos</td></tr>';
+    el.paidInstallmentsRows.innerHTML = '<tr><td colspan="5">Sin datos</td></tr>';
+    pendingInstallmentsCache = [];
+    pendingPaginationMeta = { page: 1, per_page: Number(state.pendingInstallmentsPerPage || 10), total: 0, total_pages: 1, has_prev: false, has_next: false };
+    updatePendingPaginationUi();
+    updateLoanPaymentSummary();
   }
 
-  const txPayload = await apiCall(`/api/v1/accounts/${state.accountId}/transactions`, 'GET');
-  const rows = txPayload.transactions || [];
+  const txPage = Number(state.txPage || 1);
+  const txPerPage = Number(state.txPerPage || 10);
+  const txFilter = state.txFilter || 'all';
+  const txPayload = await apiCall(
+    `/api/v1/accounts/${state.accountId}/transactions?page=${txPage}&per_page=${txPerPage}&transaction_filter=${encodeURIComponent(txFilter)}`,
+    'GET'
+  );
+  const rows = Array.isArray(txPayload) ? txPayload : (txPayload.transactions || []);
+  txPaginationMeta = {
+    page: Number(txPayload.page || txPage),
+    per_page: Number(txPayload.per_page || txPerPage),
+    total: Number(txPayload.total || rows.length),
+    total_pages: Number(txPayload.total_pages || 1),
+    has_prev: Boolean(txPayload.has_prev),
+    has_next: Boolean(txPayload.has_next)
+  };
+  state.txPage = txPaginationMeta.page;
+  state.txPerPage = txPaginationMeta.per_page;
+  persistState();
   if (rows.length === 0) {
     el.txRows.innerHTML = '<tr><td colspan="5">Sin movimientos</td></tr>';
   } else {
     el.txRows.innerHTML = rows
-      .slice(0, 25)
       .map(
         (tx) =>
-          `<tr><td>${tx.id || '-'}</td><td>${tx.transaction_type || '-'}</td><td>${Number(tx.amount || 0).toFixed(2)}</td><td>${tx.status || '-'}</td><td>${tx.created_at || '-'}</td></tr>`
+          `<tr><td>${tx.id || '-'}</td><td>${formatTransactionType(tx.transaction_type)}</td><td class="${amountClassByMovement(tx)}">${signedAmountByMovement(tx)}</td><td>${tx.status || '-'}</td><td>${tx.created_at || '-'}</td></tr>`
       )
       .join('');
   }
+  updateTransactionsPaginationUi();
 
   persistState();
   updateHeader();
+}
+
+function renderInstallmentsRows(rows, targetNode, dateField) {
+  if (!rows || rows.length === 0) {
+    targetNode.innerHTML = '<tr><td colspan="5">Sin datos</td></tr>';
+    return;
+  }
+
+  targetNode.innerHTML = rows
+    .map(
+      (item) =>
+        `<tr><td>${item.installment_number || '-'}</td><td>${item[dateField] || '-'}</td><td>${Number(item.amount || 0).toFixed(2)}</td><td>${Number(item.principal_amount || 0).toFixed(2)}</td><td>${Number(item.interest_amount || 0).toFixed(2)}</td></tr>`
+    )
+    .join('');
+}
+
+async function refreshInstallmentsForClient() {
+  if (!state.accountId || !state.loanId) {
+    el.pendingInstallmentsRows.innerHTML = '<tr><td colspan="5">Sin datos</td></tr>';
+    el.paidInstallmentsRows.innerHTML = '<tr><td colspan="5">Sin datos</td></tr>';
+    pendingInstallmentsCache = [];
+    pendingPaginationMeta = { page: 1, per_page: Number(state.pendingInstallmentsPerPage || 10), total: 0, total_pages: 1, has_prev: false, has_next: false };
+    updatePendingPaginationUi();
+    updateLoanPaymentSummary();
+    return;
+  }
+
+  const page = Number(state.pendingInstallmentsPage || 1);
+  const perPage = Number(state.pendingInstallmentsPerPage || 10);
+  const payload = await apiCall(`/api/v1/accounts/${state.accountId}/loans/${state.loanId}/installments?page=${page}&per_page=${perPage}`, 'GET');
+  pendingInstallmentsCache = payload.pending_installments || [];
+  pendingPaginationMeta = payload.pending_pagination || { page: 1, per_page: perPage, total: pendingInstallmentsCache.length, total_pages: 1, has_prev: false, has_next: false };
+  state.pendingInstallmentsPage = Number(pendingPaginationMeta.page || 1);
+  state.pendingInstallmentsPerPage = Number(pendingPaginationMeta.per_page || perPage);
+  persistState();
+  renderInstallmentsRows(payload.pending_installments || [], el.pendingInstallmentsRows, 'due_date');
+  renderInstallmentsRows(payload.paid_installments || [], el.paidInstallmentsRows, 'paid_at');
+  updatePendingPaginationUi();
+  updateLoanPaymentSummary();
+}
+
+function renderAdminLoanPreview(schedule) {
+  if (!schedule || schedule.length === 0) {
+    el.adminLoanPreviewRows.innerHTML = '<tr><td colspan="5">Sin plan previsualizado</td></tr>';
+    return;
+  }
+
+  el.adminLoanPreviewRows.innerHTML = schedule
+    .map(
+      (item) =>
+        `<tr><td>${item.installment_number}</td><td>${item.due_date}</td><td>${Number(item.amount || 0).toFixed(2)}</td><td>${Number(item.principal_amount || 0).toFixed(2)}</td><td>${Number(item.interest_amount || 0).toFixed(2)}</td></tr>`
+    )
+    .join('');
 }
 
 async function refreshProfileData() {
@@ -288,94 +509,12 @@ async function refreshAdminDashboard() {
   pushAudit('Consulta reporte de actividad de cuentas (30 dias)');
 }
 
-function captureLogin(payload, isAdminIntent) {
-  state.token = payload.token || '';
-  state.userId = payload.user ? String(payload.user.id) : '';
-  state.accountId = payload.account ? String(payload.account.id) : '';
-  state.accountNumber = payload.account ? String(payload.account.account_number) : '';
-  state.fullName = payload.user ? `${payload.user.first_name} ${payload.user.last_name}` : '';
-  state.role = payload.user ? payload.user.role : '-';
-
-  if (state.role === 'manager') {
-    state.managerToken = state.token;
-    pushAudit('Sesion manager iniciada');
-  }
-
-  if (isAdminIntent && state.role !== 'manager') {
-    renderResponse(403, { errors: 'Este usuario no tiene rol manager/admin.' });
-    setView('client');
-  }
-
-  persistState();
-  updateHeader();
-  document.getElementById('loginAccountNumber').value = state.accountNumber;
-}
-
-async function login(isAdminIntent) {
-  const accountNumber = document.getElementById('loginAccountNumber').value.trim();
-  const pinRaw = document.getElementById('loginPin').value.trim();
-  const pin = pinRaw || '1234';
-
-  const payload = await apiCall('/api/v1/login', 'POST', {
-    account_number: accountNumber,
-    pin
-  }, 'public');
-
-  captureLogin(payload, isAdminIntent);
-  await refreshServices();
-  await refreshClientDashboard();
-  await refreshProfileData();
-  if (state.role === 'manager') {
-    await refreshAdminDashboard();
-    if (isAdminIntent) {
-      setView('admin');
-    }
-  }
-}
-
 function bindEvents() {
   document.getElementById('baseConfigForm').addEventListener('submit', (event) => {
     event.preventDefault();
     state.baseUrl = el.baseUrl.value.trim();
     persistState();
     renderResponse(200, { message: 'Base URL actualizada' });
-  });
-
-  document.getElementById('registerForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    try {
-      const payload = await apiCall('/api/v1/register', 'POST', {
-        first_name: document.getElementById('regFirstName').value.trim(),
-        last_name: document.getElementById('regLastName').value.trim(),
-        email: document.getElementById('regEmail').value.trim(),
-        pin: document.getElementById('regPin').value.trim()
-      }, 'public');
-      captureLogin(payload, false);
-      await refreshServices();
-      await refreshClientDashboard();
-      await refreshProfileData();
-      setView('client');
-    } catch (error) {
-      renderResponse(422, { errors: error.message });
-    }
-  });
-
-  document.getElementById('loginForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    try {
-      await login(false);
-      setView('client');
-    } catch (error) {
-      renderResponse(401, { errors: error.message });
-    }
-  });
-
-  document.getElementById('adminLoginBtn').addEventListener('click', async () => {
-    try {
-      await login(true);
-    } catch (error) {
-      renderResponse(401, { errors: error.message });
-    }
   });
 
   el.viewClientBtn.addEventListener('click', () => setView('client'));
@@ -400,6 +539,7 @@ function bindEvents() {
         description: document.getElementById('depositDescription').value.trim()
       });
       await refreshClientDashboard();
+      await refreshInstallmentsForClient();
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
@@ -413,6 +553,7 @@ function bindEvents() {
         description: document.getElementById('withdrawDescription').value.trim()
       });
       await refreshClientDashboard();
+      await refreshInstallmentsForClient();
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
@@ -427,38 +568,7 @@ function bindEvents() {
         description: document.getElementById('serviceDescription').value.trim()
       });
       await refreshClientDashboard();
-    } catch (error) {
-      renderResponse(422, { errors: error.message });
-    }
-  });
-
-  document.getElementById('createLoanForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    try {
-      const payload = await apiCall(`/api/v1/accounts/${state.accountId}/loans`, 'POST', {
-        amount: Number(document.getElementById('loanAmount').value),
-        term_months: Number(document.getElementById('loanTermMonths').value),
-        first_due_date: document.getElementById('loanFirstDueDate').value
-      });
-      if (payload.loan && payload.loan.id) {
-        state.loanId = String(payload.loan.id);
-        el.loanIdInput.value = state.loanId;
-        persistState();
-      }
-      await refreshClientDashboard();
-    } catch (error) {
-      renderResponse(422, { errors: error.message });
-    }
-  });
-
-  document.getElementById('payLoanForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const loanId = document.getElementById('loanId').value.trim();
-    try {
-      await apiCall(`/api/v1/accounts/${state.accountId}/loans/${loanId}/pay`, 'POST', {
-        amount: Number(document.getElementById('payLoanAmount').value)
-      });
-      await refreshClientDashboard();
+      await refreshInstallmentsForClient();
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
@@ -468,10 +578,146 @@ function bindEvents() {
     try {
       await refreshClientDashboard();
       await refreshProfileData();
+      await refreshInstallmentsForClient();
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
   });
+
+  document.getElementById('refreshInstallmentsBtn').addEventListener('click', async () => {
+    try {
+      await refreshInstallmentsForClient();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('loanCalculateAmountBtn').addEventListener('click', async () => {
+    if (!state.accountId || !state.loanId) {
+      renderResponse(422, { errors: 'No hay prestamo activo para calcular cuotas.' });
+      return;
+    }
+
+    try {
+      const installmentsCount = Math.max(Number(el.loanInstallmentsToPay.value || 1), 1);
+      let amount = calculatePendingInstallmentsAmount();
+      if (installmentsCount > pendingInstallmentsCache.length) {
+        amount = await calculateInstallmentsAmountFromApi(installmentsCount);
+      }
+      el.payLoanAmount.value = amount > 0 ? String(amount.toFixed(2)) : '1';
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('payLoanForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!state.accountId || !state.loanId) {
+      renderResponse(422, { errors: 'No hay prestamo activo para pagar.' });
+      return;
+    }
+
+    try {
+      await apiCall(`/api/v1/accounts/${state.accountId}/loans/${state.loanId}/pay`, 'POST', {
+        amount: Number(el.payLoanAmount.value)
+      });
+      await refreshClientDashboard();
+      await refreshInstallmentsForClient();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  el.pendingInstallmentsPerPage.addEventListener('change', async () => {
+    state.pendingInstallmentsPerPage = Number(el.pendingInstallmentsPerPage.value || 10);
+    state.pendingInstallmentsPage = 1;
+    persistState();
+    try {
+      await refreshInstallmentsForClient();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  el.pendingPrevPageBtn.addEventListener('click', async () => {
+    if (state.pendingInstallmentsPage <= 1) {
+      return;
+    }
+    state.pendingInstallmentsPage -= 1;
+    persistState();
+    try {
+      await refreshInstallmentsForClient();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  el.pendingNextPageBtn.addEventListener('click', async () => {
+    const totalPages = pendingPaginationMeta.total_pages || 1;
+    if (state.pendingInstallmentsPage >= totalPages) {
+      return;
+    }
+    state.pendingInstallmentsPage += 1;
+    persistState();
+    try {
+      await refreshInstallmentsForClient();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  el.txFilter.addEventListener('change', async () => {
+    state.txFilter = el.txFilter.value;
+    state.txPage = 1;
+    persistState();
+    try {
+      await refreshClientDashboard();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  el.txPerPage.addEventListener('change', async () => {
+    state.txPerPage = Number(el.txPerPage.value || 10);
+    state.txPage = 1;
+    persistState();
+    try {
+      await refreshClientDashboard();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  el.txPrevPageBtn.addEventListener('click', async () => {
+    if (state.txPage <= 1) {
+      return;
+    }
+    state.txPage -= 1;
+    persistState();
+    try {
+      await refreshClientDashboard();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  el.txNextPageBtn.addEventListener('click', async () => {
+    const totalPages = txPaginationMeta.total_pages || 1;
+    if (state.txPage >= totalPages) {
+      return;
+    }
+    state.txPage += 1;
+    persistState();
+    try {
+      await refreshClientDashboard();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  el.showProfileSectionBtn.addEventListener('click', () => toggleAccountMaintenance('profile'));
+  el.showSecuritySectionBtn.addEventListener('click', () => toggleAccountMaintenance('security'));
+  el.hideAccountSectionBtn.addEventListener('click', () => toggleAccountMaintenance('hide'));
 
   document.getElementById('updateProfileForm').addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -574,6 +820,111 @@ function bindEvents() {
     }
   });
 
+  document.getElementById('adminPreviewLoanBtn').addEventListener('click', async () => {
+    if (!hasManagerAccess()) {
+      renderResponse(403, { errors: 'Operacion restringida a manager.' });
+      return;
+    }
+
+    const accountId = document.getElementById('adminLoanAccountId').value.trim();
+    try {
+      const payload = await apiCall(`/api/v1/manager/accounts/${accountId}/loans/preview`, 'POST', {
+        amount: Number(document.getElementById('adminLoanAmount').value),
+        term_months: Number(document.getElementById('adminLoanTermMonths').value),
+        first_due_date: document.getElementById('adminLoanFirstDueDate').value
+      }, 'manager');
+      el.adminLoanRateHint.textContent = `Interes anual: ${Number(payload.annual_interest_rate || 0).toFixed(2)}% | Cuota mensual: S/ ${Number(payload.monthly_payment || 0).toFixed(2)}`;
+      renderAdminLoanPreview(payload.projected_schedule || []);
+      pushAudit(`Previsualizacion de prestamo manager account_id=${accountId}`);
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('adminCreateLoanBtn').addEventListener('click', async () => {
+    if (!hasManagerAccess()) {
+      renderResponse(403, { errors: 'Operacion restringida a manager.' });
+      return;
+    }
+
+    const accountId = document.getElementById('adminLoanAccountId').value.trim();
+    try {
+      const payload = await apiCall(`/api/v1/manager/accounts/${accountId}/loans`, 'POST', {
+        amount: Number(document.getElementById('adminLoanAmount').value),
+        term_months: Number(document.getElementById('adminLoanTermMonths').value),
+        first_due_date: document.getElementById('adminLoanFirstDueDate').value
+      }, 'manager');
+      el.adminLoanRateHint.textContent = `Interes anual: ${Number(payload.loan.annual_interest_rate || 0).toFixed(2)}% | Cuota mensual: S/ ${Number(payload.loan.monthly_payment || 0).toFixed(2)}`;
+      renderAdminLoanPreview(payload.loan.installments || []);
+      pushAudit(`Creacion de prestamo por gerente account_id=${accountId} loan_id=${payload.loan.id}`);
+      await refreshAdminDashboard();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('adminDepositTargetBtn').addEventListener('click', async () => {
+    if (!hasManagerAccess()) {
+      renderResponse(403, { errors: 'Operacion restringida a manager.' });
+      return;
+    }
+
+    const accountId = document.getElementById('adminTargetAccountId').value.trim();
+    try {
+      await apiCall(`/api/v1/manager/accounts/${accountId}/deposit`, 'POST', {
+        amount: Number(document.getElementById('adminTargetAmount').value),
+        description: document.getElementById('adminTargetDescription').value.trim()
+      }, 'manager');
+      pushAudit(`Deposito por gerente sobre account_id=${accountId}`);
+      await refreshAdminDashboard();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('adminWithdrawTargetBtn').addEventListener('click', async () => {
+    if (!hasManagerAccess()) {
+      renderResponse(403, { errors: 'Operacion restringida a manager.' });
+      return;
+    }
+
+    const accountId = document.getElementById('adminTargetAccountId').value.trim();
+    try {
+      await apiCall(`/api/v1/manager/accounts/${accountId}/withdraw`, 'POST', {
+        amount: Number(document.getElementById('adminTargetAmount').value),
+        description: document.getElementById('adminTargetDescription').value.trim()
+      }, 'manager');
+      pushAudit(`Retiro por gerente sobre account_id=${accountId}`);
+      await refreshAdminDashboard();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('adminPayLoanTargetBtn').addEventListener('click', async () => {
+    if (!hasManagerAccess()) {
+      renderResponse(403, { errors: 'Operacion restringida a manager.' });
+      return;
+    }
+
+    const accountId = document.getElementById('adminTargetAccountId').value.trim();
+    const loanId = document.getElementById('adminTargetLoanId').value.trim();
+    if (!loanId) {
+      renderResponse(422, { errors: 'Debes indicar loan_id para pago de prestamo.' });
+      return;
+    }
+
+    try {
+      await apiCall(`/api/v1/manager/accounts/${accountId}/loans/${loanId}/pay`, 'POST', {
+        amount: Number(document.getElementById('adminTargetAmount').value)
+      }, 'manager');
+      pushAudit(`Pago de prestamo por gerente account_id=${accountId} loan_id=${loanId}`);
+      await refreshAdminDashboard();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
   el.logoutBtn.addEventListener('click', () => {
     clearSession(true);
     window.location.href = '/angelfire/';
@@ -582,8 +933,18 @@ function bindEvents() {
 
 function hydrateInputs() {
   el.baseUrl.value = state.baseUrl;
-  document.getElementById('loginAccountNumber').value = state.accountNumber || '9000000001';
-  el.loanIdInput.value = state.loanId;
+  const perPage = Number(state.pendingInstallmentsPerPage || 10);
+  el.pendingInstallmentsPerPage.value = String([10, 20, 50].includes(perPage) ? perPage : 10);
+  state.pendingInstallmentsPerPage = Number(el.pendingInstallmentsPerPage.value);
+  state.pendingInstallmentsPage = Number(state.pendingInstallmentsPage || 1);
+  const txPerPage = Number(state.txPerPage || 10);
+  el.txPerPage.value = String([10, 20, 50].includes(txPerPage) ? txPerPage : 10);
+  state.txPerPage = Number(el.txPerPage.value);
+  el.txFilter.value = state.txFilter || 'all';
+  state.txFilter = el.txFilter.value;
+  state.txPage = Number(state.txPage || 1);
+  updatePendingPaginationUi();
+  updateTransactionsPaginationUi();
   renderAuditLog();
   updateHeader();
 }
@@ -601,6 +962,7 @@ async function init() {
     await refreshServices();
     await refreshClientDashboard();
     await refreshProfileData();
+    await refreshInstallmentsForClient();
     if (hasManagerAccess()) {
       await refreshAdminDashboard();
     }

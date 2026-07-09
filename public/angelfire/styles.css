@@ -126,6 +126,13 @@ h1 {
   font-size: 1.55rem;
 }
 
+.header-links {
+  margin-top: 0.55rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
 .base-config {
   display: flex;
   gap: 0.5rem;
@@ -236,6 +243,11 @@ select {
   background: #fff;
 }
 
+.btn.mini {
+  padding: 0.45rem 0.66rem;
+  font-size: 0.78rem;
+}
+
 .btn.active-view {
   color: #fff;
   border: 0;
@@ -254,6 +266,48 @@ select {
   gap: 0.6rem;
 }
 
+.table-header.compact {
+  margin-bottom: 0.45rem;
+}
+
+.compact-panel {
+  margin: 0.45rem 0 0.75rem;
+}
+
+.compact-panel h3 {
+  margin: 0;
+  font-size: 0.96rem;
+}
+
+.pager-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pager-controls label {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.78rem;
+}
+
+.pager-controls select {
+  padding: 0.35rem 0.4rem;
+}
+
+.installments-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.installments-grid h3 {
+  margin: 0 0 0.4rem;
+  font-size: 0.9rem;
+  color: var(--ink-700);
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -265,6 +319,16 @@ td {
   padding: 0.5rem;
   border-bottom: 1px solid var(--line);
   text-align: left;
+}
+
+.tx-amount-debit {
+  color: #9f2d2d;
+  font-weight: 800;
+}
+
+.tx-amount-credit {
+  color: #0b7e53;
+  font-weight: 800;
 }
 
 pre {
@@ -305,6 +369,10 @@ pre {
   .operations-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+
+  .installments-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 920px) {
@@ -328,5 +396,10 @@ pre {
   .operations-grid,
   .kpi-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pager-controls {
+    flex-wrap: wrap;
+    justify-content: flex-start;
   }
 }

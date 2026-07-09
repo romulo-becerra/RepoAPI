@@ -19,6 +19,9 @@ class AccountsController < ApplicationController
         has_active_loan: true,
         total_loan_amount: active_loan.amount.to_f,
         annual_interest_rate: active_loan.annual_interest_rate.to_f,
+        term_months: active_loan.term_months,
+        monthly_payment: active_loan.monthly_payment.to_f,
+        first_due_date: active_loan.first_due_date,
         outstanding_principal: active_loan.outstanding_principal.to_f,
         paid_installments_count: active_loan.paid_installments_count,
         pending_installments_count: active_loan.pending_installments_count
@@ -77,8 +80,8 @@ class AccountsController < ApplicationController
     return render json: { errors: "Cuenta no encontrada" }, status: :not_found unless @account
 
     transactions = @account.transactions.where(status: :completed)
-    income = transactions.where(transaction_type: %i[deposit transfer service_payment]).sum(&:amount)
-    expense = transactions.where(transaction_type: :withdraw).sum(&:amount)
+    income = transactions.where(transaction_type: %i[deposit atm_deposit]).sum(&:amount)
+    expense = transactions.where(transaction_type: %i[withdraw transfer service_payment loan_payment atm_withdrawal]).sum(&:amount)
 
     render json: {
       account_id: @account.id,

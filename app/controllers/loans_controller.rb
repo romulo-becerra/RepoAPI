@@ -60,12 +60,32 @@ class LoansController < ApplicationController
 
   def installments
     paid = @loan.loan_installments.paid.order(:installment_number)
-    pending = @loan.loan_installments.where(status: %i[pending partial]).order(:installment_number)
+    pending_scope = @loan.loan_installments.where(status: %i[pending partial]).order(:installment_number)
+
+    per_page = [ installment_params[:per_page].to_i, 1 ].max
+    per_page = 50 if per_page > 50
+    per_page = 10 if per_page.zero?
+    page = [ installment_params[:page].to_i, 1 ].max
+
+    total_pending = pending_scope.count
+    total_pages = (total_pending.to_f / per_page).ceil
+    total_pages = 1 if total_pages.zero?
+    page = total_pages if page > total_pages
+
+    pending = pending_scope.offset((page - 1) * per_page).limit(per_page)
 
     render json: {
       loan_id: @loan.id,
       paid_installments: paid.map { |item| serialize_installment(item) },
-      pending_installments: pending.map { |item| serialize_installment(item) }
+      pending_installments: pending.map { |item| serialize_installment(item) },
+      pending_pagination: {
+        page: page,
+        per_page: per_page,
+        total: total_pending,
+        total_pages: total_pages,
+        has_prev: page > 1,
+        has_next: page < total_pages
+      }
     }, status: :ok
   end
 
@@ -91,6 +111,10 @@ class LoansController < ApplicationController
 
   def loan_payment_params
     params.permit(:amount, :paid_on)
+  end
+
+  def installment_params
+    params.permit(:page, :per_page)
   end
 
   def serialize_loan(loan, include_installments: false)
