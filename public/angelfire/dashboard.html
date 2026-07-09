@@ -261,6 +261,14 @@
                     <option value="transfer">Transferencias</option>
                     <option value="service_payment">Pago servicio</option>
                     <option value="loan_payment">Pago prestamo</option>
+                    <option value="loan_disbursement">Prestamo desembolsado</option>
+                  </select>
+                </label>
+                <label>Ejecutado por
+                  <select id="txActorFilter" data-testid="tx-actor-filter">
+                    <option value="all">Todos</option>
+                    <option value="manager">Admin</option>
+                    <option value="user">Usuario</option>
                   </select>
                 </label>
                 <label>Ver
@@ -281,13 +289,16 @@
                 <tr>
                   <th>ID</th>
                   <th>Tipo</th>
+                  <th>Detalle</th>
                   <th>Monto</th>
                   <th>Estado</th>
+                  <th>Ejecutado por</th>
+                  <th>Id usuario</th>
                   <th>Fecha</th>
                 </tr>
               </thead>
               <tbody id="txRows" data-testid="tx-rows">
-                <tr><td colspan="5">Sin movimientos</td></tr>
+                <tr><td colspan="8">Sin movimientos</td></tr>
               </tbody>
             </table>
           </section>

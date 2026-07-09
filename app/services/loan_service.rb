@@ -19,11 +19,18 @@ class LoanService
     raise LoanError, "La fecha de primera cuota es inválida"
   end
 
-  def self.apply_payment!(loan, amount:, paid_on: nil)
-    new(loan.account, amount: 1, term_months: 1).apply_payment!(loan, amount: amount, paid_on: paid_on)
+  def self.apply_payment!(loan, amount:, paid_on: nil, performed_by_role: nil, performed_by_user_id: nil, performed_by_name: nil)
+    new(loan.account, amount: 1, term_months: 1).apply_payment!(
+      loan,
+      amount: amount,
+      paid_on: paid_on,
+      performed_by_role: performed_by_role,
+      performed_by_user_id: performed_by_user_id,
+      performed_by_name: performed_by_name
+    )
   end
 
-  def create_loan!
+  def create_loan!(performed_by_role: nil, performed_by_user_id: nil, performed_by_name: nil)
     validate_inputs!
 
     annual_rate = self.class.annual_rate_for(@amount)
@@ -43,13 +50,20 @@ class LoanService
       )
 
       build_installments!(loan, monthly_rate, monthly_payment)
-      @account.deposit!(@amount)
+      TransactionService.new.deposit!(
+        @account,
+        @amount,
+        "Desembolso de préstamo ##{loan.id}",
+        performed_by_role: performed_by_role,
+        performed_by_user_id: performed_by_user_id,
+        performed_by_name: performed_by_name
+      )
 
       loan
     end
   end
 
-  def apply_payment!(loan, amount:, paid_on: nil)
+  def apply_payment!(loan, amount:, paid_on: nil, performed_by_role: nil, performed_by_user_id: nil, performed_by_name: nil)
     payment_left = BigDecimal(amount.to_s)
     raise LoanError, "El monto a pagar debe ser mayor que cero" if payment_left <= 0
 
@@ -72,7 +86,10 @@ class LoanService
       payment_transaction = TransactionService.new.loan_payment!(
         loan.account,
         payment_left,
-        "Pago de préstamo ##{loan.id}"
+        "Pago de préstamo ##{loan.id}",
+        performed_by_role: performed_by_role,
+        performed_by_user_id: performed_by_user_id,
+        performed_by_name: performed_by_name
       )
 
       loan.loan_installments.where(status: %i[pending partial]).order(:installment_number).each do |installment|

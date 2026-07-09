@@ -99,7 +99,10 @@ class AccountsController < ApplicationController
     transaction = TransactionService.new.deposit!(
       account,
       params[:amount],
-      params[:description].presence || "Deposito en cuenta"
+      params[:description].presence || "Deposito en cuenta",
+      performed_by_role: :user,
+      performed_by_user_id: current_user.id,
+      performed_by_name: current_user.to_s
     )
 
     render json: {
@@ -121,7 +124,10 @@ class AccountsController < ApplicationController
     transaction = TransactionService.new.withdraw!(
       account,
       params[:amount],
-      params[:description].presence || "Retiro en cuenta"
+      params[:description].presence || "Retiro en cuenta",
+      performed_by_role: :user,
+      performed_by_user_id: current_user.id,
+      performed_by_name: current_user.to_s
     )
 
     render json: {
@@ -145,7 +151,14 @@ class AccountsController < ApplicationController
   end
 
   def perform_transfer(source_account, recipient_account, amount, description)
-    source_account.transfer!(recipient_account, amount, description)
+    source_account.transfer!(
+      recipient_account,
+      amount,
+      description,
+      performed_by_role: :user,
+      performed_by_user_id: current_user.id,
+      performed_by_name: current_user.to_s
+    )
     @recipient_account = recipient_account
     render :transfer, status: :ok
   rescue AccountNotFoundError => e

@@ -28,8 +28,16 @@ class Account < ApplicationRecord
 
   enum :account_type, { user: 0, service: 1 }, default: :user
 
-  def transfer!(recipient_account, amount, description = nil)
-    TransactionService.new.transfer!(self, recipient_account, amount, description)
+  def transfer!(recipient_account, amount, description = nil, performed_by_role: nil, performed_by_user_id: nil, performed_by_name: nil)
+    TransactionService.new.transfer!(
+      self,
+      recipient_account,
+      amount,
+      description,
+      performed_by_role: performed_by_role,
+      performed_by_user_id: performed_by_user_id,
+      performed_by_name: performed_by_name
+    )
   end
 
   def default?

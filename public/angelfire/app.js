@@ -16,6 +16,7 @@ const defaultState = {
   txPage: 1,
   txPerPage: 10,
   txFilter: 'all',
+  txActorFilter: 'all',
   adminUsersPage: 1,
   adminUsersPerPage: 10,
   adminPlanPage: 1,
@@ -62,6 +63,7 @@ const el = {
   pendingPrevPageBtn: document.getElementById('pendingPrevPageBtn'),
   pendingNextPageBtn: document.getElementById('pendingNextPageBtn'),
   txFilter: document.getElementById('txFilter'),
+  txActorFilter: document.getElementById('txActorFilter'),
   txPerPage: document.getElementById('txPerPage'),
   txPrevPageBtn: document.getElementById('txPrevPageBtn'),
   txNextPageBtn: document.getElementById('txNextPageBtn'),
@@ -114,6 +116,79 @@ const el = {
   actionModalConfirmBtn: document.getElementById('actionModalConfirmBtn'),
   actionModalCancelBtn: document.getElementById('actionModalCancelBtn')
 };
+
+function ensureBalanceControls() {
+  const balanceCard = el.balanceValue && el.balanceValue.closest('.kpi');
+  if (!balanceCard) {
+    return;
+  }
+
+  if (!el.refreshBalanceBtn) {
+    const refreshBtn = document.createElement('button');
+    refreshBtn.id = 'refreshBalanceBtn';
+    refreshBtn.type = 'button';
+    refreshBtn.className = 'btn mini';
+    refreshBtn.textContent = 'Actualizar saldo';
+    refreshBtn.setAttribute('data-testid', 'refresh-balance-btn');
+    balanceCard.append(refreshBtn);
+    el.refreshBalanceBtn = refreshBtn;
+  }
+
+  if (!el.autoRefreshBalanceToggle) {
+    const toggleLabel = document.createElement('label');
+    toggleLabel.className = 'kpi-toggle';
+    toggleLabel.setAttribute('for', 'autoRefreshBalanceToggle');
+    toggleLabel.innerHTML = '<input id="autoRefreshBalanceToggle" type="checkbox" data-testid="auto-refresh-balance-toggle" /> Auto-actualizar cada 15s';
+    balanceCard.append(toggleLabel);
+    el.autoRefreshBalanceToggle = document.getElementById('autoRefreshBalanceToggle');
+  }
+
+  if (!el.balanceAutoIndicator) {
+    const indicator = document.createElement('span');
+    indicator.id = 'balanceAutoIndicator';
+    indicator.className = 'auto-indicator hidden';
+    indicator.textContent = 'Auto ON';
+    indicator.setAttribute('data-testid', 'balance-auto-indicator');
+    if (el.refreshBalanceBtn && el.refreshBalanceBtn.parentElement) {
+      el.refreshBalanceBtn.parentElement.insertBefore(indicator, el.refreshBalanceBtn);
+    }
+    el.balanceAutoIndicator = indicator;
+  }
+}
+
+function ensureActionModalElements() {
+  if (!el.actionModal) {
+    const modal = document.createElement('div');
+    modal.id = 'actionModal';
+    modal.className = 'action-modal hidden';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'actionModalTitle');
+    modal.innerHTML = `
+      <div class="action-modal-card">
+        <h3 id="actionModalTitle">Confirmar operacion</h3>
+        <p id="actionModalMessage">Estas seguro de continuar?</p>
+        <div class="action-modal-actions">
+          <button id="actionModalCancelBtn" class="btn ghost" type="button">Cancelar</button>
+          <button id="actionModalConfirmBtn" class="btn" type="button">Confirmar</button>
+        </div>
+      </div>
+    `;
+    document.body.append(modal);
+
+    el.actionModal = modal;
+    el.actionModalCard = modal.querySelector('.action-modal-card');
+    el.actionModalTitle = modal.querySelector('#actionModalTitle');
+    el.actionModalMessage = modal.querySelector('#actionModalMessage');
+    el.actionModalConfirmBtn = modal.querySelector('#actionModalConfirmBtn');
+    el.actionModalCancelBtn = modal.querySelector('#actionModalCancelBtn');
+  }
+}
+
+function ensureDashboardUiElements() {
+  ensureBalanceControls();
+  ensureActionModalElements();
+}
 
 function loadState() {
   try {
@@ -433,10 +508,25 @@ function formatTransactionType(type) {
     transfer: 'Transferencia',
     service_payment: 'Pago servicio',
     loan_payment: 'Pago prestamo',
+    loan_disbursement: 'Prestamo desembolsado',
     atm_deposit: 'Deposito ATM',
     atm_withdrawal: 'Retiro ATM'
   };
   return labels[type] || type || '-';
+}
+
+function formatPerformedBy(tx) {
+  if (tx.performed_by_label) {
+    return tx.performed_by_label;
+  }
+  if (tx.performed_by_name) {
+    return tx.performed_by_name;
+  }
+  if (tx.performed_by_role) {
+    const byId = tx.performed_by_user_id ? ` #${tx.performed_by_user_id}` : '';
+    return `${tx.performed_by_role}${byId}`;
+  }
+  return 'No disponible';
 }
 
 function updatePendingPaginationUi() {
@@ -695,8 +785,9 @@ async function refreshClientDashboard() {
   const txPage = Number(state.txPage || 1);
   const txPerPage = Number(state.txPerPage || 10);
   const txFilter = state.txFilter || 'all';
+  const txActorFilter = state.txActorFilter || 'all';
   const txPayload = await apiCall(
-    `/api/v1/accounts/${state.accountId}/transactions?page=${txPage}&per_page=${txPerPage}&transaction_filter=${encodeURIComponent(txFilter)}`,
+    `/api/v1/accounts/${state.accountId}/transactions?page=${txPage}&per_page=${txPerPage}&transaction_filter=${encodeURIComponent(txFilter)}&performed_by_filter=${encodeURIComponent(txActorFilter)}`,
     'GET'
   );
   const rows = Array.isArray(txPayload) ? txPayload : (txPayload.transactions || []);
@@ -712,12 +803,12 @@ async function refreshClientDashboard() {
   state.txPerPage = txPaginationMeta.per_page;
   persistState();
   if (rows.length === 0) {
-    el.txRows.innerHTML = '<tr><td colspan="5">Sin movimientos</td></tr>';
+    el.txRows.innerHTML = '<tr><td colspan="8">Sin movimientos</td></tr>';
   } else {
     el.txRows.innerHTML = rows
       .map(
         (tx) =>
-          `<tr><td>${tx.id || '-'}</td><td>${formatTransactionType(tx.transaction_type)}</td><td class="${amountClassByMovement(tx)}">${signedAmountByMovement(tx)}</td><td>${tx.status || '-'}</td><td>${tx.created_at || '-'}</td></tr>`
+          `<tr><td>${tx.id || '-'}</td><td>${formatTransactionType(tx.display_type || tx.transaction_type)}</td><td>${tx.description || '-'}</td><td class="${amountClassByMovement(tx)}">${signedAmountByMovement(tx)}</td><td>${tx.status || '-'}</td><td>${formatPerformedBy(tx)}</td><td>${tx.performed_by_user_id || '-'}</td><td>${tx.created_at || '-'}</td></tr>`
       )
       .join('');
   }
@@ -1288,6 +1379,19 @@ function bindEvents() {
     }
   });
 
+  if (el.txActorFilter) {
+    el.txActorFilter.addEventListener('change', async () => {
+      state.txActorFilter = el.txActorFilter.value;
+      state.txPage = 1;
+      persistState();
+      try {
+        await refreshClientDashboard();
+      } catch (error) {
+        renderResponse(422, { errors: error.message });
+      }
+    });
+  }
+
   el.txPerPage.addEventListener('change', async () => {
     state.txPerPage = Number(el.txPerPage.value || 10);
     state.txPage = 1;
@@ -1751,6 +1855,10 @@ function hydrateInputs() {
   state.txPerPage = Number(el.txPerPage.value);
   el.txFilter.value = state.txFilter || 'all';
   state.txFilter = el.txFilter.value;
+  if (el.txActorFilter) {
+    el.txActorFilter.value = state.txActorFilter || 'all';
+    state.txActorFilter = el.txActorFilter.value;
+  }
   state.txPage = Number(state.txPage || 1);
   const adminUsersPerPage = Number(state.adminUsersPerPage || 10);
   el.adminUsersPerPage.value = String([10, 20, 50].includes(adminUsersPerPage) ? adminUsersPerPage : 10);
@@ -1784,6 +1892,7 @@ async function init() {
     return;
   }
 
+  ensureDashboardUiElements();
   hydrateInputs();
   setDefaultDate();
   bindEvents();
