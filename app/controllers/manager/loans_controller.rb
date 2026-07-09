@@ -9,7 +9,6 @@ module Manager
       first_due_date = loan_params[:first_due_date].present? ? Date.parse(loan_params[:first_due_date].to_s) : Date.current.next_month
 
       raise LoanService::LoanError, "El monto del préstamo debe ser mayor que cero" if amount <= 0
-      raise LoanService::LoanError, "El monto del préstamo debe ser un número entero" unless amount.frac.zero?
       raise LoanService::LoanError, "El plazo debe ser mayor que cero" if term_months <= 0
 
       annual_rate = LoanService.annual_rate_for(amount)

@@ -15,6 +15,8 @@ const defaultState = {
   txPage: 1,
   txPerPage: 10,
   txFilter: 'all',
+  adminUsersPage: 1,
+  adminUsersPerPage: 10,
   activeView: 'client',
   auditLog: []
 };
@@ -23,6 +25,7 @@ const state = loadState();
 let pendingInstallmentsCache = [];
 let pendingPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
 let txPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
+let adminUsersPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
 
 const el = {
   baseUrl: document.getElementById('baseUrl'),
@@ -59,7 +62,13 @@ const el = {
   adminActiveLoans: document.getElementById('adminActiveLoans'),
   adminLoansAmount: document.getElementById('adminLoansAmount'),
   adminActivity: document.getElementById('adminActivity'),
+  adminUsersPerPage: document.getElementById('adminUsersPerPage'),
+  adminUsersPrevPageBtn: document.getElementById('adminUsersPrevPageBtn'),
+  adminUsersNextPageBtn: document.getElementById('adminUsersNextPageBtn'),
+  adminUsersPageInfo: document.getElementById('adminUsersPageInfo'),
   adminUsersRows: document.getElementById('adminUsersRows'),
+  userFilesRows: document.getElementById('userFilesRows'),
+  userFileInput: document.getElementById('userFileInput'),
   adminAuditLog: document.getElementById('adminAuditLog'),
   permClient: document.getElementById('permClient'),
   permAdmin: document.getElementById('permAdmin'),
@@ -216,6 +225,14 @@ function updateTransactionsPaginationUi() {
   el.txNextPageBtn.disabled = !txPaginationMeta.has_next;
 }
 
+function updateAdminUsersPaginationUi() {
+  const page = adminUsersPaginationMeta.page || 1;
+  const totalPages = adminUsersPaginationMeta.total_pages || 1;
+  el.adminUsersPageInfo.textContent = `${page} / ${totalPages}`;
+  el.adminUsersPrevPageBtn.disabled = !adminUsersPaginationMeta.has_prev;
+  el.adminUsersNextPageBtn.disabled = !adminUsersPaginationMeta.has_next;
+}
+
 function signedAmountByMovement(tx) {
   const value = Number(tx.amount || 0).toFixed(2);
   if (tx.movement_kind === 'debit') {
@@ -227,6 +244,66 @@ function signedAmountByMovement(tx) {
 
 function amountClassByMovement(tx) {
   return tx.movement_kind === 'debit' ? 'tx-amount-debit' : 'tx-amount-credit';
+}
+
+function estimatedAnnualRate(amount) {
+  const value = Number(amount || 0);
+  if (!value || value <= 0) {
+    return null;
+  }
+  if (value <= 100000) {
+    return 5.0;
+  }
+  if (value <= 200000) {
+    return 5.5;
+  }
+  return 6.0;
+}
+
+function updateAdminLoanRateHintFromAmount() {
+  const amount = Number(document.getElementById('adminLoanAmount').value || 0);
+  const rate = estimatedAnnualRate(amount);
+  if (!rate) {
+    el.adminLoanRateHint.textContent = 'Interes anual: -';
+    return;
+  }
+  el.adminLoanRateHint.textContent = `Interes anual estimado: ${rate.toFixed(2)}%`;
+}
+
+function getAdminLoanFormValues() {
+  return {
+    accountId: document.getElementById('adminLoanAccountId').value.trim(),
+    amount: Number(document.getElementById('adminLoanAmount').value),
+    termMonths: Number(document.getElementById('adminLoanTermMonths').value),
+    firstDueDate: document.getElementById('adminLoanFirstDueDate').value
+  };
+}
+
+function validateAdminLoanFormValues(values) {
+  if (!values.accountId) {
+    return 'Debes indicar account ID objetivo.';
+  }
+  if (!values.amount || values.amount <= 0) {
+    return 'Debes indicar un monto valido mayor a cero.';
+  }
+  if (!values.termMonths || values.termMonths <= 0) {
+    return 'Debes indicar un plazo en meses valido.';
+  }
+  if (!values.firstDueDate) {
+    return 'Debes indicar la fecha de primera cuota.';
+  }
+  return null;
+}
+
+function formatFileSize(bytes) {
+  const value = Number(bytes || 0);
+  if (value < 1024) {
+    return `${value} B`;
+  }
+  if (value < 1024 * 1024) {
+    return `${(value / 1024).toFixed(1)} KB`;
+  }
+  return `${(value / (1024 * 1024)).toFixed(2)} MB`;
 }
 
 function updateLoanPaymentSummary() {
@@ -464,6 +541,66 @@ async function refreshProfileData() {
   el.profilePhone.value = user.phone || '';
 }
 
+async function refreshUserFiles() {
+  if (!state.token || !state.userId) {
+    return;
+  }
+
+  const payload = await apiCall(`/api/v1/users/${state.userId}/files`, 'GET');
+  const files = payload.files || [];
+
+  if (files.length === 0) {
+    el.userFilesRows.innerHTML = '<tr><td colspan="5">Sin archivos</td></tr>';
+    return;
+  }
+
+  el.userFilesRows.innerHTML = files
+    .map(
+      (file) =>
+        `<tr><td>${file.id}</td><td>${file.original_filename}</td><td>${file.content_type}</td><td>${formatFileSize(file.file_size)}</td><td>${file.created_at || '-'}</td></tr>`
+    )
+    .join('');
+}
+
+async function uploadUserFile() {
+  if (!state.token || !state.userId) {
+    throw new Error('Debes iniciar sesion para subir archivos.');
+  }
+
+  const file = el.userFileInput.files && el.userFileInput.files[0];
+  if (!file) {
+    throw new Error('Debes seleccionar un archivo.');
+  }
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const response = await fetch(`${state.baseUrl}/api/v1/users/${state.userId}/files`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      Authorization: `Bearer ${state.token}`
+    },
+    body: formData
+  });
+
+  const text = await response.text();
+  let payload;
+  try {
+    payload = text ? JSON.parse(text) : {};
+  } catch (_error) {
+    payload = { raw: text };
+  }
+
+  renderResponse(response.status, payload);
+  if (!response.ok) {
+    throw new Error(payload.errors || payload.error || 'No se pudo subir el archivo');
+  }
+
+  el.userFileInput.value = '';
+  await refreshUserFiles();
+}
+
 function sumLoansAmount(loans) {
   return loans.reduce((total, item) => {
     const value = Number(item.outstanding_principal || item.amount || 0);
@@ -476,19 +613,40 @@ async function refreshAdminDashboard() {
     return;
   }
 
-  const usersPayload = await apiCall('/api/v1/manager/users', 'GET', null, 'manager');
+  const usersPage = Number(state.adminUsersPage || 1);
+  const usersPerPage = Number(state.adminUsersPerPage || 10);
+  const usersPayload = await apiCall(
+    `/api/v1/manager/users?page=${usersPage}&per_page=${usersPerPage}`,
+    'GET',
+    null,
+    'manager'
+  );
   const users = usersPayload.users || [];
-  el.adminUsersCount.textContent = String(usersPayload.total || users.length);
+  adminUsersPaginationMeta = {
+    page: Number(usersPayload.page || usersPage),
+    per_page: Number(usersPayload.per_page || usersPerPage),
+    total: Number(usersPayload.total || users.length),
+    total_pages: Number(usersPayload.total_pages || 1),
+    has_prev: Boolean(usersPayload.has_prev),
+    has_next: Boolean(usersPayload.has_next)
+  };
+  state.adminUsersPage = adminUsersPaginationMeta.page;
+  state.adminUsersPerPage = adminUsersPaginationMeta.per_page;
+  el.adminUsersCount.textContent = String(adminUsersPaginationMeta.total);
   pushAudit(`Consulta de usuarios manager total=${usersPayload.total || users.length}`);
 
   if (users.length === 0) {
-    el.adminUsersRows.innerHTML = '<tr><td colspan="4">Sin usuarios</td></tr>';
+    el.adminUsersRows.innerHTML = '<tr><td colspan="5">Sin usuarios</td></tr>';
   } else {
     el.adminUsersRows.innerHTML = users
-      .slice(0, 50)
-      .map((user) => `<tr><td>${user.id}</td><td>${user.first_name} ${user.last_name}</td><td>${user.email}</td><td>${user.role}</td></tr>`)
+      .map(
+        (user) =>
+          `<tr><td>${user.id}</td><td>${user.first_name} ${user.last_name}</td><td>${user.email}</td><td>${user.account_number || '-'}</td><td>${user.role}</td></tr>`
+      )
       .join('');
   }
+  updateAdminUsersPaginationUi();
+  persistState();
 
   const loansPayload = await apiCall('/api/v1/manager/reports/loans?status=active', 'GET', null, 'manager');
   const loans = loansPayload.loans || [];
@@ -579,6 +737,24 @@ function bindEvents() {
       await refreshClientDashboard();
       await refreshProfileData();
       await refreshInstallmentsForClient();
+      await refreshUserFiles();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('uploadFileForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      await uploadUserFile();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('refreshFilesBtn').addEventListener('click', async () => {
+    try {
+      await refreshUserFiles();
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
@@ -820,25 +996,73 @@ function bindEvents() {
     }
   });
 
+  el.adminUsersPerPage.addEventListener('change', async () => {
+    state.adminUsersPerPage = Number(el.adminUsersPerPage.value || 10);
+    state.adminUsersPage = 1;
+    persistState();
+    try {
+      await refreshAdminDashboard();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  el.adminUsersPrevPageBtn.addEventListener('click', async () => {
+    if (state.adminUsersPage <= 1) {
+      return;
+    }
+    state.adminUsersPage -= 1;
+    persistState();
+    try {
+      await refreshAdminDashboard();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  el.adminUsersNextPageBtn.addEventListener('click', async () => {
+    const totalPages = adminUsersPaginationMeta.total_pages || 1;
+    if (state.adminUsersPage >= totalPages) {
+      return;
+    }
+    state.adminUsersPage += 1;
+    persistState();
+    try {
+      await refreshAdminDashboard();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
   document.getElementById('adminPreviewLoanBtn').addEventListener('click', async () => {
     if (!hasManagerAccess()) {
       renderResponse(403, { errors: 'Operacion restringida a manager.' });
       return;
     }
 
-    const accountId = document.getElementById('adminLoanAccountId').value.trim();
+    const values = getAdminLoanFormValues();
+    const validationError = validateAdminLoanFormValues(values);
+    if (validationError) {
+      renderResponse(422, { errors: validationError });
+      return;
+    }
+
     try {
-      const payload = await apiCall(`/api/v1/manager/accounts/${accountId}/loans/preview`, 'POST', {
-        amount: Number(document.getElementById('adminLoanAmount').value),
-        term_months: Number(document.getElementById('adminLoanTermMonths').value),
-        first_due_date: document.getElementById('adminLoanFirstDueDate').value
+      const payload = await apiCall(`/api/v1/manager/accounts/${values.accountId}/loans/preview`, 'POST', {
+        amount: values.amount,
+        term_months: values.termMonths,
+        first_due_date: values.firstDueDate
       }, 'manager');
       el.adminLoanRateHint.textContent = `Interes anual: ${Number(payload.annual_interest_rate || 0).toFixed(2)}% | Cuota mensual: S/ ${Number(payload.monthly_payment || 0).toFixed(2)}`;
       renderAdminLoanPreview(payload.projected_schedule || []);
-      pushAudit(`Previsualizacion de prestamo manager account_id=${accountId}`);
+      pushAudit(`Previsualizacion de prestamo manager account_id=${values.accountId}`);
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
+  });
+
+  document.getElementById('adminLoanAmount').addEventListener('input', () => {
+    updateAdminLoanRateHintFromAmount();
   });
 
   document.getElementById('adminCreateLoanBtn').addEventListener('click', async () => {
@@ -847,16 +1071,22 @@ function bindEvents() {
       return;
     }
 
-    const accountId = document.getElementById('adminLoanAccountId').value.trim();
+    const values = getAdminLoanFormValues();
+    const validationError = validateAdminLoanFormValues(values);
+    if (validationError) {
+      renderResponse(422, { errors: validationError });
+      return;
+    }
+
     try {
-      const payload = await apiCall(`/api/v1/manager/accounts/${accountId}/loans`, 'POST', {
-        amount: Number(document.getElementById('adminLoanAmount').value),
-        term_months: Number(document.getElementById('adminLoanTermMonths').value),
-        first_due_date: document.getElementById('adminLoanFirstDueDate').value
+      const payload = await apiCall(`/api/v1/manager/accounts/${values.accountId}/loans`, 'POST', {
+        amount: values.amount,
+        term_months: values.termMonths,
+        first_due_date: values.firstDueDate
       }, 'manager');
       el.adminLoanRateHint.textContent = `Interes anual: ${Number(payload.loan.annual_interest_rate || 0).toFixed(2)}% | Cuota mensual: S/ ${Number(payload.loan.monthly_payment || 0).toFixed(2)}`;
       renderAdminLoanPreview(payload.loan.installments || []);
-      pushAudit(`Creacion de prestamo por gerente account_id=${accountId} loan_id=${payload.loan.id}`);
+      pushAudit(`Creacion de prestamo por gerente account_id=${values.accountId} loan_id=${payload.loan.id}`);
       await refreshAdminDashboard();
     } catch (error) {
       renderResponse(422, { errors: error.message });
@@ -870,9 +1100,18 @@ function bindEvents() {
     }
 
     const accountId = document.getElementById('adminTargetAccountId').value.trim();
+    const amount = Number(document.getElementById('adminTargetAmount').value);
+    if (!accountId) {
+      renderResponse(422, { errors: 'Debes indicar account_id objetivo.' });
+      return;
+    }
+    if (!amount || amount <= 0) {
+      renderResponse(422, { errors: 'Debes indicar un monto valido mayor a cero.' });
+      return;
+    }
     try {
       await apiCall(`/api/v1/manager/accounts/${accountId}/deposit`, 'POST', {
-        amount: Number(document.getElementById('adminTargetAmount').value),
+        amount: amount,
         description: document.getElementById('adminTargetDescription').value.trim()
       }, 'manager');
       pushAudit(`Deposito por gerente sobre account_id=${accountId}`);
@@ -889,9 +1128,18 @@ function bindEvents() {
     }
 
     const accountId = document.getElementById('adminTargetAccountId').value.trim();
+    const amount = Number(document.getElementById('adminTargetAmount').value);
+    if (!accountId) {
+      renderResponse(422, { errors: 'Debes indicar account_id objetivo.' });
+      return;
+    }
+    if (!amount || amount <= 0) {
+      renderResponse(422, { errors: 'Debes indicar un monto valido mayor a cero.' });
+      return;
+    }
     try {
       await apiCall(`/api/v1/manager/accounts/${accountId}/withdraw`, 'POST', {
-        amount: Number(document.getElementById('adminTargetAmount').value),
+        amount: amount,
         description: document.getElementById('adminTargetDescription').value.trim()
       }, 'manager');
       pushAudit(`Retiro por gerente sobre account_id=${accountId}`);
@@ -909,14 +1157,23 @@ function bindEvents() {
 
     const accountId = document.getElementById('adminTargetAccountId').value.trim();
     const loanId = document.getElementById('adminTargetLoanId').value.trim();
+    const amount = Number(document.getElementById('adminTargetAmount').value);
+    if (!accountId) {
+      renderResponse(422, { errors: 'Debes indicar account_id objetivo.' });
+      return;
+    }
     if (!loanId) {
       renderResponse(422, { errors: 'Debes indicar loan_id para pago de prestamo.' });
+      return;
+    }
+    if (!amount || amount <= 0) {
+      renderResponse(422, { errors: 'Debes indicar un monto valido mayor a cero.' });
       return;
     }
 
     try {
       await apiCall(`/api/v1/manager/accounts/${accountId}/loans/${loanId}/pay`, 'POST', {
-        amount: Number(document.getElementById('adminTargetAmount').value)
+        amount: amount
       }, 'manager');
       pushAudit(`Pago de prestamo por gerente account_id=${accountId} loan_id=${loanId}`);
       await refreshAdminDashboard();
@@ -943,8 +1200,14 @@ function hydrateInputs() {
   el.txFilter.value = state.txFilter || 'all';
   state.txFilter = el.txFilter.value;
   state.txPage = Number(state.txPage || 1);
+  const adminUsersPerPage = Number(state.adminUsersPerPage || 10);
+  el.adminUsersPerPage.value = String([10, 20, 50].includes(adminUsersPerPage) ? adminUsersPerPage : 10);
+  state.adminUsersPerPage = Number(el.adminUsersPerPage.value);
+  state.adminUsersPage = Number(state.adminUsersPage || 1);
+  updateAdminLoanRateHintFromAmount();
   updatePendingPaginationUi();
   updateTransactionsPaginationUi();
+  updateAdminUsersPaginationUi();
   renderAuditLog();
   updateHeader();
 }
@@ -963,6 +1226,7 @@ async function init() {
     await refreshClientDashboard();
     await refreshProfileData();
     await refreshInstallmentsForClient();
+    await refreshUserFiles();
     if (hasManagerAccess()) {
       await refreshAdminDashboard();
     }

@@ -3,11 +3,28 @@ module Manager
     before_action :require_manager!
 
     def index
-      users = User.includes(:user_address).order(created_at: :desc)
+      per_page = [params[:per_page].to_i, 1].max
+      per_page = 50 if per_page > 50
+      per_page = 10 if per_page.zero?
+
+      users_scope = User.includes(:user_address, :accounts).order(created_at: :desc)
+      total = users_scope.count
+      total_pages = (total.to_f / per_page).ceil
+      total_pages = 1 if total_pages.zero?
+
+      page = [params[:page].to_i, 1].max
+      page = total_pages if page > total_pages
+
+      users = users_scope.offset((page - 1) * per_page).limit(per_page)
 
       render json: {
-        total: users.count,
-        users: users.limit(300).map { |user| serialize_user(user) }
+        total: total,
+        page: page,
+        per_page: per_page,
+        total_pages: total_pages,
+        has_prev: page > 1,
+        has_next: page < total_pages,
+        users: users.map { |user| serialize_user(user) }
       }, status: :ok
     end
 
@@ -45,6 +62,8 @@ module Manager
     end
 
     def serialize_user(user)
+      primary_account = user.accounts.order(default: :desc, created_at: :asc).first
+
       {
         id: user.id,
         first_name: user.first_name,
@@ -52,6 +71,7 @@ module Manager
         email: user.email,
         phone: user.phone,
         role: user.role,
+        account_number: primary_account&.account_number,
         address: user.user_address ? {
           country: user.user_address.country,
           city: user.user_address.city,

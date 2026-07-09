@@ -207,6 +207,31 @@
 
           <section class="panel table-panel">
             <div class="table-header">
+              <h2>Archivos del usuario</h2>
+              <button id="refreshFilesBtn" class="btn ghost" type="button" data-testid="refresh-files">Actualizar archivos</button>
+            </div>
+            <form id="uploadFileForm" class="row-actions" enctype="multipart/form-data">
+              <input id="userFileInput" type="file" accept=".txt,.csv,.json,image/png,image/jpeg,image/jpg,image/gif,image/webp,text/plain,text/csv,application/json" required data-testid="user-file-input" />
+              <button class="btn" type="submit" data-testid="upload-file-submit">Subir archivo</button>
+            </form>
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Archivo</th>
+                  <th>Tipo</th>
+                  <th>Tamaño</th>
+                  <th>Fecha</th>
+                </tr>
+              </thead>
+              <tbody id="userFilesRows" data-testid="user-files-rows">
+                <tr><td colspan="5">Sin archivos</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel table-panel">
+            <div class="table-header">
               <h2>Movimientos de cuenta</h2>
               <div class="pager-controls">
                 <label>Tipo
@@ -274,11 +299,12 @@
           <section class="operations-grid admin-ops-grid">
             <form id="adminCreateUserForm" class="panel">
               <h2>Crear usuario (admin)</h2>
-              <input id="adminFirstName" placeholder="First name" required data-testid="admin-first-name" />
-              <input id="adminLastName" placeholder="Last name" required data-testid="admin-last-name" />
-              <input id="adminEmail" type="email" placeholder="new.user@example.com" required data-testid="admin-email" />
-              <input id="adminPhone" placeholder="+51999111222" data-testid="admin-phone" />
-              <input id="adminPin" value="1234" required data-testid="admin-pin" />
+              <p class="field-help">Requeridos: nombre, apellido, email, PIN y rol.</p>
+              <input id="adminFirstName" placeholder="Nombre *" required data-testid="admin-first-name" />
+              <input id="adminLastName" placeholder="Apellido *" required data-testid="admin-last-name" />
+              <input id="adminEmail" type="email" placeholder="correo@dominio.com *" required data-testid="admin-email" />
+              <input id="adminPhone" placeholder="Telefono (opcional)" data-testid="admin-phone" />
+              <input id="adminPin" placeholder="PIN *" required data-testid="admin-pin" />
               <select id="adminRole" data-testid="admin-role">
                 <option value="customer">customer</option>
                 <option value="manager">manager</option>
@@ -288,9 +314,10 @@
 
             <form id="adminCreateLoanForm" class="panel">
               <h2>Originar prestamo (admin)</h2>
-              <input id="adminLoanAccountId" placeholder="Account ID objetivo" required data-testid="admin-loan-account-id" />
-              <input id="adminLoanAmount" type="number" min="1" value="12000" required data-testid="admin-loan-amount" />
-              <input id="adminLoanTermMonths" type="number" min="1" value="12" required data-testid="admin-loan-term-months" />
+              <p class="field-help">Requeridos: account ID, monto, plazo y primera fecha de pago.</p>
+              <input id="adminLoanAccountId" placeholder="Account ID objetivo *" required data-testid="admin-loan-account-id" />
+              <input id="adminLoanAmount" type="number" min="1" step="0.01" placeholder="Monto del prestamo *" required data-testid="admin-loan-amount" />
+              <input id="adminLoanTermMonths" type="number" min="1" placeholder="Plazo en meses *" required data-testid="admin-loan-term-months" />
               <input id="adminLoanFirstDueDate" type="date" required data-testid="admin-loan-first-due-date" />
               <div class="row-actions">
                 <button class="btn ghost" id="adminPreviewLoanBtn" type="button" data-testid="admin-preview-loan">Previsualizar plan</button>
@@ -301,10 +328,11 @@
 
             <form id="adminAccountOpsForm" class="panel">
               <h2>Operar cuenta de usuario</h2>
-              <input id="adminTargetAccountId" placeholder="Account ID objetivo" required data-testid="admin-target-account-id" />
-              <input id="adminTargetLoanId" placeholder="Loan ID (solo pago prestamo)" data-testid="admin-target-loan-id" />
-              <input id="adminTargetAmount" type="number" min="1" value="100" required data-testid="admin-target-amount" />
-              <input id="adminTargetDescription" placeholder="Descripcion" value="Operacion ejecutada por gerente" data-testid="admin-target-description" />
+              <p class="field-help">Requeridos: account ID y monto. Para pagar prestamo tambien se requiere loan ID.</p>
+              <input id="adminTargetAccountId" placeholder="Account ID objetivo *" required data-testid="admin-target-account-id" />
+              <input id="adminTargetLoanId" placeholder="Loan ID (solo para pagar prestamo)" data-testid="admin-target-loan-id" />
+              <input id="adminTargetAmount" type="number" min="0.01" step="0.01" placeholder="Monto *" required data-testid="admin-target-amount" />
+              <input id="adminTargetDescription" placeholder="Descripcion (opcional)" data-testid="admin-target-description" />
               <div class="row-actions">
                 <button class="btn" id="adminDepositTargetBtn" type="button" data-testid="admin-deposit-target">Depositar</button>
                 <button class="btn alt" id="adminWithdrawTargetBtn" type="button" data-testid="admin-withdraw-target">Retirar</button>
@@ -314,7 +342,8 @@
 
             <form id="adminDeleteUserForm" class="panel">
               <h2>Eliminar usuario</h2>
-              <input id="adminDeleteUserId" placeholder="User ID" required data-testid="admin-delete-user-id" />
+              <p class="field-help">Requerido: User ID.</p>
+              <input id="adminDeleteUserId" placeholder="User ID *" required data-testid="admin-delete-user-id" />
               <button class="btn alt" type="submit" data-testid="admin-delete-user-submit">Eliminar usuario</button>
             </form>
 
@@ -328,6 +357,18 @@
           <section class="panel table-panel">
             <div class="table-header">
               <h2>Usuarios del sistema</h2>
+              <div class="pager-controls">
+                <label>Ver
+                  <select id="adminUsersPerPage" data-testid="admin-users-per-page">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                  </select>
+                </label>
+                <button id="adminUsersPrevPageBtn" class="btn ghost mini" type="button" data-testid="admin-users-prev-page">Anterior</button>
+                <span id="adminUsersPageInfo" data-testid="admin-users-page-info">1 / 1</span>
+                <button id="adminUsersNextPageBtn" class="btn ghost mini" type="button" data-testid="admin-users-next-page">Siguiente</button>
+              </div>
             </div>
             <table>
               <thead>
@@ -335,11 +376,12 @@
                   <th>ID</th>
                   <th>Nombre</th>
                   <th>Email</th>
+                  <th>Cuenta</th>
                   <th>Rol</th>
                 </tr>
               </thead>
               <tbody id="adminUsersRows" data-testid="admin-users-rows">
-                <tr><td colspan="4">Sin datos</td></tr>
+                <tr><td colspan="5">Sin datos</td></tr>
               </tbody>
             </table>
           </section>

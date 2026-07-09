@@ -108,7 +108,6 @@ class LoanService
 
   def validate_inputs!
     raise LoanError, "El monto del préstamo debe ser mayor que cero" if @amount <= 0
-    raise LoanError, "El monto del préstamo debe ser un número entero" unless @amount.frac.zero?
     raise LoanError, "El plazo debe ser mayor que cero" if @term_months <= 0
   end
 
