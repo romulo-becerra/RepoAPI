@@ -37,27 +37,27 @@ class Account < ApplicationRecord
   end
 
   def withdraw!(amount)
-    value = amount.to_i
+    value = BigDecimal(amount.to_s).round(2)
     raise StandardError, "El monto debe ser mayor a cero" if value <= 0
     raise StandardError, "Fondos insuficientes en la cuenta" if balance < value
 
-    self.balance -= value
+    self.balance = BigDecimal(balance.to_s).round(2) - value
     save!
   end
 
   def deposit!(amount)
-    value = amount.to_i
+    value = BigDecimal(amount.to_s).round(2)
     raise StandardError, "El monto debe ser mayor a cero" if value <= 0
 
-    self.balance += value
+    self.balance = BigDecimal(balance.to_s).round(2) + value
     save!
   end
 
   def service_payment!(amount)
-    value = amount.to_i
+    value = BigDecimal(amount.to_s).round(2)
     raise StandardError, "El monto debe ser mayor a cero" if value <= 0
 
-    self.balance += value
+    self.balance = BigDecimal(balance.to_s).round(2) + value
     save!
   end
 

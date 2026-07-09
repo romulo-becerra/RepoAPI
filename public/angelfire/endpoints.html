@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AngelFire | API Endpoints</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg-900: #091923;
+        --bg-800: #102736;
+        --paper: #f4f7f8;
+        --panel: #ffffff;
+        --line: #dbe4ea;
+        --ink-900: #10212d;
+        --ink-700: #455d6e;
+        --accent-600: #0c8a7f;
+        --accent-700: #0a7067;
+        --warn-600: #9f5d16;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: 'Manrope', sans-serif;
+        color: var(--ink-900);
+        background: linear-gradient(120deg, var(--bg-900), var(--bg-800));
+      }
+
+      .wrapper {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+
+      .hero {
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 16px;
+        background: rgba(7, 18, 26, 0.45);
+        padding: 1rem;
+        color: #d9e8ef;
+        margin-bottom: 1rem;
+      }
+
+      .hero h1 {
+        margin: 0;
+        font-size: clamp(1.4rem, 3vw, 2rem);
+      }
+
+      .hero p {
+        margin: 0.4rem 0 0;
+        color: #bdd4df;
+      }
+
+      .hero code,
+      code {
+        font-family: 'IBM Plex Mono', monospace;
+        background: rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        padding: 0.12rem 0.35rem;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 0.9rem;
+        margin-bottom: 0.9rem;
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: 1.2fr auto auto;
+        gap: 0.6rem;
+      }
+
+      .controls input,
+      .controls select {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 0.55rem 0.6rem;
+        font-family: inherit;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+        margin-top: 0.6rem;
+      }
+
+      .chip {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        font-size: 0.78rem;
+        padding: 0.18rem 0.52rem;
+        background: #fff;
+      }
+
+      .chip.ok {
+        color: #0a352f;
+        border-color: rgba(163, 243, 226, 0.9);
+        background: #a3f3e2;
+      }
+
+      .chip.warn {
+        color: #5f3a11;
+        border-color: #f0d9bc;
+        background: #fff3e3;
+      }
+
+      .table-wrap {
+        overflow: auto;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.82rem;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--line);
+        padding: 0.45rem;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        white-space: nowrap;
+        color: var(--ink-700);
+        font-weight: 700;
+      }
+
+      .method {
+        border-radius: 999px;
+        display: inline-block;
+        min-width: 54px;
+        text-align: center;
+        font-weight: 800;
+        padding: 0.15rem 0.4rem;
+      }
+
+      .m-get {
+        background: #e8f5f1;
+        color: #0b6c56;
+      }
+
+      .m-post {
+        background: #e9effa;
+        color: #1c4fa4;
+      }
+
+      .m-put {
+        background: #fff3e6;
+        color: #8a4c10;
+      }
+
+      .m-patch {
+        background: #f5ecff;
+        color: #5f2ca3;
+      }
+
+      .m-delete {
+        background: #ffe9e9;
+        color: #a12727;
+      }
+
+      .path {
+        font-family: 'IBM Plex Mono', monospace;
+      }
+
+      .mono {
+        font-family: 'IBM Plex Mono', monospace;
+        white-space: pre-wrap;
+      }
+
+      .footer-note {
+        font-size: 0.8rem;
+        color: #6b8292;
+      }
+
+      details.example {
+        margin-top: 0.4rem;
+      }
+
+      details.example > summary {
+        cursor: pointer;
+        color: var(--accent-700);
+        font-weight: 700;
+      }
+
+      .example-pre {
+        margin: 0.45rem 0 0;
+        padding: 0.6rem;
+        border-radius: 10px;
+        background: #102736;
+        color: #d9ebef;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.75rem;
+        white-space: pre-wrap;
+      }
+
+      @media (max-width: 980px) {
+        .controls {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrapper">
+      <section class="hero">
+        <h1>Catalogo de Endpoints API v1</h1>
+        <p>
+          Ruta publica: <code>/angelfire/endpoints.html</code>.
+          Base URL recomendada para pruebas locales: <code>http://localhost:3001</code>.
+        </p>
+      </section>
+
+      <section class="panel">
+        <div class="controls">
+          <input id="searchInput" placeholder="Buscar por ruta, descripcion o payload..." />
+          <select id="methodFilter">
+            <option value="all">Todos los metodos</option>
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="PATCH">PATCH</option>
+            <option value="DELETE">DELETE</option>
+          </select>
+          <select id="authFilter">
+            <option value="all">Todo acceso</option>
+            <option value="public">Publico</option>
+            <option value="user">Bearer user/manager</option>
+            <option value="manager">Bearer manager</option>
+          </select>
+        </div>
+        <div class="chip-row">
+          <span class="chip ok">Publico: sin Authorization</span>
+          <span class="chip warn">User: Authorization: Bearer user_token</span>
+          <span class="chip warn">Manager: Authorization: Bearer manager_token</span>
+          <span class="chip">Multipart: usar form-data (archivo)</span>
+        </div>
+      </section>
+
+      <section class="panel table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Metodo</th>
+              <th>Ruta</th>
+              <th>Auth</th>
+              <th>Descripcion</th>
+              <th>Query / Body minimo</th>
+              <th>Ejemplo rapido</th>
+            </tr>
+          </thead>
+          <tbody id="endpointsBody"></tbody>
+        </table>
+      </section>
+
+      <section class="panel">
+        <h2>Headers base sugeridos</h2>
+        <p class="mono">Accept: application/json
+Content-Type: application/json
+Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
+      </section>
+
+      <section class="panel">
+        <h2>Notas para Postman/Insomnia</h2>
+        <ul>
+          <li>Crea variable <code>{{baseUrl}}</code> con valor <code>http://localhost:3001</code>.</li>
+          <li>Para endpoints de manager usa token de usuario con rol <code>manager</code>.</li>
+          <li>Para subir archivo usa <code>form-data</code> y campo <code>file</code>.</li>
+          <li>Descarga de plan de pagos devuelve CSV en <code>text/csv</code>.</li>
+        </ul>
+        <p class="footer-note">Documento generado desde rutas activas del proyecto para pruebas funcionales.</p>
+      </section>
+    </div>
+
+    <script>
+      const endpoints = [
+        { method: 'GET', path: '/up', auth: 'public', desc: 'Health check de Rails', payload: '-', sample: 'GET {{baseUrl}}/up' },
+        { method: 'GET', path: '/', auth: 'public', desc: 'Estado base del servicio', payload: '-', sample: 'GET {{baseUrl}}/' },
+
+        { method: 'POST', path: '/api/v1/register', auth: 'public', desc: 'Registro de usuario', payload: '{"first_name","last_name","email","pin"}', sample: 'POST {{baseUrl}}/api/v1/register' },
+        { method: 'POST', path: '/api/v1/login', auth: 'public', desc: 'Login por account_number + pin', payload: '{"account_number","pin"}', sample: 'POST {{baseUrl}}/api/v1/login' },
+        { method: 'POST', path: '/api/v1/logout', auth: 'user', desc: 'Cerrar sesion', payload: '-', sample: 'POST {{baseUrl}}/api/v1/logout' },
+
+        { method: 'GET', path: '/api/v1/accounts', auth: 'user', desc: 'Listar cuentas del usuario autenticado', payload: '-', sample: 'GET {{baseUrl}}/api/v1/accounts' },
+        { method: 'POST', path: '/api/v1/accounts', auth: 'user', desc: 'Crear nueva cuenta del usuario', payload: '{}', sample: 'POST {{baseUrl}}/api/v1/accounts' },
+        { method: 'GET', path: '/api/v1/accounts/:id', auth: 'user', desc: 'Detalle de cuenta + prestamo activo', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/accounts/12' },
+        { method: 'GET', path: '/api/v1/accounts/:id/balance', auth: 'user', desc: 'Saldo de cuenta', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/accounts/12/balance' },
+        { method: 'GET', path: '/api/v1/accounts/:id/summary', auth: 'user', desc: 'Resumen mensual (income/expense)', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/accounts/12/summary' },
+        { method: 'POST', path: '/api/v1/accounts/:id/deposit', auth: 'user', desc: 'Depositar en cuenta propia', payload: '{"amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/deposit' },
+        { method: 'POST', path: '/api/v1/accounts/:id/withdraw', auth: 'user', desc: 'Retirar de cuenta propia', payload: '{"amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/withdraw' },
+        { method: 'POST', path: '/api/v1/accounts/:id/transfer', auth: 'user', desc: 'Transferir a otra cuenta', payload: '{"recipient_account_id","amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/transfer' },
+        { method: 'POST', path: '/api/v1/accounts/:id/pay_service', auth: 'user', desc: 'Pago de servicio', payload: '{"service_id","amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/pay_service' },
+
+        { method: 'GET', path: '/api/v1/accounts/:account_id/transactions', auth: 'user', desc: 'Movimientos paginados (filtros)', payload: 'query: page, per_page, transaction_filter', sample: 'GET {{baseUrl}}/api/v1/accounts/12/transactions?page=1&per_page=10' },
+        { method: 'POST', path: '/api/v1/accounts/:account_id/transactions', auth: 'user', desc: 'Transferencia via recurso transactions', payload: '{"recipient_id","amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/transactions' },
+
+        { method: 'GET', path: '/api/v1/accounts/:account_id/loans', auth: 'user', desc: 'Listar prestamos de la cuenta', payload: '-', sample: 'GET {{baseUrl}}/api/v1/accounts/12/loans' },
+        { method: 'POST', path: '/api/v1/accounts/:account_id/loans', auth: 'user', desc: 'Crear prestamo (si habilitado)', payload: '{"amount","term_months","first_due_date"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/loans' },
+        { method: 'GET', path: '/api/v1/accounts/:account_id/loans/:id', auth: 'user', desc: 'Detalle de prestamo', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/accounts/12/loans/5' },
+        { method: 'POST', path: '/api/v1/accounts/:account_id/loans/:id/pay', auth: 'user', desc: 'Pago de prestamo', payload: '{"amount","paid_on?"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/loans/5/pay' },
+        { method: 'GET', path: '/api/v1/accounts/:account_id/loans/:id/installments', auth: 'user', desc: 'Cuotas pagadas y pendientes (paginadas pendientes)', payload: 'query: page, per_page', sample: 'GET {{baseUrl}}/api/v1/accounts/12/loans/5/installments?page=1&per_page=10' },
+
+        { method: 'GET', path: '/api/v1/recipients', auth: 'user', desc: 'Listar destinatarios', payload: '-', sample: 'GET {{baseUrl}}/api/v1/recipients' },
+        { method: 'POST', path: '/api/v1/recipients', auth: 'user', desc: 'Crear destinatario', payload: '{"name","account_id"}', sample: 'POST {{baseUrl}}/api/v1/recipients' },
+        { method: 'DELETE', path: '/api/v1/recipients/:id', auth: 'user', desc: 'Eliminar destinatario', payload: 'path :id', sample: 'DELETE {{baseUrl}}/api/v1/recipients/8' },
+        { method: 'GET', path: '/api/v1/recipients/search', auth: 'user', desc: 'Buscar destinatarios', payload: 'query segun implementacion', sample: 'GET {{baseUrl}}/api/v1/recipients/search?query=juan' },
+
+        { method: 'GET', path: '/api/v1/services', auth: 'public', desc: 'Listar servicios', payload: '-', sample: 'GET {{baseUrl}}/api/v1/services' },
+        { method: 'GET', path: '/api/v1/services/:id', auth: 'public', desc: 'Detalle de servicio', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/services/1' },
+
+        { method: 'POST', path: '/api/v1/atm/accounts/:id/deposit', auth: 'user', desc: 'Deposito ATM', payload: '{"amount"}', sample: 'POST {{baseUrl}}/api/v1/atm/accounts/12/deposit' },
+        { method: 'POST', path: '/api/v1/atm/accounts/:id/withdraw', auth: 'user', desc: 'Retiro ATM', payload: '{"amount"}', sample: 'POST {{baseUrl}}/api/v1/atm/accounts/12/withdraw' },
+        { method: 'GET', path: '/api/v1/atm/accounts/:id/balance', auth: 'user', desc: 'Saldo ATM', payload: '-', sample: 'GET {{baseUrl}}/api/v1/atm/accounts/12/balance' },
+        { method: 'GET', path: '/api/v1/atm/accounts/:id/statement', auth: 'user', desc: 'Estado de cuenta ATM', payload: '-', sample: 'GET {{baseUrl}}/api/v1/atm/accounts/12/statement' },
+
+        { method: 'PATCH', path: '/api/v1/users/:id', auth: 'user', desc: 'Actualizar datos de usuario', payload: '{"first_name?","last_name?","email?","phone?","pin?"}', sample: 'PATCH {{baseUrl}}/api/v1/users/3' },
+        { method: 'PUT', path: '/api/v1/users/:id/pin', auth: 'user', desc: 'Cambiar PIN', payload: '{"current_pin","new_pin"}', sample: 'PUT {{baseUrl}}/api/v1/users/3/pin' },
+        { method: 'GET', path: '/api/v1/users/:id/profile', auth: 'user', desc: 'Perfil del usuario', payload: '-', sample: 'GET {{baseUrl}}/api/v1/users/3/profile' },
+        { method: 'GET', path: '/api/v1/users/:id/address', auth: 'user', desc: 'Obtener direccion', payload: '-', sample: 'GET {{baseUrl}}/api/v1/users/3/address' },
+        { method: 'PUT', path: '/api/v1/users/:id/address', auth: 'user', desc: 'Crear/actualizar direccion', payload: '{"country","city","province","street", ...}', sample: 'PUT {{baseUrl}}/api/v1/users/3/address' },
+        { method: 'GET', path: '/api/v1/users/:id/files', auth: 'user', desc: 'Listar archivos usuario', payload: '-', sample: 'GET {{baseUrl}}/api/v1/users/3/files' },
+        { method: 'POST', path: '/api/v1/users/:id/files', auth: 'user', desc: 'Subir archivo (texto o imagen)', payload: 'multipart/form-data: file', sample: 'POST {{baseUrl}}/api/v1/users/3/files' },
+        { method: 'DELETE', path: '/api/v1/users/:id/files/:file_id', auth: 'user', desc: 'Eliminar archivo', payload: 'path :file_id', sample: 'DELETE {{baseUrl}}/api/v1/users/3/files/10' },
+
+        { method: 'GET', path: '/api/v1/manager/reports/overview', auth: 'manager', desc: 'Reporte ejecutivo general', payload: '-', sample: 'GET {{baseUrl}}/api/v1/manager/reports/overview' },
+        { method: 'GET', path: '/api/v1/manager/reports/loans', auth: 'manager', desc: 'Reporte de prestamos', payload: 'query: status?', sample: 'GET {{baseUrl}}/api/v1/manager/reports/loans?status=active' },
+        { method: 'GET', path: '/api/v1/manager/reports/accounts_activity', auth: 'manager', desc: 'Actividad de cuentas', payload: 'query: days?', sample: 'GET {{baseUrl}}/api/v1/manager/reports/accounts_activity?days=30' },
+
+        { method: 'GET', path: '/api/v1/manager/users', auth: 'manager', desc: 'Usuarios paginados', payload: 'query: page, per_page', sample: 'GET {{baseUrl}}/api/v1/manager/users?page=1&per_page=20' },
+        { method: 'POST', path: '/api/v1/manager/users', auth: 'manager', desc: 'Crear usuario por manager', payload: '{"first_name","last_name","email","pin","role","phone?"}', sample: 'POST {{baseUrl}}/api/v1/manager/users' },
+        { method: 'DELETE', path: '/api/v1/manager/users/:id', auth: 'manager', desc: 'Eliminar usuario', payload: 'path :id', sample: 'DELETE {{baseUrl}}/api/v1/manager/users/40' },
+
+        { method: 'POST', path: '/api/v1/manager/loans/:id/cancel', auth: 'manager', desc: 'Cancelar prestamo', payload: 'path :id', sample: 'POST {{baseUrl}}/api/v1/manager/loans/9/cancel' },
+        { method: 'POST', path: '/api/v1/manager/accounts/:account_id/loans/preview', auth: 'manager', desc: 'Previsualizar plan de pagos', payload: '{"amount","term_months","first_due_date"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/preview' },
+        { method: 'POST', path: '/api/v1/manager/accounts/:account_id/loans', auth: 'manager', desc: 'Originar prestamo en cuenta objetivo', payload: '{"amount","term_months","first_due_date"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/loans' },
+        { method: 'GET', path: '/api/v1/manager/accounts/:account_id/summary', auth: 'manager', desc: 'Resumen por cuenta (saldo + prestamos)', payload: ':account_id o account_number', sample: 'GET {{baseUrl}}/api/v1/manager/accounts/9000000001/summary' },
+        { method: 'GET', path: '/api/v1/manager/accounts/:account_id/loans/:loan_id/installments', auth: 'manager', desc: 'Plan de pagos paginado', payload: 'query: page, per_page', sample: 'GET {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/installments?page=1&per_page=10' },
+        { method: 'GET', path: '/api/v1/manager/accounts/:account_id/loans/:loan_id/installments/download', auth: 'manager', desc: 'Descargar plan de pagos CSV', payload: '-', sample: 'GET {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/installments/download' },
+        { method: 'POST', path: '/api/v1/manager/accounts/:account_id/deposit', auth: 'manager', desc: 'Depositar por manager', payload: '{"amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/deposit' },
+        { method: 'POST', path: '/api/v1/manager/accounts/:account_id/withdraw', auth: 'manager', desc: 'Retirar por manager', payload: '{"amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/withdraw' },
+        { method: 'POST', path: '/api/v1/manager/accounts/:account_id/loans/:loan_id/pay', auth: 'manager', desc: 'Pagar prestamo por manager', payload: '{"amount","paid_on?"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/pay' }
+      ];
+
+      const body = document.getElementById('endpointsBody');
+      const searchInput = document.getElementById('searchInput');
+      const methodFilter = document.getElementById('methodFilter');
+      const authFilter = document.getElementById('authFilter');
+
+      function methodClass(method) {
+        const m = method.toLowerCase();
+        return `m-${m}`;
+      }
+
+      function escapeHtml(text) {
+        return String(text)
+          .replaceAll('&', '&amp;')
+          .replaceAll('<', '&lt;')
+          .replaceAll('>', '&gt;');
+      }
+
+      function sampleValueForKey(key) {
+        const k = key.toLowerCase();
+        if (k.includes('id')) return 1;
+        if (k.includes('amount')) return 100.5;
+        if (k.includes('email')) return 'user@example.com';
+        if (k.includes('pin')) return '1234';
+        if (k.includes('date')) return '2026-07-31';
+        if (k.includes('number')) return '9000000001';
+        if (k.includes('name')) return 'Angel';
+        if (k.includes('query')) return 'juan';
+        return 'valor';
+      }
+
+      function bodyExampleFromPayload(payload) {
+        if (!payload || payload === '-' || payload.startsWith('path ') || payload.startsWith('query:') || payload.startsWith(':account_id')) {
+          return null;
+        }
+
+        if (payload.includes('multipart/form-data')) {
+          return '[form-data]\nfile=@/ruta/archivo.png';
+        }
+
+        const keys = [ ...payload.matchAll(/"([^"]+)"/g) ].map((m) => m[1].replace('?', ''));
+        if (keys.length === 0) {
+          return null;
+        }
+
+        const obj = {};
+        keys.forEach((key) => {
+          obj[key] = sampleValueForKey(key);
+        });
+        return JSON.stringify(obj, null, 2);
+      }
+
+      function responseExampleForEndpoint(endpoint) {
+        const p = endpoint.path;
+        if (p === '/api/v1/login') {
+          return JSON.stringify({ message: 'Inicio de sesión exitoso', token: '<jwt>', user: { id: 1, role: 'customer' }, account: { id: 10, account_number: '9000000001' } }, null, 2);
+        }
+        if (p === '/api/v1/register') {
+          return JSON.stringify({ message: 'Usuario registrado exitosamente', token: '<jwt>', user: { id: 2 }, account: { account_number: '9000000002' } }, null, 2);
+        }
+        if (p.includes('/transactions')) {
+          return JSON.stringify({ total: 1, page: 1, per_page: 10, transactions: [ { id: 1, transaction_type: 'deposit', amount: 100.5 } ] }, null, 2);
+        }
+        if (p.includes('/installments/download')) {
+          return 'Content-Type: text/csv\ninstallment_number,due_date,amount,principal_amount,interest_amount,status,paid_at\n1,2026-08-01,200.00,180.00,20.00,pending,';
+        }
+        if (p.includes('/installments')) {
+          return JSON.stringify({ total: 12, page: 1, per_page: 10, installments: [ { installment_number: 1, due_date: '2026-08-01', amount: 200.0, status: 'pending' } ] }, null, 2);
+        }
+        if (p.includes('/summary')) {
+          return JSON.stringify({ account_id: 10, account_number: '9000000001', balance: 1200.5, loans: [] }, null, 2);
+        }
+        if (p.includes('/deposit') || p.includes('/withdraw') || p.includes('/pay')) {
+          return JSON.stringify({ message: 'Operacion aplicada correctamente', account_id: 10, transaction_type: 'deposit', amount: 100.5 }, null, 2);
+        }
+        return JSON.stringify({ message: 'OK', status: 200 }, null, 2);
+      }
+
+      function completeExample(endpoint) {
+        const url = endpoint.sample.replace(/^\w+\s+/, '');
+        const isMultipart = endpoint.payload.includes('multipart/form-data');
+        const bodyExample = bodyExampleFromPayload(endpoint.payload);
+        const authHeader = endpoint.auth === 'public' ? '' : ' \\\n+  -H "Authorization: Bearer <token>"';
+        const contentTypeHeader = isMultipart ? '' : ' \\\n+  -H "Content-Type: application/json"';
+        const bodyPart = bodyExample && !isMultipart
+          ? ` \\\n+  -d '${bodyExample.replaceAll("'", "\\\\'")}'`
+          : '';
+
+        let result = `REQUEST\n${endpoint.method} ${url}\nAuth: ${endpoint.auth}\n`;
+        if (bodyExample) {
+          result += `\nBODY EJEMPLO\n${bodyExample}\n`;
+        }
+        result += `\nCURL\ncurl -X ${endpoint.method} "${url}" \\\n+  -H "Accept: application/json"${contentTypeHeader}${authHeader}${bodyPart}\n`;
+        result += `\nRESPUESTA EJEMPLO\n${responseExampleForEndpoint(endpoint)}`;
+        return result;
+      }
+
+      function renderRows() {
+        const q = (searchInput.value || '').toLowerCase();
+        const m = methodFilter.value;
+        const a = authFilter.value;
+
+        const filtered = endpoints.filter((item) => {
+          const methodOk = m === 'all' || item.method === m;
+          const authOk = a === 'all' || item.auth === a;
+          const text = `${item.method} ${item.path} ${item.auth} ${item.desc} ${item.payload} ${item.sample}`.toLowerCase();
+          const queryOk = !q || text.includes(q);
+          return methodOk && authOk && queryOk;
+        });
+
+        if (filtered.length === 0) {
+          body.innerHTML = '<tr><td colspan="6">Sin resultados para el filtro actual.</td></tr>';
+          return;
+        }
+
+        body.innerHTML = filtered
+          .map((e) => {
+            const complete = escapeHtml(completeExample(e));
+            return `
+            <tr>
+              <td><span class="method ${methodClass(e.method)}">${e.method}</span></td>
+              <td class="path">${e.path}</td>
+              <td>${e.auth}</td>
+              <td>${e.desc}</td>
+              <td class="mono">${e.payload}</td>
+              <td class="mono">
+                ${e.sample}
+                <details class="example">
+                  <summary>Ver ejemplo completo (opcional)</summary>
+                  <pre class="example-pre">${complete}</pre>
+                </details>
+              </td>
+            </tr>`;
+          })
+          .join('');
+      }
+
+      searchInput.addEventListener('input', renderRows);
+      methodFilter.addEventListener('change', renderRows);
+      authFilter.addEventListener('change', renderRows);
+      renderRows();
+    </script>
+  </body>
+</html>

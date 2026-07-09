@@ -26,6 +26,8 @@ class Transaction < ApplicationRecord
       account.deposit!(amount)
     elsif withdraw?
       account.withdraw!(amount)
+    elsif transfer?
+      account.withdraw!(amount)
     elsif loan_payment?
       account.withdraw!(amount)
     elsif atm_deposit?
@@ -33,7 +35,7 @@ class Transaction < ApplicationRecord
     elsif atm_withdrawal?
       account.withdraw!(amount)
     elsif service_payment?
-      account.service_payment!(amount)
+      account.service? ? account.deposit!(amount) : account.withdraw!(amount)
     end
 
     update_column(:status, Transaction.statuses[:completed])

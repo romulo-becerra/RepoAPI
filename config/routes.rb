@@ -43,6 +43,14 @@ Rails.application.routes.draw do
         resources :users, only: [ :index, :create, :destroy ]
 
         post "loans/:id/cancel", to: "loans#cancel"
+        post "accounts/:account_id/loans/preview", to: "loans#preview"
+        post "accounts/:account_id/loans", to: "loans#create_for_account"
+        get "accounts/:account_id/summary", to: "account_operations#summary"
+        get "accounts/:account_id/loans/:loan_id/installments", to: "loans#installments"
+        get "accounts/:account_id/loans/:loan_id/installments/download", to: "loans#download_installments"
+        post "accounts/:account_id/deposit", to: "account_operations#deposit"
+        post "accounts/:account_id/withdraw", to: "account_operations#withdraw"
+        post "accounts/:account_id/loans/:loan_id/pay", to: "account_operations#pay_loan"
       end
 
       post "register", to: "users#register"

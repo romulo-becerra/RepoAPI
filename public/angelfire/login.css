@@ -89,11 +89,6 @@ h1 {
   font-size: 1rem;
 }
 
-.card.compact {
-  grid-template-columns: 1fr auto;
-  align-items: end;
-}
-
 label {
   display: grid;
   gap: 0.3rem;
@@ -129,6 +124,18 @@ input {
   background: #fff;
 }
 
+.btn.mini {
+  padding: 0.45rem 0.65rem;
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.pin-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.45rem;
+}
+
 .row-actions {
   display: flex;
   gap: 0.5rem;
@@ -154,12 +161,16 @@ pre {
   font-size: 0.77rem;
 }
 
+.hidden {
+  display: none;
+}
+
 @media (max-width: 980px) {
   .auth-shell {
     grid-template-columns: 1fr;
   }
 
-  .card.compact,
+  .pin-row,
   .row-actions {
     grid-template-columns: 1fr;
     display: grid;
