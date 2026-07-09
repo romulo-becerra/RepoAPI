@@ -65,7 +65,9 @@ module Manager
         transaction_type: transaction.transaction_type,
         amount: transaction.amount.to_f
       }, status: :ok
-    rescue InvalidAmountError, InsufficientFundsError, StandardError => e
+    rescue InsufficientFundsError => e
+      render json: { errors: e.message }, status: :payment_required
+    rescue InvalidAmountError, StandardError => e
       render json: { errors: e.message }, status: :unprocessable_entity
     end
 
@@ -89,6 +91,8 @@ module Manager
         loan_status: loan.reload.status,
         outstanding_principal: loan.outstanding_principal.to_f
       }, status: :ok
+    rescue InsufficientFundsError => e
+      render json: { errors: e.message }, status: :payment_required
     rescue LoanService::LoanError => e
       render json: { errors: e.message }, status: :unprocessable_entity
     rescue StandardError => e

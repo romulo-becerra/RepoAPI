@@ -27,7 +27,7 @@ class TransactionService
   def withdraw!(account, amount, description = nil, transaction_type: :withdraw)
     normalized_amount = normalize_amount(amount)
     validate_account_and_amount(account, normalized_amount)
-    raise InsufficientFundsError, "Insufficient funds in account" if account.balance < normalized_amount
+    raise InsufficientFundsError, "Saldo insuficiente para completar la operacion" if account.balance < normalized_amount
 
     make_transaction(normalized_amount, account, transaction_type, description)
   end
@@ -54,7 +54,7 @@ class TransactionService
     raise AccountNotFoundError, "Origin account not found" if origin_account.nil?
     raise AccountNotFoundError, "Recipient account not found" if recipient_account.nil?
     raise InvalidAmountError, "Amount must be greater than 0" if amount <= 0
-    raise InsufficientFundsError, "Insufficient funds in origin account" if origin_account.balance < amount
+    raise InsufficientFundsError, "Saldo insuficiente para completar la operacion" if origin_account.balance < amount
     raise InvalidTransactionError, "Cannot transfer to the same account" if origin_account == recipient_account
   end
 

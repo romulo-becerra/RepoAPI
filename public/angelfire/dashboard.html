@@ -94,23 +94,30 @@
           <section class="operations-grid">
             <form id="depositForm" class="panel">
               <h2>Deposito</h2>
-              <input id="depositAmount" type="number" min="1" value="100" required data-testid="deposit-amount" />
-              <input id="depositDescription" value="Deposito AngelFire" data-testid="deposit-description" />
+              <label for="depositAmount">Monto</label>
+              <input id="depositAmount" type="number" min="1" value="100" placeholder="Ej: 100" required data-testid="deposit-amount" />
+              <label for="depositDescription">Detalle</label>
+              <input id="depositDescription" value="Deposito AngelFire" placeholder="Motivo del deposito" data-testid="deposit-description" />
               <button class="btn" type="submit" data-testid="deposit-submit">Aplicar deposito</button>
             </form>
 
             <form id="withdrawForm" class="panel">
               <h2>Retiro</h2>
-              <input id="withdrawAmount" type="number" min="1" value="50" required data-testid="withdraw-amount" />
-              <input id="withdrawDescription" value="Retiro AngelFire" data-testid="withdraw-description" />
+              <label for="withdrawAmount">Monto</label>
+              <input id="withdrawAmount" type="number" min="1" value="50" placeholder="Ej: 50" required data-testid="withdraw-amount" />
+              <label for="withdrawDescription">Detalle</label>
+              <input id="withdrawDescription" value="Retiro AngelFire" placeholder="Motivo del retiro" data-testid="withdraw-description" />
               <button class="btn" type="submit" data-testid="withdraw-submit">Aplicar retiro</button>
             </form>
 
             <form id="payServiceForm" class="panel">
               <h2>Pago de servicios</h2>
+              <label for="serviceId">Servicio</label>
               <select id="serviceId" data-testid="service-id"></select>
-              <input id="serviceAmount" type="number" min="1" value="80" required data-testid="service-amount" />
-              <input id="serviceDescription" value="Pago de servicio AngelFire" data-testid="service-description" />
+              <label for="serviceAmount">Monto</label>
+              <input id="serviceAmount" type="number" min="1" value="80" placeholder="Ej: 80" required data-testid="service-amount" />
+              <label for="serviceDescription">Detalle</label>
+              <input id="serviceDescription" value="Pago de servicio AngelFire" placeholder="Motivo del pago" data-testid="service-description" />
               <button class="btn" type="submit" data-testid="pay-service-submit">Pagar servicio</button>
             </form>
           </section>
@@ -126,11 +133,12 @@
               <h3>Pagar prestamo</h3>
               <p id="nextPendingInstallmentAmount" data-testid="next-pending-installment">Proxima cuota pendiente: -</p>
               <div class="row-actions">
-                <label>Cuotas a pagar
+                <label for="loanInstallmentsToPay">Cuotas a pagar
                   <input id="loanInstallmentsToPay" type="number" min="1" value="1" data-testid="loan-installments-to-pay" />
                 </label>
                 <button id="loanCalculateAmountBtn" class="btn ghost" type="button" data-testid="loan-calc-amount">Calcular monto</button>
               </div>
+              <label for="payLoanAmount">Monto total a pagar</label>
               <input id="payLoanAmount" type="number" min="0.01" step="0.01" value="1.00" required data-testid="loan-pay-amount" />
               <button class="btn" type="submit" data-testid="loan-pay-submit">Pagar cuotas</button>
             </form>
@@ -487,6 +495,16 @@
           <pre id="responseBox" data-testid="response-box">Listo para operar.</pre>
         </section>
       </main>
+    </div>
+    <div id="actionModal" class="action-modal hidden" role="dialog" aria-modal="true" aria-labelledby="actionModalTitle">
+      <div class="action-modal-card">
+        <h3 id="actionModalTitle">Confirmar operacion</h3>
+        <p id="actionModalMessage">Estas seguro de continuar?</p>
+        <div class="action-modal-actions">
+          <button id="actionModalCancelBtn" class="btn ghost" type="button">Cancelar</button>
+          <button id="actionModalConfirmBtn" class="btn" type="button">Confirmar</button>
+        </div>
+      </div>
     </div>
     <script src="app.js"></script>
   </body>

@@ -32,6 +32,8 @@ let pendingPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, h
 let txPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
 let adminUsersPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
 let adminPlanPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
+let modalDecisionResolver = null;
+let modalCloseTimer = null;
 
 const el = {
   baseUrl: document.getElementById('baseUrl'),
@@ -98,7 +100,13 @@ const el = {
   showSecuritySectionBtn: document.getElementById('showSecuritySectionBtn'),
   hideAccountSectionBtn: document.getElementById('hideAccountSectionBtn'),
   adminLoanRateHint: document.getElementById('adminLoanRateHint'),
-  adminLoanPreviewRows: document.getElementById('adminLoanPreviewRows')
+  adminLoanPreviewRows: document.getElementById('adminLoanPreviewRows'),
+  actionModal: document.getElementById('actionModal'),
+  actionModalCard: document.querySelector('#actionModal .action-modal-card'),
+  actionModalTitle: document.getElementById('actionModalTitle'),
+  actionModalMessage: document.getElementById('actionModalMessage'),
+  actionModalConfirmBtn: document.getElementById('actionModalConfirmBtn'),
+  actionModalCancelBtn: document.getElementById('actionModalCancelBtn')
 };
 
 function loadState() {
@@ -211,6 +219,56 @@ function renderResponse(status, payload) {
   el.responseBox.textContent = JSON.stringify(payload, null, 2);
 }
 
+function lockBodyScroll() {
+  document.body.classList.add('modal-open');
+}
+
+function unlockBodyScroll() {
+  document.body.classList.remove('modal-open');
+}
+
+function resolveActionModal(confirmed) {
+  if (modalDecisionResolver) {
+    modalDecisionResolver(confirmed);
+    modalDecisionResolver = null;
+  }
+  el.actionModal.classList.remove('is-open');
+  if (modalCloseTimer) {
+    clearTimeout(modalCloseTimer);
+  }
+  modalCloseTimer = setTimeout(() => {
+    el.actionModal.classList.add('hidden');
+    unlockBodyScroll();
+    modalCloseTimer = null;
+  }, 180);
+}
+
+function openActionModal({ title, message, confirmText, cancelText, tone = '', showCancel = true }) {
+  if (modalCloseTimer) {
+    clearTimeout(modalCloseTimer);
+    modalCloseTimer = null;
+  }
+
+  el.actionModalTitle.textContent = title;
+  el.actionModalMessage.textContent = message;
+  el.actionModalConfirmBtn.textContent = confirmText;
+  el.actionModalCancelBtn.textContent = cancelText;
+  el.actionModalCancelBtn.classList.toggle('hidden', !showCancel);
+  el.actionModalConfirmBtn.classList.remove('warn', 'danger');
+  if (tone) {
+    el.actionModalConfirmBtn.classList.add(tone);
+  }
+  el.actionModal.classList.remove('hidden');
+  lockBodyScroll();
+  requestAnimationFrame(() => {
+    el.actionModal.classList.add('is-open');
+  });
+
+  return new Promise((resolve) => {
+    modalDecisionResolver = resolve;
+  });
+}
+
 function clearFormFields(formNode) {
   if (!formNode) {
     return;
@@ -233,13 +291,56 @@ function clearFormFields(formNode) {
   });
 }
 
-function confirmMutationAction(message, formId) {
-  const confirmed = window.confirm(message);
+async function showWarningDialog(message) {
+  const shouldShake = String(message || '').toLowerCase().includes('saldo insuficiente');
+  const modalResult = openActionModal({
+    title: 'Operacion no completada',
+    message,
+    confirmText: 'Entendido',
+    cancelText: 'Cerrar',
+    tone: 'danger',
+    showCancel: false
+  });
+
+  if (shouldShake && el.actionModalCard) {
+    el.actionModalCard.classList.remove('shake');
+    void el.actionModalCard.offsetWidth;
+    el.actionModalCard.classList.add('shake');
+  }
+
+  await modalResult;
+}
+
+async function confirmMutationAction(message, formId, tone = 'warn') {
+  const confirmed = await openActionModal({
+    title: 'Confirmar operacion',
+    message,
+    confirmText: 'Confirmar',
+    cancelText: 'Cancelar',
+    tone,
+    showCancel: true
+  });
+
   if (!confirmed) {
     clearFormFields(document.getElementById(formId));
     renderResponse(200, { message: 'Operacion cancelada por el usuario.' });
   }
+
   return confirmed;
+}
+
+function normalizeErrorMessage(message) {
+  const text = String(message || '').toLowerCase();
+  if (text.includes('insufficient funds') || text.includes('saldo insuficiente')) {
+    return 'Saldo insuficiente para completar la operacion.';
+  }
+  return message;
+}
+
+async function handleMutationError(error, status = 422) {
+  const normalizedMessage = normalizeErrorMessage(error.message || 'Operacion fallida.');
+  renderResponse(status, { errors: normalizedMessage });
+  await showWarningDialog(normalizedMessage);
 }
 
 function formatTransactionType(type) {
@@ -862,6 +963,19 @@ async function refreshAdminDashboard() {
 }
 
 function bindEvents() {
+  el.actionModalConfirmBtn.addEventListener('click', () => resolveActionModal(true));
+  el.actionModalCancelBtn.addEventListener('click', () => resolveActionModal(false));
+  el.actionModal.addEventListener('click', (event) => {
+    if (event.target === el.actionModal) {
+      resolveActionModal(false);
+    }
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !el.actionModal.classList.contains('hidden')) {
+      resolveActionModal(false);
+    }
+  });
+
   document.getElementById('baseConfigForm').addEventListener('submit', (event) => {
     event.preventDefault();
     state.baseUrl = el.baseUrl.value.trim();
@@ -885,7 +999,7 @@ function bindEvents() {
 
   document.getElementById('depositForm').addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (!confirmMutationAction('Confirmar deposito en la cuenta seleccionada?', 'depositForm')) {
+    if (!await confirmMutationAction('Se aplicara un deposito. Deseas continuar?', 'depositForm')) {
       return;
     }
 
@@ -898,13 +1012,13 @@ function bindEvents() {
       await refreshInstallmentsForClient();
       clearFormFields(document.getElementById('depositForm'));
     } catch (error) {
-      renderResponse(422, { errors: error.message });
+      await handleMutationError(error);
     }
   });
 
   document.getElementById('withdrawForm').addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (!confirmMutationAction('Confirmar retiro en la cuenta seleccionada?', 'withdrawForm')) {
+    if (!await confirmMutationAction('Se aplicara un retiro. Deseas continuar?', 'withdrawForm', 'danger')) {
       return;
     }
 
@@ -917,13 +1031,13 @@ function bindEvents() {
       await refreshInstallmentsForClient();
       clearFormFields(document.getElementById('withdrawForm'));
     } catch (error) {
-      renderResponse(422, { errors: error.message });
+      await handleMutationError(error);
     }
   });
 
   document.getElementById('payServiceForm').addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (!confirmMutationAction('Confirmar pago de servicio?', 'payServiceForm')) {
+    if (!await confirmMutationAction('Se aplicara el pago del servicio. Deseas continuar?', 'payServiceForm')) {
       return;
     }
 
@@ -937,7 +1051,7 @@ function bindEvents() {
       await refreshInstallmentsForClient();
       clearFormFields(document.getElementById('payServiceForm'));
     } catch (error) {
-      renderResponse(422, { errors: error.message });
+      await handleMutationError(error);
     }
   });
 
@@ -954,7 +1068,7 @@ function bindEvents() {
 
   document.getElementById('uploadFileForm').addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (!confirmMutationAction('Confirmar carga de archivo?', 'uploadFileForm')) {
+    if (!await confirmMutationAction('Se subira el archivo seleccionado. Deseas continuar?', 'uploadFileForm')) {
       return;
     }
 
@@ -962,7 +1076,7 @@ function bindEvents() {
       await uploadUserFile();
       clearFormFields(document.getElementById('uploadFileForm'));
     } catch (error) {
-      renderResponse(422, { errors: error.message });
+      await handleMutationError(error);
     }
   });
 
@@ -1006,7 +1120,7 @@ function bindEvents() {
       renderResponse(422, { errors: 'No hay prestamo activo para pagar.' });
       return;
     }
-    if (!confirmMutationAction('Confirmar pago de cuotas del prestamo?', 'payLoanForm')) {
+    if (!await confirmMutationAction('Se aplicara el pago del prestamo. Deseas continuar?', 'payLoanForm')) {
       return;
     }
 
@@ -1018,7 +1132,7 @@ function bindEvents() {
       await refreshInstallmentsForClient();
       clearFormFields(document.getElementById('payLoanForm'));
     } catch (error) {
-      renderResponse(422, { errors: error.message });
+      await handleMutationError(error);
     }
   });
 
@@ -1119,7 +1233,7 @@ function bindEvents() {
       renderResponse(401, { errors: 'Debes iniciar sesion para actualizar tus datos.' });
       return;
     }
-    if (!confirmMutationAction('Confirmar actualizacion de datos del perfil?', 'updateProfileForm')) {
+    if (!await confirmMutationAction('Se actualizaran tus datos de perfil. Deseas continuar?', 'updateProfileForm')) {
       return;
     }
 
@@ -1142,7 +1256,7 @@ function bindEvents() {
       await refreshProfileData();
       clearFormFields(document.getElementById('updateProfileForm'));
     } catch (error) {
-      renderResponse(422, { errors: error.message });
+      await handleMutationError(error);
     }
   });
 
@@ -1152,7 +1266,7 @@ function bindEvents() {
       renderResponse(401, { errors: 'Debes iniciar sesion para cambiar PIN.' });
       return;
     }
-    if (!confirmMutationAction('Confirmar cambio de PIN?', 'changePinForm')) {
+    if (!await confirmMutationAction('Se actualizara tu PIN. Deseas continuar?', 'changePinForm', 'danger')) {
       return;
     }
 
@@ -1163,7 +1277,7 @@ function bindEvents() {
       });
       clearFormFields(document.getElementById('changePinForm'));
     } catch (error) {
-      renderResponse(422, { errors: error.message });
+      await handleMutationError(error);
     }
   });
 
@@ -1173,7 +1287,7 @@ function bindEvents() {
       renderResponse(403, { errors: 'Operacion restringida a manager.' });
       return;
     }
-    if (!confirmMutationAction('Confirmar creacion de usuario?', 'adminCreateUserForm')) {
+    if (!await confirmMutationAction('Se creara un nuevo usuario. Deseas continuar?', 'adminCreateUserForm')) {
       return;
     }
 
@@ -1195,7 +1309,7 @@ function bindEvents() {
       await refreshAdminDashboard();
       clearFormFields(document.getElementById('adminCreateUserForm'));
     } catch (error) {
-      renderResponse(422, { errors: error.message });
+      await handleMutationError(error);
     }
   });
 
@@ -1205,7 +1319,7 @@ function bindEvents() {
       renderResponse(403, { errors: 'Operacion restringida a manager.' });
       return;
     }
-    if (!confirmMutationAction('Confirmar eliminacion de usuario?', 'adminDeleteUserForm')) {
+    if (!await confirmMutationAction('Se eliminara el usuario indicado. Deseas continuar?', 'adminDeleteUserForm', 'danger')) {
       return;
     }
 
@@ -1216,7 +1330,7 @@ function bindEvents() {
       await refreshAdminDashboard();
       clearFormFields(document.getElementById('adminDeleteUserForm'));
     } catch (error) {
-      renderResponse(422, { errors: error.message });
+      await handleMutationError(error);
     }
   });
 
@@ -1389,7 +1503,7 @@ function bindEvents() {
       renderResponse(403, { errors: 'Operacion restringida a manager.' });
       return;
     }
-    if (!confirmMutationAction('Confirmar creacion de prestamo?', 'adminCreateLoanForm')) {
+    if (!await confirmMutationAction('Se creara el prestamo para la cuenta indicada. Deseas continuar?', 'adminCreateLoanForm')) {
       return;
     }
 
@@ -1412,7 +1526,7 @@ function bindEvents() {
       await refreshAdminDashboard();
       clearFormFields(document.getElementById('adminCreateLoanForm'));
     } catch (error) {
-      renderResponse(422, { errors: error.message });
+      await handleMutationError(error);
     }
   });
 
@@ -1421,7 +1535,7 @@ function bindEvents() {
       renderResponse(403, { errors: 'Operacion restringida a manager.' });
       return;
     }
-    if (!confirmMutationAction('Confirmar deposito a cuenta de usuario?', 'adminAccountOpsForm')) {
+    if (!await confirmMutationAction('Se depositara saldo en la cuenta objetivo. Deseas continuar?', 'adminAccountOpsForm')) {
       return;
     }
 
@@ -1444,7 +1558,7 @@ function bindEvents() {
       await refreshAdminDashboard();
       clearFormFields(document.getElementById('adminAccountOpsForm'));
     } catch (error) {
-      renderResponse(422, { errors: error.message });
+      await handleMutationError(error);
     }
   });
 
@@ -1453,7 +1567,7 @@ function bindEvents() {
       renderResponse(403, { errors: 'Operacion restringida a manager.' });
       return;
     }
-    if (!confirmMutationAction('Confirmar retiro de cuenta de usuario?', 'adminAccountOpsForm')) {
+    if (!await confirmMutationAction('Se retirara saldo de la cuenta objetivo. Deseas continuar?', 'adminAccountOpsForm', 'danger')) {
       return;
     }
 
@@ -1476,7 +1590,7 @@ function bindEvents() {
       await refreshAdminDashboard();
       clearFormFields(document.getElementById('adminAccountOpsForm'));
     } catch (error) {
-      renderResponse(422, { errors: error.message });
+      await handleMutationError(error);
     }
   });
 
@@ -1485,7 +1599,7 @@ function bindEvents() {
       renderResponse(403, { errors: 'Operacion restringida a manager.' });
       return;
     }
-    if (!confirmMutationAction('Confirmar pago de prestamo del usuario?', 'adminAccountOpsForm')) {
+    if (!await confirmMutationAction('Se aplicara el pago del prestamo objetivo. Deseas continuar?', 'adminAccountOpsForm')) {
       return;
     }
 
@@ -1513,7 +1627,7 @@ function bindEvents() {
       await refreshAdminDashboard();
       clearFormFields(document.getElementById('adminAccountOpsForm'));
     } catch (error) {
-      renderResponse(422, { errors: error.message });
+      await handleMutationError(error);
     }
   });
 

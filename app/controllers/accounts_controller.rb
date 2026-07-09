@@ -132,7 +132,9 @@ class AccountsController < ApplicationController
       transaction_type: transaction.transaction_type,
       amount: transaction.amount.to_f
     }, status: :ok
-  rescue InvalidAmountError, InsufficientFundsError, StandardError => e
+  rescue InsufficientFundsError => e
+    render json: { errors: e.message }, status: :payment_required
+  rescue InvalidAmountError, StandardError => e
     render json: { errors: e.message }, status: :unprocessable_entity
   end
 
