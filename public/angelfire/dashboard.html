@@ -314,8 +314,8 @@
 
             <form id="adminCreateLoanForm" class="panel">
               <h2>Originar prestamo (admin)</h2>
-              <p class="field-help">Requeridos: account ID, monto, plazo y primera fecha de pago.</p>
-              <input id="adminLoanAccountId" placeholder="Account ID objetivo *" required data-testid="admin-loan-account-id" />
+              <p class="field-help">Requeridos: account ID o numero de cuenta, monto, plazo y primera fecha de pago.</p>
+              <input id="adminLoanAccountId" placeholder="Account ID o numero de cuenta objetivo *" required data-testid="admin-loan-account-id" />
               <input id="adminLoanAmount" type="number" min="1" step="0.01" placeholder="Monto del prestamo *" required data-testid="admin-loan-amount" />
               <input id="adminLoanTermMonths" type="number" min="1" placeholder="Plazo en meses *" required data-testid="admin-loan-term-months" />
               <input id="adminLoanFirstDueDate" type="date" required data-testid="admin-loan-first-due-date" />
@@ -328,8 +328,8 @@
 
             <form id="adminAccountOpsForm" class="panel">
               <h2>Operar cuenta de usuario</h2>
-              <p class="field-help">Requeridos: account ID y monto. Para pagar prestamo tambien se requiere loan ID.</p>
-              <input id="adminTargetAccountId" placeholder="Account ID objetivo *" required data-testid="admin-target-account-id" />
+              <p class="field-help">Requeridos: account ID o numero de cuenta y monto. Para pagar prestamo tambien se requiere loan ID.</p>
+              <input id="adminTargetAccountId" placeholder="Account ID o numero de cuenta objetivo *" required data-testid="admin-target-account-id" />
               <input id="adminTargetLoanId" placeholder="Loan ID (solo para pagar prestamo)" data-testid="admin-target-loan-id" />
               <input id="adminTargetAmount" type="number" min="0.01" step="0.01" placeholder="Monto *" required data-testid="admin-target-amount" />
               <input id="adminTargetDescription" placeholder="Descripcion (opcional)" data-testid="admin-target-description" />

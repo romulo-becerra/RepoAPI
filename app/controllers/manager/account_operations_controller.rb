@@ -72,7 +72,9 @@ module Manager
     private
 
     def set_account
-      @account = Account.find_by(id: params[:account_id])
+      lookup = params[:account_id].to_s.strip
+      @account = Account.find_by(id: lookup)
+      @account ||= Account.find_by(account_number: lookup)
       return if @account
 
       render json: { errors: "Cuenta no encontrada" }, status: :not_found
