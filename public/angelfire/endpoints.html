@@ -439,10 +439,8 @@ Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
         const url = endpoint.sample.replace(/^\w+\s+/, '');
         const isMultipart = endpoint.payload.includes('multipart/form-data');
         const bodyExample = bodyExampleFromPayload(endpoint.payload);
-        const authHeader = endpoint.auth === 'public' ? '' : '\\
-  -H "Authorization: Bearer <token>"';
-        const contentTypeHeader = isMultipart ? '' : '\\
-  -H "Content-Type: application/json"';
+        const authHeader = endpoint.auth === 'public' ? '' : ' \\\n+  -H "Authorization: Bearer <token>"';
+        const contentTypeHeader = isMultipart ? '' : ' \\\n+  -H "Content-Type: application/json"';
         const bodyPart = bodyExample && !isMultipart
           ? ` \\\n+  -d '${bodyExample.replaceAll("'", "\\\\'")}'`
           : '';
