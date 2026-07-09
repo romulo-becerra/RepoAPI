@@ -211,6 +211,37 @@ function renderResponse(status, payload) {
   el.responseBox.textContent = JSON.stringify(payload, null, 2);
 }
 
+function clearFormFields(formNode) {
+  if (!formNode) {
+    return;
+  }
+
+  const controls = formNode.querySelectorAll('input, select, textarea');
+  controls.forEach((control) => {
+    if (control.tagName === 'SELECT') {
+      control.selectedIndex = 0;
+      return;
+    }
+
+    const inputType = (control.type || '').toLowerCase();
+    if (inputType === 'checkbox' || inputType === 'radio') {
+      control.checked = false;
+      return;
+    }
+
+    control.value = '';
+  });
+}
+
+function confirmMutationAction(message, formId) {
+  const confirmed = window.confirm(message);
+  if (!confirmed) {
+    clearFormFields(document.getElementById(formId));
+    renderResponse(200, { message: 'Operacion cancelada por el usuario.' });
+  }
+  return confirmed;
+}
+
 function formatTransactionType(type) {
   const labels = {
     deposit: 'Deposito',
@@ -854,6 +885,10 @@ function bindEvents() {
 
   document.getElementById('depositForm').addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (!confirmMutationAction('Confirmar deposito en la cuenta seleccionada?', 'depositForm')) {
+      return;
+    }
+
     try {
       await apiCall(`/api/v1/accounts/${state.accountId}/deposit`, 'POST', {
         amount: Number(document.getElementById('depositAmount').value),
@@ -861,6 +896,7 @@ function bindEvents() {
       });
       await refreshClientDashboard();
       await refreshInstallmentsForClient();
+      clearFormFields(document.getElementById('depositForm'));
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
@@ -868,6 +904,10 @@ function bindEvents() {
 
   document.getElementById('withdrawForm').addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (!confirmMutationAction('Confirmar retiro en la cuenta seleccionada?', 'withdrawForm')) {
+      return;
+    }
+
     try {
       await apiCall(`/api/v1/accounts/${state.accountId}/withdraw`, 'POST', {
         amount: Number(document.getElementById('withdrawAmount').value),
@@ -875,6 +915,7 @@ function bindEvents() {
       });
       await refreshClientDashboard();
       await refreshInstallmentsForClient();
+      clearFormFields(document.getElementById('withdrawForm'));
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
@@ -882,6 +923,10 @@ function bindEvents() {
 
   document.getElementById('payServiceForm').addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (!confirmMutationAction('Confirmar pago de servicio?', 'payServiceForm')) {
+      return;
+    }
+
     try {
       await apiCall(`/api/v1/accounts/${state.accountId}/pay_service`, 'POST', {
         service_id: Number(document.getElementById('serviceId').value),
@@ -890,6 +935,7 @@ function bindEvents() {
       });
       await refreshClientDashboard();
       await refreshInstallmentsForClient();
+      clearFormFields(document.getElementById('payServiceForm'));
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
@@ -908,8 +954,13 @@ function bindEvents() {
 
   document.getElementById('uploadFileForm').addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (!confirmMutationAction('Confirmar carga de archivo?', 'uploadFileForm')) {
+      return;
+    }
+
     try {
       await uploadUserFile();
+      clearFormFields(document.getElementById('uploadFileForm'));
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
@@ -955,6 +1006,9 @@ function bindEvents() {
       renderResponse(422, { errors: 'No hay prestamo activo para pagar.' });
       return;
     }
+    if (!confirmMutationAction('Confirmar pago de cuotas del prestamo?', 'payLoanForm')) {
+      return;
+    }
 
     try {
       await apiCall(`/api/v1/accounts/${state.accountId}/loans/${state.loanId}/pay`, 'POST', {
@@ -962,6 +1016,7 @@ function bindEvents() {
       });
       await refreshClientDashboard();
       await refreshInstallmentsForClient();
+      clearFormFields(document.getElementById('payLoanForm'));
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
@@ -1064,6 +1119,9 @@ function bindEvents() {
       renderResponse(401, { errors: 'Debes iniciar sesion para actualizar tus datos.' });
       return;
     }
+    if (!confirmMutationAction('Confirmar actualizacion de datos del perfil?', 'updateProfileForm')) {
+      return;
+    }
 
     const payload = {
       first_name: el.profileFirstName.value.trim(),
@@ -1082,6 +1140,7 @@ function bindEvents() {
       persistState();
       updateHeader();
       await refreshProfileData();
+      clearFormFields(document.getElementById('updateProfileForm'));
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
@@ -1093,14 +1152,16 @@ function bindEvents() {
       renderResponse(401, { errors: 'Debes iniciar sesion para cambiar PIN.' });
       return;
     }
+    if (!confirmMutationAction('Confirmar cambio de PIN?', 'changePinForm')) {
+      return;
+    }
 
     try {
       await apiCall(`/api/v1/users/${state.userId}/pin`, 'PUT', {
         current_pin: document.getElementById('currentPin').value.trim(),
         new_pin: document.getElementById('newPin').value.trim()
       });
-      document.getElementById('currentPin').value = '';
-      document.getElementById('newPin').value = '';
+      clearFormFields(document.getElementById('changePinForm'));
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
@@ -1110,6 +1171,9 @@ function bindEvents() {
     event.preventDefault();
     if (!hasManagerAccess()) {
       renderResponse(403, { errors: 'Operacion restringida a manager.' });
+      return;
+    }
+    if (!confirmMutationAction('Confirmar creacion de usuario?', 'adminCreateUserForm')) {
       return;
     }
 
@@ -1129,6 +1193,7 @@ function bindEvents() {
       await apiCall('/api/v1/manager/users', 'POST', payload, 'manager');
       pushAudit(`Creacion de usuario por manager email=${payload.email} role=${payload.role}`);
       await refreshAdminDashboard();
+      clearFormFields(document.getElementById('adminCreateUserForm'));
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
@@ -1140,12 +1205,16 @@ function bindEvents() {
       renderResponse(403, { errors: 'Operacion restringida a manager.' });
       return;
     }
+    if (!confirmMutationAction('Confirmar eliminacion de usuario?', 'adminDeleteUserForm')) {
+      return;
+    }
 
     const userId = document.getElementById('adminDeleteUserId').value.trim();
     try {
       await apiCall(`/api/v1/manager/users/${userId}`, 'DELETE', null, 'manager');
       pushAudit(`Eliminacion de usuario por manager user_id=${userId}`);
       await refreshAdminDashboard();
+      clearFormFields(document.getElementById('adminDeleteUserForm'));
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
@@ -1320,6 +1389,9 @@ function bindEvents() {
       renderResponse(403, { errors: 'Operacion restringida a manager.' });
       return;
     }
+    if (!confirmMutationAction('Confirmar creacion de prestamo?', 'adminCreateLoanForm')) {
+      return;
+    }
 
     const values = getAdminLoanFormValues();
     const validationError = validateAdminLoanFormValues(values);
@@ -1338,6 +1410,7 @@ function bindEvents() {
       renderAdminLoanPreview(payload.loan.installments || []);
       pushAudit(`Creacion de prestamo por gerente account_id=${values.accountId} loan_id=${payload.loan.id}`);
       await refreshAdminDashboard();
+      clearFormFields(document.getElementById('adminCreateLoanForm'));
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
@@ -1346,6 +1419,9 @@ function bindEvents() {
   document.getElementById('adminDepositTargetBtn').addEventListener('click', async () => {
     if (!hasManagerAccess()) {
       renderResponse(403, { errors: 'Operacion restringida a manager.' });
+      return;
+    }
+    if (!confirmMutationAction('Confirmar deposito a cuenta de usuario?', 'adminAccountOpsForm')) {
       return;
     }
 
@@ -1366,6 +1442,7 @@ function bindEvents() {
       }, 'manager');
       pushAudit(`Deposito por gerente sobre account_id=${accountId}`);
       await refreshAdminDashboard();
+      clearFormFields(document.getElementById('adminAccountOpsForm'));
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
@@ -1374,6 +1451,9 @@ function bindEvents() {
   document.getElementById('adminWithdrawTargetBtn').addEventListener('click', async () => {
     if (!hasManagerAccess()) {
       renderResponse(403, { errors: 'Operacion restringida a manager.' });
+      return;
+    }
+    if (!confirmMutationAction('Confirmar retiro de cuenta de usuario?', 'adminAccountOpsForm')) {
       return;
     }
 
@@ -1394,6 +1474,7 @@ function bindEvents() {
       }, 'manager');
       pushAudit(`Retiro por gerente sobre account_id=${accountId}`);
       await refreshAdminDashboard();
+      clearFormFields(document.getElementById('adminAccountOpsForm'));
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
@@ -1402,6 +1483,9 @@ function bindEvents() {
   document.getElementById('adminPayLoanTargetBtn').addEventListener('click', async () => {
     if (!hasManagerAccess()) {
       renderResponse(403, { errors: 'Operacion restringida a manager.' });
+      return;
+    }
+    if (!confirmMutationAction('Confirmar pago de prestamo del usuario?', 'adminAccountOpsForm')) {
       return;
     }
 
@@ -1427,6 +1511,7 @@ function bindEvents() {
       }, 'manager');
       pushAudit(`Pago de prestamo por gerente account_id=${accountId} loan_id=${loanId}`);
       await refreshAdminDashboard();
+      clearFormFields(document.getElementById('adminAccountOpsForm'));
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
