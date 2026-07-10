@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_07_09_103000) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_10_120000) do
   create_table "accounts", force: :cascade do |t|
     t.integer "user_id"
     t.string "account_number"
@@ -124,6 +124,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_07_09_103000) do
     t.string "email"
     t.integer "role", default: 0, null: false
     t.string "phone"
+    t.boolean "active", default: true, null: false
+    t.boolean "blocked", default: false, null: false
+    t.index ["active"], name: "index_users_on_active"
+    t.index ["blocked"], name: "index_users_on_blocked"
     t.index ["phone"], name: "index_users_on_phone", unique: true
     t.index ["role"], name: "index_users_on_role"
   end

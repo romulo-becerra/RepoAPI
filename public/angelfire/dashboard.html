@@ -375,6 +375,17 @@
               <button class="btn alt" type="submit" data-testid="admin-delete-user-submit">Eliminar usuario</button>
             </form>
 
+            <form id="adminUserStateForm" class="panel">
+              <h2>Estado de usuario</h2>
+              <p class="field-help">Requerido: User ID para bloquear/desbloquear/desactivar.</p>
+              <input id="adminUserStateId" placeholder="User ID *" required data-testid="admin-user-state-id" />
+              <div class="row-actions">
+                <button class="btn alt" id="adminBlockUserBtn" type="button" data-testid="admin-block-user-btn">Bloquear</button>
+                <button class="btn" id="adminUnblockUserBtn" type="button" data-testid="admin-unblock-user-btn">Desbloquear</button>
+                <button class="btn ghost" id="adminDeactivateUserBtn" type="button" data-testid="admin-deactivate-user-btn">Desactivar</button>
+              </div>
+            </form>
+
             <section class="panel">
               <h2>Acciones admin</h2>
               <p>Refresca reportes y lista de usuarios del sistema.</p>
@@ -469,10 +480,12 @@
                   <th>Email</th>
                   <th>Cuenta</th>
                   <th>Rol</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody id="adminUsersRows" data-testid="admin-users-rows">
-                <tr><td colspan="5">Sin datos</td></tr>
+                <tr><td colspan="7">Sin datos</td></tr>
               </tbody>
             </table>
           </section>

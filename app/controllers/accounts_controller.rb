@@ -72,7 +72,7 @@ class AccountsController < ApplicationController
     @account = current_user.accounts.find_by(id: params[:id])
     return render json: { errors: "Cuenta no encontrada" }, status: :not_found unless @account
 
-    render json: { account_id: @account.id, balance: @account.balance }, status: :ok
+    render json: { account_id: @account.id, balance: @account.balance.to_f }, status: :ok
   end
 
   def summary

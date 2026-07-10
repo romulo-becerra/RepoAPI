@@ -23,6 +23,10 @@ class UsersController < ApplicationController
 
     if account && account.user.authenticate_pin(params[:pin])
       @user = account.user
+      unless @user.can_authenticate?
+        return render json: { errors: "Usuario bloqueado o desactivado" }, status: :forbidden
+      end
+
       @account = account
       @token = JsonWebToken.encode(user_id: @user.id)
       render :login, status: :ok

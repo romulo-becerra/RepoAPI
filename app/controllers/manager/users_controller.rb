@@ -55,6 +55,46 @@ module Manager
       render json: { message: "Usuario eliminado correctamente", user_id: user.id }, status: :ok
     end
 
+    def block
+      user = User.find_by(id: params[:id])
+      return render json: { errors: "Usuario no encontrado" }, status: :not_found unless user
+
+      if user.id == current_user.id
+        return render json: { errors: "No puede bloquear su propio usuario" }, status: :unprocessable_entity
+      end
+
+      return render json: { errors: "No se puede bloquear un usuario desactivado" }, status: :unprocessable_entity unless user.active?
+      return render json: { message: "El usuario ya está bloqueado", user: serialize_user(user) }, status: :ok if user.blocked?
+
+      user.update!(blocked: true)
+      render json: { message: "Usuario bloqueado correctamente", user: serialize_user(user.reload) }, status: :ok
+    end
+
+    def unblock
+      user = User.find_by(id: params[:id])
+      return render json: { errors: "Usuario no encontrado" }, status: :not_found unless user
+
+      return render json: { errors: "No se puede desbloquear un usuario desactivado" }, status: :unprocessable_entity unless user.active?
+      return render json: { message: "El usuario ya está desbloqueado", user: serialize_user(user) }, status: :ok unless user.blocked?
+
+      user.update!(blocked: false)
+      render json: { message: "Usuario desbloqueado correctamente", user: serialize_user(user.reload) }, status: :ok
+    end
+
+    def deactivate
+      user = User.find_by(id: params[:id])
+      return render json: { errors: "Usuario no encontrado" }, status: :not_found unless user
+
+      if user.id == current_user.id
+        return render json: { errors: "No puede desactivar su propio usuario" }, status: :unprocessable_entity
+      end
+
+      return render json: { message: "El usuario ya está desactivado", user: serialize_user(user) }, status: :ok unless user.active?
+
+      user.update!(active: false, blocked: false)
+      render json: { message: "Usuario desactivado correctamente", user: serialize_user(user.reload) }, status: :ok
+    end
+
     private
 
     def manager_user_params
@@ -71,6 +111,9 @@ module Manager
         email: user.email,
         phone: user.phone,
         role: user.role,
+        active: user.active,
+        blocked: user.blocked,
+        status: user.status_label,
         account_number: primary_account&.account_number,
         address: user.user_address ? {
           country: user.user_address.country,

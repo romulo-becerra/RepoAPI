@@ -45,7 +45,7 @@ class AtmOperationsController < ApplicationController
   def balance
     render json: {
       account_id: @account.id,
-      balance: @account.balance,
+      balance: @account.balance.to_f,
       checked_at: Time.current
     }, status: :ok
   end

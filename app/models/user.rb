@@ -32,9 +32,22 @@ class User < ApplicationRecord
 
   validates :email, allow_blank: true, format: { with: /\A[^@\s]+@[^@\s]+\z/ }
   validates :phone, allow_blank: true, format: { with: /\A\+?[0-9]{8,15}\z/ }
+  validates :active, inclusion: { in: [ true, false ] }
+  validates :blocked, inclusion: { in: [ true, false ] }
 
   def to_s
     "#{first_name} #{last_name}"
+  end
+
+  def can_authenticate?
+    active? && !blocked?
+  end
+
+  def status_label
+    return "deactivated" unless active?
+    return "blocked" if blocked?
+
+    "active"
   end
 
   private
