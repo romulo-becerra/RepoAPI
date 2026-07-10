@@ -43,7 +43,11 @@ module Manager
         first_due_date: loan_params[:first_due_date]
       )
 
-      loan = service.create_loan!
+      loan = service.create_loan!(
+        performed_by_role: :manager,
+        performed_by_user_id: current_user.id,
+        performed_by_name: current_user.to_s
+      )
 
       render json: {
         message: "Préstamo aplicado por gerente",

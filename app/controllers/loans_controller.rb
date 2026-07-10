@@ -26,7 +26,11 @@ class LoansController < ApplicationController
       first_due_date: loan_create_params[:first_due_date]
     )
 
-    loan = service.create_loan!
+    loan = service.create_loan!(
+      performed_by_role: :user,
+      performed_by_user_id: current_user.id,
+      performed_by_name: current_user.to_s
+    )
 
     render json: {
       message: "Préstamo registrado correctamente",
@@ -43,7 +47,10 @@ class LoansController < ApplicationController
     payment_result = LoanService.apply_payment!(
       @loan,
       amount: loan_payment_params[:amount],
-      paid_on: loan_payment_params[:paid_on]
+      paid_on: loan_payment_params[:paid_on],
+      performed_by_role: :user,
+      performed_by_user_id: current_user.id,
+      performed_by_name: current_user.to_s
     )
 
     render json: {
@@ -54,6 +61,8 @@ class LoansController < ApplicationController
       payment: payment_result,
       loan: serialize_loan(@loan.reload, include_installments: false)
     }, status: :ok
+  rescue InsufficientFundsError => e
+    render json: { errors: e.message }, status: :payment_required
   rescue LoanService::LoanError => e
     render json: { errors: e.message }, status: :unprocessable_entity
   end

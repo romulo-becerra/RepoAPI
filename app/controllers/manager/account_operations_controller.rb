@@ -33,7 +33,10 @@ module Manager
       transaction = TransactionService.new.deposit!(
         @account,
         params[:amount],
-        params[:description].presence || "Deposito aplicado por gerente"
+        params[:description].presence || "Deposito aplicado por gerente",
+        performed_by_role: :manager,
+        performed_by_user_id: current_user.id,
+        performed_by_name: current_user.to_s
       )
 
       render json: {
@@ -53,7 +56,10 @@ module Manager
       transaction = TransactionService.new.withdraw!(
         @account,
         params[:amount],
-        params[:description].presence || "Retiro aplicado por gerente"
+        params[:description].presence || "Retiro aplicado por gerente",
+        performed_by_role: :manager,
+        performed_by_user_id: current_user.id,
+        performed_by_name: current_user.to_s
       )
 
       render json: {
@@ -65,7 +71,9 @@ module Manager
         transaction_type: transaction.transaction_type,
         amount: transaction.amount.to_f
       }, status: :ok
-    rescue InvalidAmountError, InsufficientFundsError, StandardError => e
+    rescue InsufficientFundsError => e
+      render json: { errors: e.message }, status: :payment_required
+    rescue InvalidAmountError, StandardError => e
       render json: { errors: e.message }, status: :unprocessable_entity
     end
 
@@ -76,7 +84,10 @@ module Manager
       payment_result = LoanService.apply_payment!(
         loan,
         amount: params[:amount],
-        paid_on: params[:paid_on]
+        paid_on: params[:paid_on],
+        performed_by_role: :manager,
+        performed_by_user_id: current_user.id,
+        performed_by_name: current_user.to_s
       )
 
       render json: {
@@ -89,6 +100,8 @@ module Manager
         loan_status: loan.reload.status,
         outstanding_principal: loan.outstanding_principal.to_f
       }, status: :ok
+    rescue InsufficientFundsError => e
+      render json: { errors: e.message }, status: :payment_required
     rescue LoanService::LoanError => e
       render json: { errors: e.message }, status: :unprocessable_entity
     rescue StandardError => e

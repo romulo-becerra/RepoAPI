@@ -3,6 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
     <title>AngelFire | Core Banking Console</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -10,7 +13,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="styles.css?v=20260709-2" />
   </head>
   <body>
     <div class="layout-shell">
@@ -76,6 +79,12 @@
             <article class="kpi">
               <p>Saldo actual</p>
               <h3 id="balanceValue" data-testid="balance-value">S/ 0.00</h3>
+              <span id="balanceAutoIndicator" class="auto-indicator hidden" data-testid="balance-auto-indicator">Auto ON</span>
+              <button id="refreshBalanceBtn" class="btn mini" type="button" data-testid="refresh-balance-btn">Actualizar saldo</button>
+              <label class="kpi-toggle" for="autoRefreshBalanceToggle">
+                <input id="autoRefreshBalanceToggle" type="checkbox" data-testid="auto-refresh-balance-toggle" />
+                Auto-actualizar cada 15s
+              </label>
             </article>
             <article class="kpi">
               <p>Cuenta</p>
@@ -94,23 +103,30 @@
           <section class="operations-grid">
             <form id="depositForm" class="panel">
               <h2>Deposito</h2>
-              <input id="depositAmount" type="number" min="1" value="100" required data-testid="deposit-amount" />
-              <input id="depositDescription" value="Deposito AngelFire" data-testid="deposit-description" />
+              <label for="depositAmount">Monto</label>
+              <input id="depositAmount" type="number" min="1" value="100" placeholder="Ej: 100" required data-testid="deposit-amount" />
+              <label for="depositDescription">Detalle</label>
+              <input id="depositDescription" value="Deposito AngelFire" placeholder="Motivo del deposito" data-testid="deposit-description" />
               <button class="btn" type="submit" data-testid="deposit-submit">Aplicar deposito</button>
             </form>
 
             <form id="withdrawForm" class="panel">
               <h2>Retiro</h2>
-              <input id="withdrawAmount" type="number" min="1" value="50" required data-testid="withdraw-amount" />
-              <input id="withdrawDescription" value="Retiro AngelFire" data-testid="withdraw-description" />
+              <label for="withdrawAmount">Monto</label>
+              <input id="withdrawAmount" type="number" min="1" value="50" placeholder="Ej: 50" required data-testid="withdraw-amount" />
+              <label for="withdrawDescription">Detalle</label>
+              <input id="withdrawDescription" value="Retiro AngelFire" placeholder="Motivo del retiro" data-testid="withdraw-description" />
               <button class="btn" type="submit" data-testid="withdraw-submit">Aplicar retiro</button>
             </form>
 
             <form id="payServiceForm" class="panel">
               <h2>Pago de servicios</h2>
+              <label for="serviceId">Servicio</label>
               <select id="serviceId" data-testid="service-id"></select>
-              <input id="serviceAmount" type="number" min="1" value="80" required data-testid="service-amount" />
-              <input id="serviceDescription" value="Pago de servicio AngelFire" data-testid="service-description" />
+              <label for="serviceAmount">Monto</label>
+              <input id="serviceAmount" type="number" min="1" value="80" placeholder="Ej: 80" required data-testid="service-amount" />
+              <label for="serviceDescription">Detalle</label>
+              <input id="serviceDescription" value="Pago de servicio AngelFire" placeholder="Motivo del pago" data-testid="service-description" />
               <button class="btn" type="submit" data-testid="pay-service-submit">Pagar servicio</button>
             </form>
           </section>
@@ -126,11 +142,12 @@
               <h3>Pagar prestamo</h3>
               <p id="nextPendingInstallmentAmount" data-testid="next-pending-installment">Proxima cuota pendiente: -</p>
               <div class="row-actions">
-                <label>Cuotas a pagar
+                <label for="loanInstallmentsToPay">Cuotas a pagar
                   <input id="loanInstallmentsToPay" type="number" min="1" value="1" data-testid="loan-installments-to-pay" />
                 </label>
                 <button id="loanCalculateAmountBtn" class="btn ghost" type="button" data-testid="loan-calc-amount">Calcular monto</button>
               </div>
+              <label for="payLoanAmount">Monto total a pagar</label>
               <input id="payLoanAmount" type="number" min="0.01" step="0.01" value="1.00" required data-testid="loan-pay-amount" />
               <button class="btn" type="submit" data-testid="loan-pay-submit">Pagar cuotas</button>
             </form>
@@ -244,6 +261,14 @@
                     <option value="transfer">Transferencias</option>
                     <option value="service_payment">Pago servicio</option>
                     <option value="loan_payment">Pago prestamo</option>
+                    <option value="loan_disbursement">Prestamo desembolsado</option>
+                  </select>
+                </label>
+                <label>Ejecutado por
+                  <select id="txActorFilter" data-testid="tx-actor-filter">
+                    <option value="all">Todos</option>
+                    <option value="manager">Admin</option>
+                    <option value="user">Usuario</option>
                   </select>
                 </label>
                 <label>Ver
@@ -264,13 +289,16 @@
                 <tr>
                   <th>ID</th>
                   <th>Tipo</th>
+                  <th>Detalle</th>
                   <th>Monto</th>
                   <th>Estado</th>
+                  <th>Ejecutado por</th>
+                  <th>Id usuario</th>
                   <th>Fecha</th>
                 </tr>
               </thead>
               <tbody id="txRows" data-testid="tx-rows">
-                <tr><td colspan="5">Sin movimientos</td></tr>
+                <tr><td colspan="8">Sin movimientos</td></tr>
               </tbody>
             </table>
           </section>
@@ -488,6 +516,16 @@
         </section>
       </main>
     </div>
-    <script src="app.js"></script>
+    <div id="actionModal" class="action-modal hidden" role="dialog" aria-modal="true" aria-labelledby="actionModalTitle">
+      <div class="action-modal-card">
+        <h3 id="actionModalTitle">Confirmar operacion</h3>
+        <p id="actionModalMessage">Estas seguro de continuar?</p>
+        <div class="action-modal-actions">
+          <button id="actionModalCancelBtn" class="btn ghost" type="button">Cancelar</button>
+          <button id="actionModalConfirmBtn" class="btn" type="button">Confirmar</button>
+        </div>
+      </div>
+    </div>
+    <script src="app.js?v=20260709-2"></script>
   </body>
 </html>

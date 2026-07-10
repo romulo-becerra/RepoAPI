@@ -36,7 +36,9 @@ class AtmOperationsController < ApplicationController
       transaction_id: transaction.id,
       amount: transaction.amount.to_f
     }, status: :ok
-  rescue InvalidAmountError, InsufficientFundsError, StandardError => e
+  rescue InsufficientFundsError => e
+    render json: { errors: e.message }, status: :payment_required
+  rescue InvalidAmountError, StandardError => e
     render json: { errors: e.message }, status: :unprocessable_entity
   end
 

@@ -81,7 +81,7 @@ function setSession(payload, isAdminIntent = false) {
   state.accountNumber = payload.account ? String(payload.account.account_number) : '';
   state.fullName = payload.user ? `${payload.user.first_name} ${payload.user.last_name}` : '';
   state.role = payload.user ? payload.user.role : '-';
-  state.activeView = isAdminIntent && state.role === 'manager' ? 'admin' : 'client';
+  state.activeView = state.role === 'manager' ? 'admin' : 'client';
 
   if (state.role === 'manager') {
     state.managerToken = state.token;
