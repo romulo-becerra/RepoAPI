@@ -645,6 +645,49 @@ function formatUserStatus(user) {
   return 'activo';
 }
 
+function renderAdminUserActions(user) {
+  const isActive = user && user.active !== false;
+  const isBlocked = user && user.blocked === true;
+  const actions = [];
+
+  if (isActive && !isBlocked) {
+    actions.push(`<button class="btn ghost mini" data-user-action="block" data-user-id="${user.id}" type="button">Bloquear</button>`);
+  }
+
+  if (isActive && isBlocked) {
+    actions.push(`<button class="btn ghost mini" data-user-action="unblock" data-user-id="${user.id}" type="button">Desbloquear</button>`);
+  }
+
+  actions.push(`<button class="btn alt mini" data-user-action="delete" data-user-id="${user.id}" type="button">Eliminar</button>`);
+  return actions.join('');
+}
+
+function toggleAdminOperation(operationKey) {
+  const selected = String(operationKey || '').trim();
+  const opCards = document.querySelectorAll('[data-admin-op-card]');
+  const opButtons = document.querySelectorAll('[data-admin-op]');
+
+  opCards.forEach((card) => {
+    const cardOp = card.getAttribute('data-admin-op-card') || '';
+    card.classList.toggle('hidden', cardOp !== selected);
+  });
+
+  opButtons.forEach((button) => {
+    const buttonOp = button.getAttribute('data-admin-op') || '';
+    button.classList.toggle('active-view', buttonOp === selected);
+  });
+
+  if (selected) {
+    const selectedCard = document.querySelector(`[data-admin-op-card="${selected}"]`);
+    if (selectedCard) {
+      const firstInput = selectedCard.querySelector('input, select, button');
+      if (firstInput instanceof HTMLElement) {
+        firstInput.focus();
+      }
+    }
+  }
+}
+
 async function executeAdminUserAction(action, userId, formId = null) {
   if (!hasManagerAccess()) {
     renderResponse(403, { errors: 'Operacion restringida a manager.' });
@@ -1189,7 +1232,7 @@ async function refreshAdminDashboard() {
     el.adminUsersRows.innerHTML = users
       .map(
         (user) =>
-          `<tr><td>${user.id}</td><td>${user.first_name} ${user.last_name}</td><td>${user.email}</td><td>${user.account_number || '-'}</td><td>${user.role}</td><td>${formatUserStatus(user)}</td><td><div class="row-actions"><button class="btn ghost mini" data-user-action="block" data-user-id="${user.id}" type="button">Bloquear</button><button class="btn ghost mini" data-user-action="unblock" data-user-id="${user.id}" type="button">Desbloquear</button><button class="btn ghost mini" data-user-action="deactivate" data-user-id="${user.id}" type="button">Desactivar</button><button class="btn alt mini" data-user-action="delete" data-user-id="${user.id}" type="button">Eliminar</button></div></td></tr>`
+          `<tr><td>${user.id}</td><td>${user.first_name} ${user.last_name}</td><td>${user.email}</td><td>${user.account_number || '-'}</td><td>${user.role}</td><td>${formatUserStatus(user)}</td><td><div class="row-actions">${renderAdminUserActions(user)}</div></td></tr>`
       )
       .join('');
   }
@@ -1615,9 +1658,11 @@ function bindEvents() {
     await executeAdminUserAction('unblock', userId, 'adminUserStateForm');
   });
 
-  document.getElementById('adminDeactivateUserBtn').addEventListener('click', async () => {
-    const userId = document.getElementById('adminUserStateId').value.trim();
-    await executeAdminUserAction('deactivate', userId, 'adminUserStateForm');
+  document.querySelectorAll('[data-admin-op]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const operation = button.getAttribute('data-admin-op') || '';
+      toggleAdminOperation(operation);
+    });
   });
 
   el.adminUsersRows.addEventListener('click', async (event) => {
@@ -1976,6 +2021,7 @@ function hydrateInputs() {
   updateTransactionsPaginationUi();
   updateAdminUsersPaginationUi();
   updateAdminPlanPaginationUi();
+  toggleAdminOperation('');
   renderAuditLog();
   updateHeader();
 }

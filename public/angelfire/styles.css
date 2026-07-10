@@ -303,6 +303,24 @@ select {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.admin-ops-panel {
+  margin-bottom: 0.9rem;
+}
+
+.admin-op-selector {
+  flex-wrap: wrap;
+}
+
+.admin-op-forms {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.admin-op-card {
+  box-shadow: none;
+  border-style: dashed;
+}
+
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));

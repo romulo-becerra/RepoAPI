@@ -324,49 +324,62 @@
             </article>
           </section>
 
+          <section class="panel admin-ops-panel">
+            <h2>Operaciones admin para cliente/customer</h2>
+            <p class="field-help">Selecciona una operacion y recien se mostrara su formulario.</p>
+            <div class="row-actions admin-op-selector">
+              <button class="btn ghost" type="button" data-admin-op="create-user" data-testid="admin-op-create-user">Crear usuario (admin)</button>
+              <button class="btn ghost" type="button" data-admin-op="create-loan" data-testid="admin-op-create-loan">Originar prestamo (admin)</button>
+              <button class="btn ghost" type="button" data-admin-op="account-ops" data-testid="admin-op-account-ops">Operar cuenta de usuario</button>
+            </div>
+
+            <div class="admin-op-forms">
+              <form id="adminCreateUserForm" class="panel admin-op-card hidden" data-admin-op-card="create-user">
+                <h2>Crear usuario (admin)</h2>
+                <p class="field-help">Requeridos: nombre, apellido, email, PIN y rol.</p>
+                <input id="adminFirstName" placeholder="Nombre *" required data-testid="admin-first-name" />
+                <input id="adminLastName" placeholder="Apellido *" required data-testid="admin-last-name" />
+                <input id="adminEmail" type="email" placeholder="correo@dominio.com *" required data-testid="admin-email" />
+                <input id="adminPhone" placeholder="Telefono (opcional)" data-testid="admin-phone" />
+                <input id="adminPin" placeholder="PIN *" required data-testid="admin-pin" />
+                <select id="adminRole" data-testid="admin-role">
+                  <option value="customer">customer</option>
+                  <option value="manager">manager</option>
+                </select>
+                <button class="btn" type="submit" data-testid="admin-create-user-submit">Crear usuario</button>
+              </form>
+
+              <form id="adminCreateLoanForm" class="panel admin-op-card hidden" data-admin-op-card="create-loan">
+                <h2>Originar prestamo (admin)</h2>
+                <p class="field-help">Requeridos: account ID o numero de cuenta, monto, plazo y primera fecha de pago.</p>
+                <input id="adminLoanAccountId" placeholder="Account ID o numero de cuenta objetivo *" required data-testid="admin-loan-account-id" />
+                <input id="adminLoanAmount" type="number" min="1" step="0.01" placeholder="Monto del prestamo *" required data-testid="admin-loan-amount" />
+                <input id="adminLoanTermMonths" type="number" min="1" placeholder="Plazo en meses *" required data-testid="admin-loan-term-months" />
+                <input id="adminLoanFirstDueDate" type="date" required data-testid="admin-loan-first-due-date" />
+                <div class="row-actions">
+                  <button class="btn ghost" id="adminPreviewLoanBtn" type="button" data-testid="admin-preview-loan">Previsualizar plan</button>
+                  <button class="btn" id="adminCreateLoanBtn" type="button" data-testid="admin-create-loan">Aplicar prestamo</button>
+                </div>
+                <p id="adminLoanRateHint" data-testid="admin-loan-rate-hint">Interes anual: -</p>
+              </form>
+
+              <form id="adminAccountOpsForm" class="panel admin-op-card hidden" data-admin-op-card="account-ops">
+                <h2>Operar cuenta de usuario</h2>
+                <p class="field-help">Requeridos: account ID o numero de cuenta y monto. Para pagar prestamo tambien se requiere loan ID.</p>
+                <input id="adminTargetAccountId" placeholder="Account ID o numero de cuenta objetivo *" required data-testid="admin-target-account-id" />
+                <input id="adminTargetLoanId" placeholder="Loan ID (solo para pagar prestamo)" data-testid="admin-target-loan-id" />
+                <input id="adminTargetAmount" type="number" min="0.01" step="0.01" placeholder="Monto *" required data-testid="admin-target-amount" />
+                <input id="adminTargetDescription" placeholder="Descripcion (opcional)" data-testid="admin-target-description" />
+                <div class="row-actions">
+                  <button class="btn" id="adminDepositTargetBtn" type="button" data-testid="admin-deposit-target">Depositar</button>
+                  <button class="btn alt" id="adminWithdrawTargetBtn" type="button" data-testid="admin-withdraw-target">Retirar</button>
+                  <button class="btn ghost" id="adminPayLoanTargetBtn" type="button" data-testid="admin-payloan-target">Pagar prestamo</button>
+                </div>
+              </form>
+            </div>
+          </section>
+
           <section class="operations-grid admin-ops-grid">
-            <form id="adminCreateUserForm" class="panel">
-              <h2>Crear usuario (admin)</h2>
-              <p class="field-help">Requeridos: nombre, apellido, email, PIN y rol.</p>
-              <input id="adminFirstName" placeholder="Nombre *" required data-testid="admin-first-name" />
-              <input id="adminLastName" placeholder="Apellido *" required data-testid="admin-last-name" />
-              <input id="adminEmail" type="email" placeholder="correo@dominio.com *" required data-testid="admin-email" />
-              <input id="adminPhone" placeholder="Telefono (opcional)" data-testid="admin-phone" />
-              <input id="adminPin" placeholder="PIN *" required data-testid="admin-pin" />
-              <select id="adminRole" data-testid="admin-role">
-                <option value="customer">customer</option>
-                <option value="manager">manager</option>
-              </select>
-              <button class="btn" type="submit" data-testid="admin-create-user-submit">Crear usuario</button>
-            </form>
-
-            <form id="adminCreateLoanForm" class="panel">
-              <h2>Originar prestamo (admin)</h2>
-              <p class="field-help">Requeridos: account ID o numero de cuenta, monto, plazo y primera fecha de pago.</p>
-              <input id="adminLoanAccountId" placeholder="Account ID o numero de cuenta objetivo *" required data-testid="admin-loan-account-id" />
-              <input id="adminLoanAmount" type="number" min="1" step="0.01" placeholder="Monto del prestamo *" required data-testid="admin-loan-amount" />
-              <input id="adminLoanTermMonths" type="number" min="1" placeholder="Plazo en meses *" required data-testid="admin-loan-term-months" />
-              <input id="adminLoanFirstDueDate" type="date" required data-testid="admin-loan-first-due-date" />
-              <div class="row-actions">
-                <button class="btn ghost" id="adminPreviewLoanBtn" type="button" data-testid="admin-preview-loan">Previsualizar plan</button>
-                <button class="btn" id="adminCreateLoanBtn" type="button" data-testid="admin-create-loan">Aplicar prestamo</button>
-              </div>
-              <p id="adminLoanRateHint" data-testid="admin-loan-rate-hint">Interes anual: -</p>
-            </form>
-
-            <form id="adminAccountOpsForm" class="panel">
-              <h2>Operar cuenta de usuario</h2>
-              <p class="field-help">Requeridos: account ID o numero de cuenta y monto. Para pagar prestamo tambien se requiere loan ID.</p>
-              <input id="adminTargetAccountId" placeholder="Account ID o numero de cuenta objetivo *" required data-testid="admin-target-account-id" />
-              <input id="adminTargetLoanId" placeholder="Loan ID (solo para pagar prestamo)" data-testid="admin-target-loan-id" />
-              <input id="adminTargetAmount" type="number" min="0.01" step="0.01" placeholder="Monto *" required data-testid="admin-target-amount" />
-              <input id="adminTargetDescription" placeholder="Descripcion (opcional)" data-testid="admin-target-description" />
-              <div class="row-actions">
-                <button class="btn" id="adminDepositTargetBtn" type="button" data-testid="admin-deposit-target">Depositar</button>
-                <button class="btn alt" id="adminWithdrawTargetBtn" type="button" data-testid="admin-withdraw-target">Retirar</button>
-                <button class="btn ghost" id="adminPayLoanTargetBtn" type="button" data-testid="admin-payloan-target">Pagar prestamo</button>
-              </div>
-            </form>
 
             <form id="adminDeleteUserForm" class="panel">
               <h2>Eliminar usuario</h2>
@@ -377,12 +390,11 @@
 
             <form id="adminUserStateForm" class="panel">
               <h2>Estado de usuario</h2>
-              <p class="field-help">Requerido: User ID para bloquear/desbloquear/desactivar.</p>
+              <p class="field-help">Requerido: User ID para bloquear o desbloquear.</p>
               <input id="adminUserStateId" placeholder="User ID *" required data-testid="admin-user-state-id" />
               <div class="row-actions">
                 <button class="btn alt" id="adminBlockUserBtn" type="button" data-testid="admin-block-user-btn">Bloquear</button>
                 <button class="btn" id="adminUnblockUserBtn" type="button" data-testid="admin-unblock-user-btn">Desbloquear</button>
-                <button class="btn ghost" id="adminDeactivateUserBtn" type="button" data-testid="admin-deactivate-user-btn">Desactivar</button>
               </div>
             </form>
 
