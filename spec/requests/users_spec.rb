@@ -39,6 +39,24 @@ RSpec.describe 'Users API', type: :request do
         expect(response).to have_http_status(:ok)
         expect(JSON.parse(response.body)['message']).to eq('Inicio de sesión exitoso')
       end
+
+      it 'rejects login for blocked users' do
+        user.update!(blocked: true)
+
+        post endpoint, params: { account_number: account.account_number, pin: '1234' }, headers: { 'Content-Type': 'application/json' }, as: :json
+
+        expect(response).to have_http_status(:forbidden)
+        expect(JSON.parse(response.body)['errors']).to eq('Usuario bloqueado o desactivado')
+      end
+
+      it 'rejects login for deactivated users' do
+        user.update!(active: false)
+
+        post endpoint, params: { account_number: account.account_number, pin: '1234' }, headers: { 'Content-Type': 'application/json' }, as: :json
+
+        expect(response).to have_http_status(:forbidden)
+        expect(JSON.parse(response.body)['errors']).to eq('Usuario bloqueado o desactivado')
+      end
     end
   
     context 'with invalid credentials' do

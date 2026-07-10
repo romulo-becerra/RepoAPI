@@ -634,6 +634,85 @@ function formatFileSize(bytes) {
   return `${(value / (1024 * 1024)).toFixed(2)} MB`;
 }
 
+function formatUserStatus(user) {
+  if (!user || user.active === false) {
+    return 'desactivado';
+  }
+  if (user.blocked === true) {
+    return 'bloqueado';
+  }
+
+  return 'activo';
+}
+
+async function executeAdminUserAction(action, userId, formId = null) {
+  if (!hasManagerAccess()) {
+    renderResponse(403, { errors: 'Operacion restringida a manager.' });
+    return;
+  }
+
+  const cleanedUserId = String(userId || '').trim();
+  if (!cleanedUserId) {
+    renderResponse(422, { errors: 'Debes indicar user_id objetivo.' });
+    return;
+  }
+
+  const actionConfig = {
+    block: {
+      path: `/api/v1/manager/users/${cleanedUserId}/block`,
+      method: 'PATCH',
+      confirmMessage: 'Se bloqueara el usuario indicado. Deseas continuar?',
+      auditMessage: `Bloqueo de usuario por manager user_id=${cleanedUserId}`,
+      tone: 'danger'
+    },
+    unblock: {
+      path: `/api/v1/manager/users/${cleanedUserId}/unblock`,
+      method: 'PATCH',
+      confirmMessage: 'Se desbloqueara el usuario indicado. Deseas continuar?',
+      auditMessage: `Desbloqueo de usuario por manager user_id=${cleanedUserId}`,
+      tone: 'warn'
+    },
+    deactivate: {
+      path: `/api/v1/manager/users/${cleanedUserId}/deactivate`,
+      method: 'PATCH',
+      confirmMessage: 'Se desactivara el usuario indicado. Deseas continuar?',
+      auditMessage: `Desactivacion de usuario por manager user_id=${cleanedUserId}`,
+      tone: 'danger'
+    },
+    delete: {
+      path: `/api/v1/manager/users/${cleanedUserId}`,
+      method: 'DELETE',
+      confirmMessage: 'Se eliminara el usuario indicado. Deseas continuar?',
+      auditMessage: `Eliminacion de usuario por manager user_id=${cleanedUserId}`,
+      tone: 'danger'
+    }
+  };
+
+  const config = actionConfig[action];
+  if (!config) {
+    renderResponse(422, { errors: 'Accion de usuario no soportada.' });
+    return;
+  }
+
+  if (!await confirmMutationAction(config.confirmMessage, formId || 'adminUserStateForm', config.tone)) {
+    return;
+  }
+
+  try {
+    await apiCall(config.path, config.method, null, 'manager');
+    pushAudit(config.auditMessage);
+    await refreshAdminDashboard();
+    if (state.adminInspectUserId && state.adminInspectUserId === cleanedUserId) {
+      await refreshAdminFilesForSelectedUser();
+    }
+    if (formId) {
+      clearFormFields(document.getElementById(formId));
+    }
+  } catch (error) {
+    await handleMutationError(error);
+  }
+}
+
 function renderAdminInstallments(rows) {
   if (!rows || rows.length === 0) {
     el.adminInstallmentsRows.innerHTML = '<tr><td colspan="6">Sin plan cargado</td></tr>';
@@ -1105,12 +1184,12 @@ async function refreshAdminDashboard() {
   pushAudit(`Consulta de usuarios manager total=${usersPayload.total || users.length}`);
 
   if (users.length === 0) {
-    el.adminUsersRows.innerHTML = '<tr><td colspan="5">Sin usuarios</td></tr>';
+    el.adminUsersRows.innerHTML = '<tr><td colspan="7">Sin usuarios</td></tr>';
   } else {
     el.adminUsersRows.innerHTML = users
       .map(
         (user) =>
-          `<tr><td>${user.id}</td><td>${user.first_name} ${user.last_name}</td><td>${user.email}</td><td>${user.account_number || '-'}</td><td>${user.role}</td></tr>`
+          `<tr><td>${user.id}</td><td>${user.first_name} ${user.last_name}</td><td>${user.email}</td><td>${user.account_number || '-'}</td><td>${user.role}</td><td>${formatUserStatus(user)}</td><td><div class="row-actions"><button class="btn ghost mini" data-user-action="block" data-user-id="${user.id}" type="button">Bloquear</button><button class="btn ghost mini" data-user-action="unblock" data-user-id="${user.id}" type="button">Desbloquear</button><button class="btn ghost mini" data-user-action="deactivate" data-user-id="${user.id}" type="button">Desactivar</button><button class="btn alt mini" data-user-action="delete" data-user-id="${user.id}" type="button">Eliminar</button></div></td></tr>`
       )
       .join('');
   }
@@ -1522,23 +1601,38 @@ function bindEvents() {
 
   document.getElementById('adminDeleteUserForm').addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (!hasManagerAccess()) {
-      renderResponse(403, { errors: 'Operacion restringida a manager.' });
-      return;
-    }
-    if (!await confirmMutationAction('Se eliminara el usuario indicado. Deseas continuar?', 'adminDeleteUserForm', 'danger')) {
+    const userId = document.getElementById('adminDeleteUserId').value.trim();
+    await executeAdminUserAction('delete', userId, 'adminDeleteUserForm');
+  });
+
+  document.getElementById('adminBlockUserBtn').addEventListener('click', async () => {
+    const userId = document.getElementById('adminUserStateId').value.trim();
+    await executeAdminUserAction('block', userId, 'adminUserStateForm');
+  });
+
+  document.getElementById('adminUnblockUserBtn').addEventListener('click', async () => {
+    const userId = document.getElementById('adminUserStateId').value.trim();
+    await executeAdminUserAction('unblock', userId, 'adminUserStateForm');
+  });
+
+  document.getElementById('adminDeactivateUserBtn').addEventListener('click', async () => {
+    const userId = document.getElementById('adminUserStateId').value.trim();
+    await executeAdminUserAction('deactivate', userId, 'adminUserStateForm');
+  });
+
+  el.adminUsersRows.addEventListener('click', async (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) {
       return;
     }
 
-    const userId = document.getElementById('adminDeleteUserId').value.trim();
-    try {
-      await apiCall(`/api/v1/manager/users/${userId}`, 'DELETE', null, 'manager');
-      pushAudit(`Eliminacion de usuario por manager user_id=${userId}`);
-      await refreshAdminDashboard();
-      clearFormFields(document.getElementById('adminDeleteUserForm'));
-    } catch (error) {
-      await handleMutationError(error);
+    const action = target.getAttribute('data-user-action');
+    const userId = target.getAttribute('data-user-id');
+    if (!action || !userId) {
+      return;
     }
+
+    await executeAdminUserAction(action, userId);
   });
 
   document.getElementById('refreshAdminDashboard').addEventListener('click', async () => {
