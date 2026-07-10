@@ -1894,6 +1894,8 @@ async function init() {
 
   ensureDashboardUiElements();
   hydrateInputs();
+  const preferredView = state.activeView || (state.role === 'manager' ? 'admin' : 'client');
+  setView(preferredView);
   setDefaultDate();
   bindEvents();
   try {
@@ -1908,10 +1910,10 @@ async function init() {
         await refreshAdminAccountSummary(state.adminInspectAccountLookup);
       }
     }
-    setView(state.activeView || 'client');
+    setView(preferredView);
     syncBalanceAutoRefreshState();
   } catch (_error) {
-    setView('client');
+    setView(preferredView);
     renderResponse(200, { message: 'Listo para iniciar sesion y operar.' });
   }
 }
