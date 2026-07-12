@@ -3,8 +3,8 @@ require "csv"
 module Manager
   class LoansController < ApplicationController
     before_action :require_manager!
-    before_action :set_account, only: %i[preview create_for_account installments download_installments]
-    before_action :set_account_loan, only: %i[installments download_installments]
+    before_action :set_account, only: %i[preview create_for_account installments installments_summary download_installments]
+    before_action :set_account_loan, only: %i[installments installments_summary download_installments]
 
     def preview
       amount = BigDecimal(loan_params[:amount].to_s)
@@ -120,6 +120,20 @@ module Manager
         has_prev: page > 1,
         has_next: page < total_pages,
         installments: installments.map { |item| serialize_installment(item) }
+      }, status: :ok
+    end
+
+    def installments_summary
+      installments_scope = @loan.loan_installments
+      paid_count = installments_scope.where(status: :paid).count
+      pending_count = installments_scope.where.not(status: :paid).count
+
+      render json: {
+        account_id: @account.id,
+        loan_id: @loan.id,
+        paid_count: paid_count,
+        pending_count: pending_count,
+        total: paid_count + pending_count
       }, status: :ok
     end
 

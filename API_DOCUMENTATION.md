@@ -327,228 +327,122 @@ curl http://localhost:3001/api/v1/services \
 
 ---
 
-## Sugerencias de nuevas APIs para añadir
+  ## Referencias de documentación extendida
 
-Estas son buenas mejoras para una solución bancaria y encajan bien con el dominio actual del proyecto.
-
-### 1) Transferencia entre cuentas
-
-### POST /api/v1/accounts/:id/transfer
-- Descripción: Transfiere saldo desde una cuenta a otra.
-- Authorization: Sí requerida.
-- Headers:
-  - Content-Type: application/json
-  - Authorization: Bearer <token>
-- Body (JSON):
-```json
-{
-  "recipient_account_id": 2,
-  "amount": 200,
-  "description": "Pago de renta"
-}
-```
-- Params:
-  - id: ID de la cuenta origen.
-
-### 2) Consultar saldo
-
-### GET /api/v1/accounts/:id/balance
-- Descripción: Devuelve el saldo actual de una cuenta.
-- Authorization: Sí requerida.
-- Headers:
-  - Authorization: Bearer <token>
-- Body: Ninguno.
-- Params:
-  - id: ID de la cuenta.
-
-### 3) Historial de transacciones filtrado
-
-### GET /api/v1/accounts/:id/transactions?from=2026-01-01&to=2026-12-31
-- Descripción: Devuelve transacciones por rango de fechas.
-- Authorization: Sí requerida.
-- Headers:
-  - Authorization: Bearer <token>
-- Body: Ninguno.
-- Params:
-  - id: ID de la cuenta.
-  - from: Fecha inicial.
-  - to: Fecha final.
-
-### 4) Cambiar PIN
-
-### PUT /api/v1/users/:id/pin
-- Descripción: Cambia el PIN del usuario.
-- Authorization: Sí requerida.
-- Headers:
-  - Content-Type: application/json
-  - Authorization: Bearer <token>
-- Body (JSON):
-```json
-{
-  "current_pin": "1234",
-  "new_pin": "5678"
-}
-```
-- Params:
-  - id: ID del usuario.
-
-### 5) Obtener perfil del usuario
-
-### GET /api/v1/users/:id/profile
-- Descripción: Devuelve el perfil del usuario autenticado.
-- Authorization: Sí requerida.
-- Headers:
-  - Authorization: Bearer <token>
-- Body: Ninguno.
-- Params:
-  - id: ID del usuario.
-
-### 6) Crear servicio nuevo
-
-### POST /api/v1/services
-- Descripción: Permite crear un servicio administrable.
-- Authorization: Sí requerida.
-- Headers:
-  - Content-Type: application/json
-  - Authorization: Bearer <token>
-- Body (JSON):
-```json
-{
-  "name": "Internet",
-  "account_id": 1
-}
-```
-- Params: Ninguno.
-
-### 7) Obtener detalle de un servicio
-
-### GET /api/v1/services/:id
-- Descripción: Retorna la información de un servicio en particular.
-- Authorization: Sí requerida.
-- Headers:
-  - Authorization: Bearer <token>
-- Body: Ninguno.
-- Params:
-  - id: ID del servicio.
-
-### 8) Buscar destinatario por CLABE
-
-### GET /api/v1/recipients/search?clabe=1234567890
-- Descripción: Busca un destinatario por CLABE.
-- Authorization: Sí requerida.
-- Headers:
-  - Authorization: Bearer <token>
-- Body: Ninguno.
-- Params:
-  - clabe: CLABE del destinatario.
-
-### 9) Obtener resumen del mes
-
-### GET /api/v1/accounts/:id/summary
-- Descripción: Devuelve un resumen de ingresos, egresos y saldo del mes.
-- Authorization: Sí requerida.
-- Headers:
-  - Authorization: Bearer <token>
-- Body: Ninguno.
-- Params:
-  - id: ID de la cuenta.
-
-### 10) Cerrar sesión
-
-### POST /api/v1/logout
-- Descripción: Invalida el token actual.
-- Authorization: Sí requerida.
-- Headers:
-  - Authorization: Bearer <token>
-- Body: Ninguno.
-- Params: Ninguno.
+  - Para el catálogo financiero completo (incluye manager, préstamos, ATM, archivos y novedades recientes), ver [FINANCIAL_APIS.md](FINANCIAL_APIS.md).
+  - Para catálogo interactivo con ejemplos completos request/response, ver [public/angelfire/endpoints.html](public/angelfire/endpoints.html).
 
 ---
 
-## APIs adicionales ya implementadas
+## Actualizaciones recientes (2026-07)
 
-### GET /api/v1/accounts/:id/balance
-- Descripción: Devuelve el saldo actual de una cuenta.
-- Authorization: Sí requerida.
-- Headers:
-  - Authorization: Bearer <token>
-- Body: Ninguno.
-- Params:
-  - id: ID de la cuenta.
+Esta sección resume endpoints manager y mejoras incorporadas recientemente para originación y consulta de préstamos.
 
-### POST /api/v1/accounts/:id/transfer
-- Descripción: Transfiere saldo entre cuentas.
-- Authorization: Sí requerida.
+### 1) Previsualizar plan de préstamo (manager)
+
+### POST /api/v1/manager/accounts/:account_id/loans/preview
+- Descripción: Genera una previsualización del plan de cuotas antes de originar el préstamo.
+- Authorization: Sí requerida (manager).
 - Headers:
   - Content-Type: application/json
-  - Authorization: Bearer <token>
+  - Authorization: Bearer <token_manager>
 - Body (JSON):
 ```json
 {
-  "recipient_account_id": 2,
-  "amount": 200,
-  "description": "Pago de renta"
+  "amount": 15000,
+  "term_months": 12,
+  "first_due_date": "2026-08-15"
 }
 ```
-- Params:
-  - id: ID de la cuenta origen.
 
-### GET /api/v1/accounts/:id/summary
-- Descripción: Devuelve un resumen mensual de ingresos, egresos y saldo.
-- Authorization: Sí requerida.
-- Headers:
-  - Authorization: Bearer <token>
-- Body: Ninguno.
-- Params:
-  - id: ID de la cuenta.
+Ejemplo cURL:
+```bash
+curl -X POST http://localhost:3001/api/v1/manager/accounts/9000000001/loans/preview \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token_manager>" \
+  -d '{"amount":15000,"term_months":12,"first_due_date":"2026-08-15"}'
+```
 
-### PUT /api/v1/users/:id/pin
-- Descripción: Cambia el PIN del usuario.
-- Authorization: Sí requerida.
-- Headers:
-  - Content-Type: application/json
-  - Authorization: Bearer <token>
-- Body (JSON):
+Respuesta ejemplo:
 ```json
 {
-  "current_pin": "1234",
-  "new_pin": "5678"
+  "account_id": 10,
+  "annual_interest_rate": 5.0,
+  "term_months": 12,
+  "monthly_payment": 1284.11,
+  "projected_schedule": [
+    {
+      "installment_number": 1,
+      "due_date": "2026-08-15",
+      "amount": 1284.11,
+      "principal_amount": 1221.61,
+      "interest_amount": 62.5
+    }
+  ]
 }
 ```
-- Params:
-  - id: ID del usuario.
 
-### GET /api/v1/users/:id/profile
-- Descripción: Devuelve el perfil del usuario autenticado.
-- Authorization: Sí requerida.
-- Headers:
-  - Authorization: Bearer <token>
-- Body: Ninguno.
-- Params:
-  - id: ID del usuario.
+### 2) Originar préstamo en cuenta objetivo (manager)
 
-### GET /api/v1/services/:id
-- Descripción: Devuelve el detalle de un servicio.
-- Authorization: Sí requerida.
+### POST /api/v1/manager/accounts/:account_id/loans
+- Descripción: Crea el préstamo y su cronograma en la cuenta indicada.
+- Authorization: Sí requerida (manager).
 - Headers:
-  - Authorization: Bearer <token>
-- Body: Ninguno.
-- Params:
-  - id: ID del servicio.
+  - Content-Type: application/json
+  - Authorization: Bearer <token_manager>
 
-### GET /api/v1/recipients/search?clabe=1234567890
-- Descripción: Busca un destinatario por CLABE.
-- Authorization: Sí requerida.
-- Headers:
-  - Authorization: Bearer <token>
-- Body: Ninguno.
-- Params:
-  - clabe: CLABE del destinatario.
+Ejemplo cURL:
+```bash
+curl -X POST http://localhost:3001/api/v1/manager/accounts/9000000001/loans \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <token_manager>" \
+  -d '{"amount":15000,"term_months":12,"first_due_date":"2026-08-15"}'
+```
 
-### POST /api/v1/logout
-- Descripción: Cierra la sesión del usuario.
-- Authorization: Sí requerida.
+### 3) Resumen de cuotas pagadas/pendientes (nuevo)
+
+### GET /api/v1/manager/accounts/:account_id/loans/:loan_id/installments/summary
+- Descripción: Retorna totales de cuotas pagadas y pendientes para un préstamo.
+- Authorization: Sí requerida (manager).
 - Headers:
-  - Authorization: Bearer <token>
-- Body: Ninguno.
-- Params: Ninguno.
+  - Accept: application/json
+  - Authorization: Bearer <token_manager>
+- Params:
+  - account_id: ID de cuenta o número de cuenta.
+  - loan_id: ID del préstamo.
+
+Ejemplo cURL:
+```bash
+curl -X GET http://localhost:3001/api/v1/manager/accounts/9000000001/loans/6/installments/summary \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer <token_manager>"
+```
+
+Respuesta ejemplo:
+```json
+{
+  "account_id": 10,
+  "loan_id": 6,
+  "paid_count": 4,
+  "pending_count": 8,
+  "total": 12
+}
+```
+
+### 4) Descarga de plan de pagos CSV (manager)
+
+### GET /api/v1/manager/accounts/:account_id/loans/:loan_id/installments/download
+- Descripción: Descarga el plan de cuotas completo en formato CSV.
+- Authorization: Sí requerida (manager).
+
+Ejemplo cURL:
+```bash
+curl -X GET http://localhost:3001/api/v1/manager/accounts/9000000001/loans/6/installments/download \
+  -H "Accept: text/csv" \
+  -H "Authorization: Bearer <token_manager>" -o loan_6_installments.csv
+```
+
+### 5) Mejora funcional aplicada
+
+- La consulta manager de cuenta acepta tanto account_id como account_number en :account_id.
+- Para mostrar totales paid/pending en frontend admin, se recomienda usar el endpoint /installments/summary en lugar de recorrer todas las páginas de /installments.

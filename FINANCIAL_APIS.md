@@ -313,6 +313,82 @@ Ejemplo:
 ### POST /api/v1/manager/loans/:id/cancel
 Cancela prestamo (si no esta completed).
 
+### POST /api/v1/manager/accounts/:account_id/loans/preview
+Previsualiza plan de pagos para originacion por manager.
+
+Body:
+{
+  "amount": 15000,
+  "term_months": 12,
+  "first_due_date": "2026-08-15"
+}
+
+Respuesta ejemplo:
+{
+  "account_id": 10,
+  "annual_interest_rate": 5.0,
+  "term_months": 12,
+  "monthly_payment": 1284.11,
+  "projected_schedule": [
+    {
+      "installment_number": 1,
+      "due_date": "2026-08-15",
+      "amount": 1284.11,
+      "principal_amount": 1221.61,
+      "interest_amount": 62.5
+    }
+  ]
+}
+
+### POST /api/v1/manager/accounts/:account_id/loans
+Origina prestamo para una cuenta objetivo.
+
+Body:
+{
+  "amount": 15000,
+  "term_months": 12,
+  "first_due_date": "2026-08-15"
+}
+
+### GET /api/v1/manager/accounts/:account_id/summary
+Resumen de cuenta para consulta operativa manager.
+
+Acepta account_id o account_number en :account_id.
+
+### GET /api/v1/manager/accounts/:account_id/loans/:loan_id/installments
+Plan de pagos paginado para manager.
+
+Query params:
+- page (default 1)
+- per_page (default 10, max 50)
+
+### GET /api/v1/manager/accounts/:account_id/loans/:loan_id/installments/summary
+Resumen agregado de cuotas para manager.
+
+Uso recomendado:
+- UI y reportes que solo necesitan contadores paid/pending sin recorrer paginas.
+
+Respuesta ejemplo:
+{
+  "account_id": 10,
+  "loan_id": 6,
+  "paid_count": 4,
+  "pending_count": 8,
+  "total": 12
+}
+
+### GET /api/v1/manager/accounts/:account_id/loans/:loan_id/installments/download
+Descarga plan de pagos completo en CSV.
+
+### POST /api/v1/manager/accounts/:account_id/deposit
+Deposito por manager en cuenta objetivo.
+
+### POST /api/v1/manager/accounts/:account_id/withdraw
+Retiro por manager en cuenta objetivo.
+
+### POST /api/v1/manager/accounts/:account_id/loans/:loan_id/pay
+Pago de prestamo por manager.
+
 ## 9. Ejemplos cURL rapidos
 
 ### Login
@@ -349,6 +425,31 @@ curl -X POST http://localhost:3001/api/v1/atm/accounts/1/withdraw \
 curl -X GET http://localhost:3001/api/v1/manager/reports/overview \
   -H "Authorization: Bearer TOKEN_MANAGER"
 
+### Preview prestamo manager
+curl -X POST http://localhost:3001/api/v1/manager/accounts/9000000001/loans/preview \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer TOKEN_MANAGER" \
+  -d '{"amount":15000,"term_months":12,"first_due_date":"2026-08-15"}'
+
+### Resumen de cuotas manager (nuevo)
+curl -X GET http://localhost:3001/api/v1/manager/accounts/9000000001/loans/6/installments/summary \
+  -H "Accept: application/json" \
+  -H "Authorization: Bearer TOKEN_MANAGER"
+
+Respuesta esperada:
+{
+  "account_id": 10,
+  "loan_id": 6,
+  "paid_count": 4,
+  "pending_count": 8,
+  "total": 12
+}
+
+### Descargar plan CSV manager
+curl -X GET http://localhost:3001/api/v1/manager/accounts/9000000001/loans/6/installments/download \
+  -H "Accept: text/csv" \
+  -H "Authorization: Bearer TOKEN_MANAGER" -o loan_6_installments.csv
+
 ### Direccion de usuario
 curl -X PUT http://localhost:3001/api/v1/users/1/address \
   -H "Content-Type: application/json" \
@@ -377,3 +478,15 @@ Comando:
 
 Reporte generado:
 - tmp/full_financial_flow_report.json
+
+## 12. Novedades recientes
+
+- Se agrego endpoint de resumen de cuotas manager:
+  - GET /api/v1/manager/accounts/:account_id/loans/:loan_id/installments/summary
+  - Retorna paid_count y pending_count para consumo rapido en UI/reportes.
+- Se consolido el flujo manager de originacion:
+  - preview del plan (POST /loans/preview)
+  - originacion (POST /loans)
+  - descarga CSV del plan (GET /installments/download)
+- Mejora de performance en frontend admin:
+  - ahora usa installments/summary para contadores globales de cuotas, evitando recorrer todas las paginas de installments.

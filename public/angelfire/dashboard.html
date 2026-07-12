@@ -413,38 +413,51 @@
               <input id="adminLookupAccountId" placeholder="Account ID o numero de cuenta *" required data-testid="admin-lookup-account-id" />
               <button class="btn" type="submit" data-testid="admin-lookup-submit">Consultar cuenta</button>
             </form>
+            <p id="adminAccountLookupValidation" class="field-help validation-error hidden" data-testid="admin-account-lookup-validation"></p>
             <p id="adminAccountSummary" data-testid="admin-account-summary">Sin cuenta seleccionada.</p>
-            <div class="row-actions">
-              <label>Prestamo
-                <select id="adminInspectLoanId" data-testid="admin-inspect-loan-id"></select>
-              </label>
-              <label>Ver
-                <select id="adminPlanPerPage" data-testid="admin-plan-per-page">
-                  <option value="10">10</option>
-                  <option value="20">20</option>
-                  <option value="50">50</option>
-                </select>
-              </label>
-              <button id="adminPlanPrevBtn" class="btn ghost mini" type="button" data-testid="admin-plan-prev">Anterior</button>
-              <span id="adminPlanPageInfo" data-testid="admin-plan-page-info">1 / 1</span>
-              <button id="adminPlanNextBtn" class="btn ghost mini" type="button" data-testid="admin-plan-next">Siguiente</button>
-              <button id="adminPlanDownloadBtn" class="btn ghost" type="button" data-testid="admin-plan-download">Descargar plan CSV</button>
+            <div id="adminAccountLoanPlanSection" class="hidden">
+              <div class="row-actions">
+                <label>Prestamo
+                  <select id="adminInspectLoanId" data-testid="admin-inspect-loan-id"></select>
+                </label>
+                <label>Ver
+                  <select id="adminPlanPerPage" data-testid="admin-plan-per-page">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                  </select>
+                </label>
+                <button id="adminPlanPrevBtn" class="btn ghost mini" type="button" data-testid="admin-plan-prev">Anterior</button>
+                <span id="adminPlanPageInfo" data-testid="admin-plan-page-info">1 / 1</span>
+                <button id="adminPlanNextBtn" class="btn ghost mini" type="button" data-testid="admin-plan-next">Siguiente</button>
+                <button id="adminPlanDownloadBtn" class="btn ghost" type="button" data-testid="admin-plan-download">Descargar plan CSV</button>
+              </div>
+              <div class="installment-status-grid" data-testid="admin-installment-status-summary">
+                <article class="installment-status-card paid">
+                  <p>Cuotas pagadas (paid)</p>
+                  <h3 id="adminInstallmentsPaidCount" data-testid="admin-installments-paid-count">0</h3>
+                </article>
+                <article class="installment-status-card pending">
+                  <p>Cuotas pendientes (pending)</p>
+                  <h3 id="adminInstallmentsPendingCount" data-testid="admin-installments-pending-count">0</h3>
+                </article>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Vence</th>
+                    <th>Monto</th>
+                    <th>Capital</th>
+                    <th>Interes</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="adminInstallmentsRows" data-testid="admin-installments-rows">
+                  <tr><td colspan="6">Sin plan cargado</td></tr>
+                </tbody>
+              </table>
             </div>
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Vence</th>
-                  <th>Monto</th>
-                  <th>Capital</th>
-                  <th>Interes</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody id="adminInstallmentsRows" data-testid="admin-installments-rows">
-                <tr><td colspan="6">Sin plan cargado</td></tr>
-              </tbody>
-            </table>
           </section>
 
           <section class="panel table-panel">
@@ -511,25 +524,6 @@
             </ul>
           </section>
 
-          <section class="panel table-panel">
-            <div class="table-header">
-              <h2>Plan de pagos (previsualizacion admin)</h2>
-            </div>
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Vence</th>
-                  <th>Monto</th>
-                  <th>Capital</th>
-                  <th>Interes</th>
-                </tr>
-              </thead>
-              <tbody id="adminLoanPreviewRows" data-testid="admin-loan-preview-rows">
-                <tr><td colspan="5">Sin plan previsualizado</td></tr>
-              </tbody>
-            </table>
-          </section>
         </section>
 
         <section class="panel response-panel">
@@ -551,6 +545,32 @@
         </div>
       </div>
     </div>
-    <script src="app.js?v=20260709-2"></script>
+    <div id="adminLoanPreviewModal" class="action-modal hidden" role="dialog" aria-modal="true" aria-labelledby="adminLoanPreviewModalTitle">
+      <div class="action-modal-card loan-preview-modal-card">
+        <h3 id="adminLoanPreviewModalTitle">Previsualizacion de plan de pagos</h3>
+        <p id="adminLoanPreviewMeta">Completa cuenta, monto y meses para generar una previsualizacion.</p>
+        <div class="loan-preview-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Vence</th>
+                <th>Monto</th>
+                <th>Capital</th>
+                <th>Interes</th>
+              </tr>
+            </thead>
+            <tbody id="adminLoanPreviewModalRows" data-testid="admin-loan-preview-modal-rows">
+              <tr><td colspan="5">Sin plan previsualizado</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="action-modal-actions">
+          <button id="adminLoanPreviewCloseBtn" class="btn ghost" type="button">Cerrar</button>
+          <button id="adminLoanPreviewDownloadBtn" class="btn" type="button">Guardar CSV</button>
+        </div>
+      </div>
+    </div>
+    <script src="app.js?v=20260711-1"></script>
   </body>
 </html>

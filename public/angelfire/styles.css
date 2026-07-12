@@ -283,6 +283,11 @@ select {
   color: var(--ink-700);
 }
 
+.validation-error {
+  color: #9f2d2d;
+  font-weight: 700;
+}
+
 .grid-auth,
 .operations-grid {
   display: grid;
@@ -462,6 +467,40 @@ select {
   gap: 0.8rem;
 }
 
+.installment-status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+  margin: 0.15rem 0 0.45rem;
+}
+
+.installment-status-card {
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  padding: 0.65rem;
+}
+
+.installment-status-card p {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.installment-status-card h3 {
+  margin: 0.25rem 0 0;
+  font-size: 1.2rem;
+}
+
+.installment-status-card.paid {
+  background: linear-gradient(140deg, #e9f7ef, #dcf3e8);
+  border-color: #86c9a4;
+}
+
+.installment-status-card.pending {
+  background: linear-gradient(140deg, #fff5e8, #ffefd6);
+  border-color: #e1bf88;
+}
+
 .installments-grid h3 {
   margin: 0 0 0.4rem;
   font-size: 0.9rem;
@@ -507,6 +546,17 @@ pre {
   display: none;
 }
 
+.loan-preview-modal-card {
+  width: min(920px, 100%);
+}
+
+.loan-preview-table-wrap {
+  max-height: min(52vh, 460px);
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+}
+
 .audit-list {
   margin: 0;
   padding-left: 1rem;
@@ -545,6 +595,10 @@ pre {
   }
 
   .installments-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .installment-status-grid {
     grid-template-columns: 1fr;
   }
 }
