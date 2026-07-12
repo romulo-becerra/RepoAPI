@@ -388,6 +388,10 @@ select {
   gap: 0.5rem;
 }
 
+.admin-op-card .row-actions {
+  flex-wrap: wrap;
+}
+
 .btn {
   border: 0;
   border-radius: 11px;
@@ -555,6 +559,10 @@ pre {
   overflow: auto;
   border-radius: 12px;
   border: 1px solid var(--line);
+}
+
+.preview-pager-controls {
+  margin-top: 0.5rem;
 }
 
 .audit-list {

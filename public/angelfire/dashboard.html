@@ -346,7 +346,10 @@
                   <option value="customer">customer</option>
                   <option value="manager">manager</option>
                 </select>
-                <button class="btn" type="submit" data-testid="admin-create-user-submit">Crear usuario</button>
+                <div class="row-actions">
+                  <button class="btn" type="submit" data-testid="admin-create-user-submit">Crear usuario</button>
+                  <button class="btn ghost" id="adminCancelCreateUserBtn" type="button" data-testid="admin-cancel-create-user">Cancelar operacion</button>
+                </div>
               </form>
 
               <form id="adminCreateLoanForm" class="panel admin-op-card hidden" data-admin-op-card="create-loan">
@@ -359,6 +362,7 @@
                 <div class="row-actions">
                   <button class="btn ghost" id="adminPreviewLoanBtn" type="button" data-testid="admin-preview-loan">Previsualizar plan</button>
                   <button class="btn" id="adminCreateLoanBtn" type="button" data-testid="admin-create-loan">Aplicar prestamo</button>
+                  <button class="btn ghost" id="adminCancelCreateLoanBtn" type="button" data-testid="admin-cancel-create-loan">Cancelar operacion</button>
                 </div>
                 <p id="adminLoanRateHint" data-testid="admin-loan-rate-hint">Interes anual: -</p>
               </form>
@@ -374,6 +378,7 @@
                   <button class="btn" id="adminDepositTargetBtn" type="button" data-testid="admin-deposit-target">Depositar</button>
                   <button class="btn alt" id="adminWithdrawTargetBtn" type="button" data-testid="admin-withdraw-target">Retirar</button>
                   <button class="btn ghost" id="adminPayLoanTargetBtn" type="button" data-testid="admin-payloan-target">Pagar prestamo</button>
+                  <button class="btn ghost" id="adminCancelAccountOpsBtn" type="button" data-testid="admin-cancel-account-ops">Cancelar operacion</button>
                 </div>
               </form>
             </div>
@@ -565,12 +570,24 @@
             </tbody>
           </table>
         </div>
+        <div class="pager-controls preview-pager-controls">
+          <label>Ver
+            <select id="adminLoanPreviewPerPage" data-testid="admin-loan-preview-per-page">
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="20">20</option>
+            </select>
+          </label>
+          <button id="adminLoanPreviewPrevBtn" class="btn ghost mini" type="button" data-testid="admin-loan-preview-prev">Anterior</button>
+          <span id="adminLoanPreviewPageInfo" data-testid="admin-loan-preview-page-info">1 / 1</span>
+          <button id="adminLoanPreviewNextBtn" class="btn ghost mini" type="button" data-testid="admin-loan-preview-next">Siguiente</button>
+        </div>
         <div class="action-modal-actions">
           <button id="adminLoanPreviewCloseBtn" class="btn ghost" type="button">Cerrar</button>
           <button id="adminLoanPreviewDownloadBtn" class="btn" type="button">Guardar CSV</button>
         </div>
       </div>
     </div>
-    <script src="app.js?v=20260711-1"></script>
+    <script src="app.js?v=20260711-2"></script>
   </body>
 </html>
