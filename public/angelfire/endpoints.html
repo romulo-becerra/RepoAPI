@@ -352,6 +352,7 @@ Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
         { method: 'POST', path: '/api/v1/manager/accounts/:account_id/loans', auth: 'manager', desc: 'Originar prestamo en cuenta objetivo', payload: '{"amount","term_months","first_due_date"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/loans' },
         { method: 'GET', path: '/api/v1/manager/accounts/:account_id/summary', auth: 'manager', desc: 'Resumen por cuenta (saldo + prestamos)', payload: ':account_id o account_number', sample: 'GET {{baseUrl}}/api/v1/manager/accounts/9000000001/summary' },
         { method: 'GET', path: '/api/v1/manager/accounts/:account_id/loans/:loan_id/installments', auth: 'manager', desc: 'Plan de pagos paginado', payload: 'query: page, per_page', sample: 'GET {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/installments?page=1&per_page=10' },
+        { method: 'GET', path: '/api/v1/manager/accounts/:account_id/loans/:loan_id/installments/summary', auth: 'manager', desc: 'Resumen de cuotas (paid/pending)', payload: '-', sample: 'GET {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/installments/summary' },
         { method: 'GET', path: '/api/v1/manager/accounts/:account_id/loans/:loan_id/installments/download', auth: 'manager', desc: 'Descargar plan de pagos CSV', payload: '-', sample: 'GET {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/installments/download' },
         { method: 'POST', path: '/api/v1/manager/accounts/:account_id/deposit', auth: 'manager', desc: 'Depositar por manager', payload: '{"amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/deposit' },
         { method: 'POST', path: '/api/v1/manager/accounts/:account_id/withdraw', auth: 'manager', desc: 'Retirar por manager', payload: '{"amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/withdraw' },
@@ -422,6 +423,9 @@ Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
         }
         if (p.includes('/installments/download')) {
           return 'Content-Type: text/csv\ninstallment_number,due_date,amount,principal_amount,interest_amount,status,paid_at\n1,2026-08-01,200.00,180.00,20.00,pending,';
+        }
+        if (p.includes('/installments/summary')) {
+          return JSON.stringify({ account_id: 10, loan_id: 6, paid_count: 4, pending_count: 8, total: 12 }, null, 2);
         }
         if (p.includes('/installments')) {
           return JSON.stringify({ total: 12, page: 1, per_page: 10, installments: [ { installment_number: 1, due_date: '2026-08-01', amount: 200.0, status: 'pending' } ] }, null, 2);

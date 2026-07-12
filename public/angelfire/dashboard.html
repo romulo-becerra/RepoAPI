@@ -324,49 +324,62 @@
             </article>
           </section>
 
+          <section class="panel admin-ops-panel">
+            <h2>Operaciones admin para cliente/customer</h2>
+            <p class="field-help">Selecciona una operacion y recien se mostrara su formulario.</p>
+            <div class="row-actions admin-op-selector">
+              <button class="btn ghost" type="button" data-admin-op="create-user" data-testid="admin-op-create-user">Crear usuario (admin)</button>
+              <button class="btn ghost" type="button" data-admin-op="create-loan" data-testid="admin-op-create-loan">Originar prestamo (admin)</button>
+              <button class="btn ghost" type="button" data-admin-op="account-ops" data-testid="admin-op-account-ops">Operar cuenta de usuario</button>
+            </div>
+
+            <div class="admin-op-forms">
+              <form id="adminCreateUserForm" class="panel admin-op-card hidden" data-admin-op-card="create-user">
+                <h2>Crear usuario (admin)</h2>
+                <p class="field-help">Requeridos: nombre, apellido, email, PIN y rol.</p>
+                <input id="adminFirstName" placeholder="Nombre *" required data-testid="admin-first-name" />
+                <input id="adminLastName" placeholder="Apellido *" required data-testid="admin-last-name" />
+                <input id="adminEmail" type="email" placeholder="correo@dominio.com *" required data-testid="admin-email" />
+                <input id="adminPhone" placeholder="Telefono (opcional)" data-testid="admin-phone" />
+                <input id="adminPin" placeholder="PIN *" required data-testid="admin-pin" />
+                <select id="adminRole" data-testid="admin-role">
+                  <option value="customer">customer</option>
+                  <option value="manager">manager</option>
+                </select>
+                <button class="btn" type="submit" data-testid="admin-create-user-submit">Crear usuario</button>
+              </form>
+
+              <form id="adminCreateLoanForm" class="panel admin-op-card hidden" data-admin-op-card="create-loan">
+                <h2>Originar prestamo (admin)</h2>
+                <p class="field-help">Requeridos: account ID o numero de cuenta, monto, plazo y primera fecha de pago.</p>
+                <input id="adminLoanAccountId" placeholder="Account ID o numero de cuenta objetivo *" required data-testid="admin-loan-account-id" />
+                <input id="adminLoanAmount" type="number" min="1" step="0.01" placeholder="Monto del prestamo *" required data-testid="admin-loan-amount" />
+                <input id="adminLoanTermMonths" type="number" min="1" placeholder="Plazo en meses *" required data-testid="admin-loan-term-months" />
+                <input id="adminLoanFirstDueDate" type="date" required data-testid="admin-loan-first-due-date" />
+                <div class="row-actions">
+                  <button class="btn ghost" id="adminPreviewLoanBtn" type="button" data-testid="admin-preview-loan">Previsualizar plan</button>
+                  <button class="btn" id="adminCreateLoanBtn" type="button" data-testid="admin-create-loan">Aplicar prestamo</button>
+                </div>
+                <p id="adminLoanRateHint" data-testid="admin-loan-rate-hint">Interes anual: -</p>
+              </form>
+
+              <form id="adminAccountOpsForm" class="panel admin-op-card hidden" data-admin-op-card="account-ops">
+                <h2>Operar cuenta de usuario</h2>
+                <p class="field-help">Requeridos: account ID o numero de cuenta y monto. Para pagar prestamo tambien se requiere loan ID.</p>
+                <input id="adminTargetAccountId" placeholder="Account ID o numero de cuenta objetivo *" required data-testid="admin-target-account-id" />
+                <input id="adminTargetLoanId" placeholder="Loan ID (solo para pagar prestamo)" data-testid="admin-target-loan-id" />
+                <input id="adminTargetAmount" type="number" min="0.01" step="0.01" placeholder="Monto *" required data-testid="admin-target-amount" />
+                <input id="adminTargetDescription" placeholder="Descripcion (opcional)" data-testid="admin-target-description" />
+                <div class="row-actions">
+                  <button class="btn" id="adminDepositTargetBtn" type="button" data-testid="admin-deposit-target">Depositar</button>
+                  <button class="btn alt" id="adminWithdrawTargetBtn" type="button" data-testid="admin-withdraw-target">Retirar</button>
+                  <button class="btn ghost" id="adminPayLoanTargetBtn" type="button" data-testid="admin-payloan-target">Pagar prestamo</button>
+                </div>
+              </form>
+            </div>
+          </section>
+
           <section class="operations-grid admin-ops-grid">
-            <form id="adminCreateUserForm" class="panel">
-              <h2>Crear usuario (admin)</h2>
-              <p class="field-help">Requeridos: nombre, apellido, email, PIN y rol.</p>
-              <input id="adminFirstName" placeholder="Nombre *" required data-testid="admin-first-name" />
-              <input id="adminLastName" placeholder="Apellido *" required data-testid="admin-last-name" />
-              <input id="adminEmail" type="email" placeholder="correo@dominio.com *" required data-testid="admin-email" />
-              <input id="adminPhone" placeholder="Telefono (opcional)" data-testid="admin-phone" />
-              <input id="adminPin" placeholder="PIN *" required data-testid="admin-pin" />
-              <select id="adminRole" data-testid="admin-role">
-                <option value="customer">customer</option>
-                <option value="manager">manager</option>
-              </select>
-              <button class="btn" type="submit" data-testid="admin-create-user-submit">Crear usuario</button>
-            </form>
-
-            <form id="adminCreateLoanForm" class="panel">
-              <h2>Originar prestamo (admin)</h2>
-              <p class="field-help">Requeridos: account ID o numero de cuenta, monto, plazo y primera fecha de pago.</p>
-              <input id="adminLoanAccountId" placeholder="Account ID o numero de cuenta objetivo *" required data-testid="admin-loan-account-id" />
-              <input id="adminLoanAmount" type="number" min="1" step="0.01" placeholder="Monto del prestamo *" required data-testid="admin-loan-amount" />
-              <input id="adminLoanTermMonths" type="number" min="1" placeholder="Plazo en meses *" required data-testid="admin-loan-term-months" />
-              <input id="adminLoanFirstDueDate" type="date" required data-testid="admin-loan-first-due-date" />
-              <div class="row-actions">
-                <button class="btn ghost" id="adminPreviewLoanBtn" type="button" data-testid="admin-preview-loan">Previsualizar plan</button>
-                <button class="btn" id="adminCreateLoanBtn" type="button" data-testid="admin-create-loan">Aplicar prestamo</button>
-              </div>
-              <p id="adminLoanRateHint" data-testid="admin-loan-rate-hint">Interes anual: -</p>
-            </form>
-
-            <form id="adminAccountOpsForm" class="panel">
-              <h2>Operar cuenta de usuario</h2>
-              <p class="field-help">Requeridos: account ID o numero de cuenta y monto. Para pagar prestamo tambien se requiere loan ID.</p>
-              <input id="adminTargetAccountId" placeholder="Account ID o numero de cuenta objetivo *" required data-testid="admin-target-account-id" />
-              <input id="adminTargetLoanId" placeholder="Loan ID (solo para pagar prestamo)" data-testid="admin-target-loan-id" />
-              <input id="adminTargetAmount" type="number" min="0.01" step="0.01" placeholder="Monto *" required data-testid="admin-target-amount" />
-              <input id="adminTargetDescription" placeholder="Descripcion (opcional)" data-testid="admin-target-description" />
-              <div class="row-actions">
-                <button class="btn" id="adminDepositTargetBtn" type="button" data-testid="admin-deposit-target">Depositar</button>
-                <button class="btn alt" id="adminWithdrawTargetBtn" type="button" data-testid="admin-withdraw-target">Retirar</button>
-                <button class="btn ghost" id="adminPayLoanTargetBtn" type="button" data-testid="admin-payloan-target">Pagar prestamo</button>
-              </div>
-            </form>
 
             <form id="adminDeleteUserForm" class="panel">
               <h2>Eliminar usuario</h2>
@@ -377,12 +390,11 @@
 
             <form id="adminUserStateForm" class="panel">
               <h2>Estado de usuario</h2>
-              <p class="field-help">Requerido: User ID para bloquear/desbloquear/desactivar.</p>
+              <p class="field-help">Requerido: User ID para bloquear o desbloquear.</p>
               <input id="adminUserStateId" placeholder="User ID *" required data-testid="admin-user-state-id" />
               <div class="row-actions">
                 <button class="btn alt" id="adminBlockUserBtn" type="button" data-testid="admin-block-user-btn">Bloquear</button>
                 <button class="btn" id="adminUnblockUserBtn" type="button" data-testid="admin-unblock-user-btn">Desbloquear</button>
-                <button class="btn ghost" id="adminDeactivateUserBtn" type="button" data-testid="admin-deactivate-user-btn">Desactivar</button>
               </div>
             </form>
 
@@ -401,38 +413,51 @@
               <input id="adminLookupAccountId" placeholder="Account ID o numero de cuenta *" required data-testid="admin-lookup-account-id" />
               <button class="btn" type="submit" data-testid="admin-lookup-submit">Consultar cuenta</button>
             </form>
+            <p id="adminAccountLookupValidation" class="field-help validation-error hidden" data-testid="admin-account-lookup-validation"></p>
             <p id="adminAccountSummary" data-testid="admin-account-summary">Sin cuenta seleccionada.</p>
-            <div class="row-actions">
-              <label>Prestamo
-                <select id="adminInspectLoanId" data-testid="admin-inspect-loan-id"></select>
-              </label>
-              <label>Ver
-                <select id="adminPlanPerPage" data-testid="admin-plan-per-page">
-                  <option value="10">10</option>
-                  <option value="20">20</option>
-                  <option value="50">50</option>
-                </select>
-              </label>
-              <button id="adminPlanPrevBtn" class="btn ghost mini" type="button" data-testid="admin-plan-prev">Anterior</button>
-              <span id="adminPlanPageInfo" data-testid="admin-plan-page-info">1 / 1</span>
-              <button id="adminPlanNextBtn" class="btn ghost mini" type="button" data-testid="admin-plan-next">Siguiente</button>
-              <button id="adminPlanDownloadBtn" class="btn ghost" type="button" data-testid="admin-plan-download">Descargar plan CSV</button>
+            <div id="adminAccountLoanPlanSection" class="hidden">
+              <div class="row-actions">
+                <label>Prestamo
+                  <select id="adminInspectLoanId" data-testid="admin-inspect-loan-id"></select>
+                </label>
+                <label>Ver
+                  <select id="adminPlanPerPage" data-testid="admin-plan-per-page">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                  </select>
+                </label>
+                <button id="adminPlanPrevBtn" class="btn ghost mini" type="button" data-testid="admin-plan-prev">Anterior</button>
+                <span id="adminPlanPageInfo" data-testid="admin-plan-page-info">1 / 1</span>
+                <button id="adminPlanNextBtn" class="btn ghost mini" type="button" data-testid="admin-plan-next">Siguiente</button>
+                <button id="adminPlanDownloadBtn" class="btn ghost" type="button" data-testid="admin-plan-download">Descargar plan CSV</button>
+              </div>
+              <div class="installment-status-grid" data-testid="admin-installment-status-summary">
+                <article class="installment-status-card paid">
+                  <p>Cuotas pagadas (paid)</p>
+                  <h3 id="adminInstallmentsPaidCount" data-testid="admin-installments-paid-count">0</h3>
+                </article>
+                <article class="installment-status-card pending">
+                  <p>Cuotas pendientes (pending)</p>
+                  <h3 id="adminInstallmentsPendingCount" data-testid="admin-installments-pending-count">0</h3>
+                </article>
+              </div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Vence</th>
+                    <th>Monto</th>
+                    <th>Capital</th>
+                    <th>Interes</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="adminInstallmentsRows" data-testid="admin-installments-rows">
+                  <tr><td colspan="6">Sin plan cargado</td></tr>
+                </tbody>
+              </table>
             </div>
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Vence</th>
-                  <th>Monto</th>
-                  <th>Capital</th>
-                  <th>Interes</th>
-                  <th>Estado</th>
-                </tr>
-              </thead>
-              <tbody id="adminInstallmentsRows" data-testid="admin-installments-rows">
-                <tr><td colspan="6">Sin plan cargado</td></tr>
-              </tbody>
-            </table>
           </section>
 
           <section class="panel table-panel">
@@ -499,25 +524,6 @@
             </ul>
           </section>
 
-          <section class="panel table-panel">
-            <div class="table-header">
-              <h2>Plan de pagos (previsualizacion admin)</h2>
-            </div>
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Vence</th>
-                  <th>Monto</th>
-                  <th>Capital</th>
-                  <th>Interes</th>
-                </tr>
-              </thead>
-              <tbody id="adminLoanPreviewRows" data-testid="admin-loan-preview-rows">
-                <tr><td colspan="5">Sin plan previsualizado</td></tr>
-              </tbody>
-            </table>
-          </section>
         </section>
 
         <section class="panel response-panel">
@@ -539,6 +545,32 @@
         </div>
       </div>
     </div>
-    <script src="app.js?v=20260709-2"></script>
+    <div id="adminLoanPreviewModal" class="action-modal hidden" role="dialog" aria-modal="true" aria-labelledby="adminLoanPreviewModalTitle">
+      <div class="action-modal-card loan-preview-modal-card">
+        <h3 id="adminLoanPreviewModalTitle">Previsualizacion de plan de pagos</h3>
+        <p id="adminLoanPreviewMeta">Completa cuenta, monto y meses para generar una previsualizacion.</p>
+        <div class="loan-preview-table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Vence</th>
+                <th>Monto</th>
+                <th>Capital</th>
+                <th>Interes</th>
+              </tr>
+            </thead>
+            <tbody id="adminLoanPreviewModalRows" data-testid="admin-loan-preview-modal-rows">
+              <tr><td colspan="5">Sin plan previsualizado</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="action-modal-actions">
+          <button id="adminLoanPreviewCloseBtn" class="btn ghost" type="button">Cerrar</button>
+          <button id="adminLoanPreviewDownloadBtn" class="btn" type="button">Guardar CSV</button>
+        </div>
+      </div>
+    </div>
+    <script src="app.js?v=20260711-1"></script>
   </body>
 </html>

@@ -35,6 +35,8 @@ let pendingPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, h
 let txPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
 let adminUsersPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
 let adminPlanPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
+let adminPreviewScheduleCache = [];
+let adminInstallmentsStatusTotalsCache = {};
 let modalDecisionResolver = null;
 let modalCloseTimer = null;
 let balanceAutoRefreshTimer = null;
@@ -84,13 +86,17 @@ const el = {
   adminUsersPageInfo: document.getElementById('adminUsersPageInfo'),
   adminUsersRows: document.getElementById('adminUsersRows'),
   adminLookupAccountId: document.getElementById('adminLookupAccountId'),
+  adminAccountLookupValidation: document.getElementById('adminAccountLookupValidation'),
   adminAccountSummary: document.getElementById('adminAccountSummary'),
+  adminAccountLoanPlanSection: document.getElementById('adminAccountLoanPlanSection'),
   adminInspectLoanId: document.getElementById('adminInspectLoanId'),
   adminPlanPerPage: document.getElementById('adminPlanPerPage'),
   adminPlanPrevBtn: document.getElementById('adminPlanPrevBtn'),
   adminPlanNextBtn: document.getElementById('adminPlanNextBtn'),
   adminPlanPageInfo: document.getElementById('adminPlanPageInfo'),
   adminInstallmentsRows: document.getElementById('adminInstallmentsRows'),
+  adminInstallmentsPaidCount: document.getElementById('adminInstallmentsPaidCount'),
+  adminInstallmentsPendingCount: document.getElementById('adminInstallmentsPendingCount'),
   adminUserFilesRows: document.getElementById('adminUserFilesRows'),
   userFilesRows: document.getElementById('userFilesRows'),
   userFileInput: document.getElementById('userFileInput'),
@@ -108,7 +114,12 @@ const el = {
   showSecuritySectionBtn: document.getElementById('showSecuritySectionBtn'),
   hideAccountSectionBtn: document.getElementById('hideAccountSectionBtn'),
   adminLoanRateHint: document.getElementById('adminLoanRateHint'),
-  adminLoanPreviewRows: document.getElementById('adminLoanPreviewRows'),
+  adminLoanPreviewModal: document.getElementById('adminLoanPreviewModal'),
+  adminLoanPreviewModalCard: document.querySelector('#adminLoanPreviewModal .action-modal-card'),
+  adminLoanPreviewMeta: document.getElementById('adminLoanPreviewMeta'),
+  adminLoanPreviewModalRows: document.getElementById('adminLoanPreviewModalRows'),
+  adminLoanPreviewCloseBtn: document.getElementById('adminLoanPreviewCloseBtn'),
+  adminLoanPreviewDownloadBtn: document.getElementById('adminLoanPreviewDownloadBtn'),
   actionModal: document.getElementById('actionModal'),
   actionModalCard: document.querySelector('#actionModal .action-modal-card'),
   actionModalTitle: document.getElementById('actionModalTitle'),
@@ -188,6 +199,169 @@ function ensureActionModalElements() {
 function ensureDashboardUiElements() {
   ensureBalanceControls();
   ensureActionModalElements();
+}
+
+function isLoanPreviewModalOpen() {
+  return Boolean(el.adminLoanPreviewModal && !el.adminLoanPreviewModal.classList.contains('hidden'));
+}
+
+function hideAdminLoanPreviewModal() {
+  if (!el.adminLoanPreviewModal) {
+    return;
+  }
+
+  el.adminLoanPreviewModal.classList.remove('is-open');
+  el.adminLoanPreviewModal.classList.add('hidden');
+  unlockBodyScroll();
+}
+
+function showAdminLoanPreviewModal(payload, values) {
+  const schedule = payload.projected_schedule || [];
+  if (!el.adminLoanPreviewModal || !el.adminLoanPreviewModalRows || !el.adminLoanPreviewMeta) {
+    return;
+  }
+
+  adminPreviewScheduleCache = schedule;
+  const annualRate = Number(payload.annual_interest_rate || 0).toFixed(2);
+  const monthlyPayment = Number(payload.monthly_payment || 0).toFixed(2);
+  el.adminLoanPreviewMeta.textContent = `Cuenta: ${values.accountId} | Monto: S/ ${Number(values.amount || 0).toFixed(2)} | Meses: ${values.termMonths} | Interes anual: ${annualRate}% | Cuota mensual: S/ ${monthlyPayment}`;
+
+  if (schedule.length === 0) {
+    el.adminLoanPreviewModalRows.innerHTML = '<tr><td colspan="5">Sin plan previsualizado</td></tr>';
+  } else {
+    el.adminLoanPreviewModalRows.innerHTML = schedule
+      .map(
+        (item) =>
+          `<tr><td>${item.installment_number}</td><td>${item.due_date}</td><td>${Number(item.amount || 0).toFixed(2)}</td><td>${Number(item.principal_amount || 0).toFixed(2)}</td><td>${Number(item.interest_amount || 0).toFixed(2)}</td></tr>`
+      )
+      .join('');
+  }
+
+  el.adminLoanPreviewModal.classList.remove('hidden');
+  lockBodyScroll();
+  requestAnimationFrame(() => {
+    el.adminLoanPreviewModal.classList.add('is-open');
+  });
+}
+
+function downloadAdminLoanPreviewCsv(values) {
+  if (!adminPreviewScheduleCache || adminPreviewScheduleCache.length === 0) {
+    throw new Error('No hay previsualizacion disponible para exportar en CSV.');
+  }
+
+  const header = ['installment_number', 'due_date', 'amount', 'principal_amount', 'interest_amount'];
+  const rows = adminPreviewScheduleCache.map((item) => [
+    item.installment_number,
+    item.due_date,
+    Number(item.amount || 0).toFixed(2),
+    Number(item.principal_amount || 0).toFixed(2),
+    Number(item.interest_amount || 0).toFixed(2)
+  ]);
+
+  const csvContent = [header, ...rows].map((row) => row.join(',')).join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const safeAccount = String(values.accountId || 'cuenta').replace(/[^\w-]/g, '_');
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `loan_preview_${safeAccount}.csv`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function resetAdminAccountLookupState() {
+  state.adminInspectAccountLookup = '';
+  state.adminInspectLoanId = '';
+  state.adminInspectUserId = '';
+  state.adminPlanPage = 1;
+  persistState();
+  clearAdminInstallmentsStatusTotalsCache();
+  setAdminInstallmentsStatusTotals(0, 0);
+
+  el.adminInspectLoanId.innerHTML = '';
+  const option = document.createElement('option');
+  option.value = '';
+  option.textContent = 'Sin prestamos';
+  el.adminInspectLoanId.append(option);
+
+  renderAdminInstallments([]);
+  adminPlanPaginationMeta = { page: 1, per_page: Number(state.adminPlanPerPage || 10), total: 0, total_pages: 1, has_prev: false, has_next: false };
+  updateAdminPlanPaginationUi();
+  el.adminAccountLoanPlanSection.classList.add('hidden');
+}
+
+function setAdminAccountLookupValidation(message) {
+  if (!el.adminAccountLookupValidation) {
+    return;
+  }
+
+  const text = String(message || '').trim();
+  if (!text) {
+    el.adminAccountLookupValidation.textContent = '';
+    el.adminAccountLookupValidation.classList.add('hidden');
+    return;
+  }
+
+  el.adminAccountLookupValidation.textContent = text;
+  el.adminAccountLookupValidation.classList.remove('hidden');
+}
+
+function normalizeAdminLookupErrorMessage(message) {
+  const text = String(message || '').toLowerCase();
+  if (text.includes('not found') || text.includes('no existe') || text.includes('no encontrado')) {
+    return 'La cuenta no existe.';
+  }
+  return 'La cuenta no existe o no tiene prestamo asignado.';
+}
+
+function setAdminInstallmentsStatusTotals(paidCount, pendingCount) {
+  if (el.adminInstallmentsPaidCount) {
+    el.adminInstallmentsPaidCount.textContent = String(paidCount || 0);
+  }
+  if (el.adminInstallmentsPendingCount) {
+    el.adminInstallmentsPendingCount.textContent = String(pendingCount || 0);
+  }
+}
+
+function getAdminInstallmentsStatusCacheKey() {
+  if (!state.adminInspectAccountLookup || !state.adminInspectLoanId) {
+    return '';
+  }
+
+  return `${state.adminInspectAccountLookup}:${state.adminInspectLoanId}`;
+}
+
+function clearAdminInstallmentsStatusTotalsCache() {
+  adminInstallmentsStatusTotalsCache = {};
+}
+
+async function ensureAdminInstallmentsStatusTotals() {
+  const cacheKey = getAdminInstallmentsStatusCacheKey();
+  if (!cacheKey) {
+    setAdminInstallmentsStatusTotals(0, 0);
+    return;
+  }
+
+  const cached = adminInstallmentsStatusTotalsCache[cacheKey];
+  if (cached) {
+    setAdminInstallmentsStatusTotals(cached.paid, cached.pending);
+    return;
+  }
+
+  const payload = await apiCall(
+    `/api/v1/manager/accounts/${state.adminInspectAccountLookup}/loans/${state.adminInspectLoanId}/installments/summary`,
+    'GET',
+    null,
+    'manager'
+  );
+
+  const paid = Number(payload.paid_count || 0);
+  const pending = Number(payload.pending_count || 0);
+
+  adminInstallmentsStatusTotalsCache[cacheKey] = { paid, pending };
+  setAdminInstallmentsStatusTotals(paid, pending);
 }
 
 function loadState() {
@@ -354,14 +528,14 @@ function hasCustomModal() {
 }
 
 function lockBodyScroll() {
-  if (!hasCustomModal()) {
+  if (!hasCustomModal() && !el.adminLoanPreviewModal) {
     return;
   }
   document.body.classList.add('modal-open');
 }
 
 function unlockBodyScroll() {
-  if (!hasCustomModal()) {
+  if (!hasCustomModal() && !el.adminLoanPreviewModal) {
     return;
   }
   document.body.classList.remove('modal-open');
@@ -643,6 +817,49 @@ function formatUserStatus(user) {
   }
 
   return 'activo';
+}
+
+function renderAdminUserActions(user) {
+  const isActive = user && user.active !== false;
+  const isBlocked = user && user.blocked === true;
+  const actions = [];
+
+  if (isActive && !isBlocked) {
+    actions.push(`<button class="btn ghost mini" data-user-action="block" data-user-id="${user.id}" type="button">Bloquear</button>`);
+  }
+
+  if (isActive && isBlocked) {
+    actions.push(`<button class="btn ghost mini" data-user-action="unblock" data-user-id="${user.id}" type="button">Desbloquear</button>`);
+  }
+
+  actions.push(`<button class="btn alt mini" data-user-action="delete" data-user-id="${user.id}" type="button">Eliminar</button>`);
+  return actions.join('');
+}
+
+function toggleAdminOperation(operationKey) {
+  const selected = String(operationKey || '').trim();
+  const opCards = document.querySelectorAll('[data-admin-op-card]');
+  const opButtons = document.querySelectorAll('[data-admin-op]');
+
+  opCards.forEach((card) => {
+    const cardOp = card.getAttribute('data-admin-op-card') || '';
+    card.classList.toggle('hidden', cardOp !== selected);
+  });
+
+  opButtons.forEach((button) => {
+    const buttonOp = button.getAttribute('data-admin-op') || '';
+    button.classList.toggle('active-view', buttonOp === selected);
+  });
+
+  if (selected) {
+    const selectedCard = document.querySelector(`[data-admin-op-card="${selected}"]`);
+    if (selectedCard) {
+      const firstInput = selectedCard.querySelector('input, select, button');
+      if (firstInput instanceof HTMLElement) {
+        firstInput.focus();
+      }
+    }
+  }
 }
 
 async function executeAdminUserAction(action, userId, formId = null) {
@@ -936,20 +1153,6 @@ async function refreshInstallmentsForClient() {
   updateLoanPaymentSummary();
 }
 
-function renderAdminLoanPreview(schedule) {
-  if (!schedule || schedule.length === 0) {
-    el.adminLoanPreviewRows.innerHTML = '<tr><td colspan="5">Sin plan previsualizado</td></tr>';
-    return;
-  }
-
-  el.adminLoanPreviewRows.innerHTML = schedule
-    .map(
-      (item) =>
-        `<tr><td>${item.installment_number}</td><td>${item.due_date}</td><td>${Number(item.amount || 0).toFixed(2)}</td><td>${Number(item.principal_amount || 0).toFixed(2)}</td><td>${Number(item.interest_amount || 0).toFixed(2)}</td></tr>`
-    )
-    .join('');
-}
-
 async function refreshProfileData() {
   if (!state.token || !state.userId) {
     return;
@@ -1009,7 +1212,9 @@ async function refreshAdminFilesForSelectedUser() {
 
 async function refreshAdminLoanInstallments() {
   if (!state.adminInspectAccountLookup || !state.adminInspectLoanId) {
+    el.adminAccountLoanPlanSection.classList.add('hidden');
     renderAdminInstallments([]);
+    setAdminInstallmentsStatusTotals(0, 0);
     adminPlanPaginationMeta = { page: 1, per_page: Number(state.adminPlanPerPage || 10), total: 0, total_pages: 1, has_prev: false, has_next: false };
     updateAdminPlanPaginationUi();
     return;
@@ -1036,12 +1241,16 @@ async function refreshAdminLoanInstallments() {
   state.adminPlanPerPage = adminPlanPaginationMeta.per_page;
   persistState();
 
+  el.adminAccountLoanPlanSection.classList.remove('hidden');
   renderAdminInstallments(payload.installments || []);
+  await ensureAdminInstallmentsStatusTotals();
   updateAdminPlanPaginationUi();
 }
 
 async function refreshAdminAccountSummary(accountLookup) {
+  clearAdminInstallmentsStatusTotalsCache();
   const payload = await apiCall(`/api/v1/manager/accounts/${accountLookup}/summary`, 'GET', null, 'manager');
+  setAdminAccountLookupValidation('');
   state.adminInspectAccountLookup = String(accountLookup);
   state.adminInspectUserId = payload.user_id ? String(payload.user_id) : '';
 
@@ -1055,6 +1264,9 @@ async function refreshAdminAccountSummary(accountLookup) {
     option.textContent = 'Sin prestamos';
     el.adminInspectLoanId.append(option);
     state.adminInspectLoanId = '';
+    setAdminAccountLookupValidation('La cuenta no tiene prestamo asignado.');
+    el.adminAccountLoanPlanSection.classList.add('hidden');
+    setAdminInstallmentsStatusTotals(0, 0);
   } else {
     loans.forEach((loan) => {
       const option = document.createElement('option');
@@ -1064,6 +1276,7 @@ async function refreshAdminAccountSummary(accountLookup) {
     });
     state.adminInspectLoanId = payload.active_loan_id ? String(payload.active_loan_id) : String(loans[0].id);
     el.adminInspectLoanId.value = state.adminInspectLoanId;
+    el.adminAccountLoanPlanSection.classList.remove('hidden');
   }
 
   state.adminPlanPage = 1;
@@ -1189,7 +1402,7 @@ async function refreshAdminDashboard() {
     el.adminUsersRows.innerHTML = users
       .map(
         (user) =>
-          `<tr><td>${user.id}</td><td>${user.first_name} ${user.last_name}</td><td>${user.email}</td><td>${user.account_number || '-'}</td><td>${user.role}</td><td>${formatUserStatus(user)}</td><td><div class="row-actions"><button class="btn ghost mini" data-user-action="block" data-user-id="${user.id}" type="button">Bloquear</button><button class="btn ghost mini" data-user-action="unblock" data-user-id="${user.id}" type="button">Desbloquear</button><button class="btn ghost mini" data-user-action="deactivate" data-user-id="${user.id}" type="button">Desactivar</button><button class="btn alt mini" data-user-action="delete" data-user-id="${user.id}" type="button">Eliminar</button></div></td></tr>`
+          `<tr><td>${user.id}</td><td>${user.first_name} ${user.last_name}</td><td>${user.email}</td><td>${user.account_number || '-'}</td><td>${user.role}</td><td>${formatUserStatus(user)}</td><td><div class="row-actions">${renderAdminUserActions(user)}</div></td></tr>`
       )
       .join('');
   }
@@ -1225,8 +1438,37 @@ function bindEvents() {
       }
     });
     document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && isLoanPreviewModalOpen()) {
+        hideAdminLoanPreviewModal();
+        return;
+      }
+
       if (event.key === 'Escape' && !el.actionModal.classList.contains('hidden')) {
         resolveActionModal(false);
+      }
+    });
+  }
+
+  if (el.adminLoanPreviewModal && el.adminLoanPreviewCloseBtn) {
+    el.adminLoanPreviewCloseBtn.addEventListener('click', () => {
+      hideAdminLoanPreviewModal();
+    });
+
+    el.adminLoanPreviewModal.addEventListener('click', (event) => {
+      if (event.target === el.adminLoanPreviewModal) {
+        hideAdminLoanPreviewModal();
+      }
+    });
+  }
+
+  if (el.adminLoanPreviewDownloadBtn) {
+    el.adminLoanPreviewDownloadBtn.addEventListener('click', () => {
+      try {
+        const values = getAdminLoanFormValues();
+        downloadAdminLoanPreviewCsv(values);
+        renderResponse(200, { message: 'Previsualizacion exportada en CSV.' });
+      } catch (error) {
+        renderResponse(422, { errors: error.message });
       }
     });
   }
@@ -1615,9 +1857,11 @@ function bindEvents() {
     await executeAdminUserAction('unblock', userId, 'adminUserStateForm');
   });
 
-  document.getElementById('adminDeactivateUserBtn').addEventListener('click', async () => {
-    const userId = document.getElementById('adminUserStateId').value.trim();
-    await executeAdminUserAction('deactivate', userId, 'adminUserStateForm');
+  document.querySelectorAll('[data-admin-op]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const operation = button.getAttribute('data-admin-op') || '';
+      toggleAdminOperation(operation);
+    });
   });
 
   el.adminUsersRows.addEventListener('click', async (event) => {
@@ -1660,11 +1904,15 @@ function bindEvents() {
       await refreshAdminAccountSummary(lookup);
       pushAudit(`Consulta de cuenta admin lookup=${lookup}`);
     } catch (error) {
+      resetAdminAccountLookupState();
+      el.adminAccountSummary.textContent = 'Sin cuenta seleccionada.';
+      setAdminAccountLookupValidation(normalizeAdminLookupErrorMessage(error.message));
       renderResponse(422, { errors: error.message });
     }
   });
 
   el.adminInspectLoanId.addEventListener('change', async () => {
+    clearAdminInstallmentsStatusTotalsCache();
     state.adminInspectLoanId = el.adminInspectLoanId.value;
     state.adminPlanPage = 1;
     persistState();
@@ -1788,7 +2036,7 @@ function bindEvents() {
         first_due_date: values.firstDueDate
       }, 'manager');
       el.adminLoanRateHint.textContent = `Interes anual: ${Number(payload.annual_interest_rate || 0).toFixed(2)}% | Cuota mensual: S/ ${Number(payload.monthly_payment || 0).toFixed(2)}`;
-      renderAdminLoanPreview(payload.projected_schedule || []);
+      showAdminLoanPreviewModal(payload, values);
       pushAudit(`Previsualizacion de prestamo manager account_id=${values.accountId}`);
     } catch (error) {
       renderResponse(422, { errors: error.message });
@@ -1822,7 +2070,6 @@ function bindEvents() {
         first_due_date: values.firstDueDate
       }, 'manager');
       el.adminLoanRateHint.textContent = `Interes anual: ${Number(payload.loan.annual_interest_rate || 0).toFixed(2)}% | Cuota mensual: S/ ${Number(payload.loan.monthly_payment || 0).toFixed(2)}`;
-      renderAdminLoanPreview(payload.loan.installments || []);
       pushAudit(`Creacion de prestamo por gerente account_id=${values.accountId} loan_id=${payload.loan.id}`);
       await refreshAdminDashboard();
       clearFormFields(document.getElementById('adminCreateLoanForm'));
@@ -1976,6 +2223,7 @@ function hydrateInputs() {
   updateTransactionsPaginationUi();
   updateAdminUsersPaginationUi();
   updateAdminPlanPaginationUi();
+  toggleAdminOperation('');
   renderAuditLog();
   updateHeader();
 }
