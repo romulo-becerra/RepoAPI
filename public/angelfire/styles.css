@@ -326,6 +326,23 @@ select {
   border-style: dashed;
 }
 
+.admin-ops-panel .btn {
+  color: #fff;
+  border: 0;
+}
+
+.admin-ops-panel .btn.ghost {
+  background: linear-gradient(120deg, #1f6f8b, #2f8f9d);
+}
+
+.admin-ops-panel .btn.alt {
+  background: linear-gradient(120deg, #8b5b1c, var(--warm-500));
+}
+
+.admin-ops-panel .btn.cancel-op {
+  background: linear-gradient(120deg, #a33030, #d45b5b);
+}
+
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
