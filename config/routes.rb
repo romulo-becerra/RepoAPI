@@ -40,7 +40,7 @@ Rails.application.routes.draw do
         get "reports/overview", to: "reports#overview"
         get "reports/loans", to: "reports#loans"
         get "reports/accounts_activity", to: "reports#accounts_activity"
-        resources :users, only: [ :index, :create, :destroy ] do
+        resources :users, only: [ :index, :show, :create, :destroy ] do
           member do
             patch :block
             patch :unblock

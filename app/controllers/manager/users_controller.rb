@@ -28,6 +28,13 @@ module Manager
       }, status: :ok
     end
 
+    def show
+      user = User.includes(:user_address, :accounts).find_by(id: params[:id])
+      return render json: { errors: "Usuario no encontrado" }, status: :not_found unless user
+
+      render json: { user: serialize_user_detail(user) }, status: :ok
+    end
+
     def create
       user = User.new(manager_user_params)
       user.role = manager_user_params[:role].presence || :customer
@@ -123,6 +130,49 @@ module Manager
           postal_code: user.user_address.postal_code
         } : nil,
         created_at: user.created_at
+      }
+    end
+
+    def serialize_user_detail(user)
+      accounts = user.accounts.order(default: :desc, created_at: :asc)
+      primary_account = accounts.first
+
+      {
+        id: user.id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        active: user.active,
+        blocked: user.blocked,
+        deleted: false,
+        status: user.status_label,
+        account_number: primary_account&.account_number,
+        accounts: accounts.map { |account| serialize_account(account) },
+        address: user.user_address ? {
+          country: user.user_address.country,
+          city: user.user_address.city,
+          province: user.user_address.province,
+          street: user.user_address.street,
+          street_number: user.user_address.street_number,
+          district: user.user_address.district,
+          postal_code: user.user_address.postal_code,
+          reference: user.user_address.reference
+        } : nil,
+        created_at: user.created_at,
+        updated_at: user.updated_at
+      }
+    end
+
+    def serialize_account(account)
+      {
+        id: account.id,
+        account_number: account.account_number,
+        clabe: account.clabe,
+        account_type: account.account_type,
+        balance: account.balance,
+        default: account.default
       }
     end
   end

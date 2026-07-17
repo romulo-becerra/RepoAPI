@@ -36,6 +36,7 @@ let txPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_pr
 let adminUsersPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
 let adminPlanPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
 let adminPreviewScheduleCache = [];
+let adminPreviewPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
 let adminInstallmentsStatusTotalsCache = {};
 let modalDecisionResolver = null;
 let modalCloseTimer = null;
@@ -118,6 +119,10 @@ const el = {
   adminLoanPreviewModalCard: document.querySelector('#adminLoanPreviewModal .action-modal-card'),
   adminLoanPreviewMeta: document.getElementById('adminLoanPreviewMeta'),
   adminLoanPreviewModalRows: document.getElementById('adminLoanPreviewModalRows'),
+  adminLoanPreviewPerPage: document.getElementById('adminLoanPreviewPerPage'),
+  adminLoanPreviewPrevBtn: document.getElementById('adminLoanPreviewPrevBtn'),
+  adminLoanPreviewNextBtn: document.getElementById('adminLoanPreviewNextBtn'),
+  adminLoanPreviewPageInfo: document.getElementById('adminLoanPreviewPageInfo'),
   adminLoanPreviewCloseBtn: document.getElementById('adminLoanPreviewCloseBtn'),
   adminLoanPreviewDownloadBtn: document.getElementById('adminLoanPreviewDownloadBtn'),
   actionModal: document.getElementById('actionModal'),
@@ -215,6 +220,55 @@ function hideAdminLoanPreviewModal() {
   unlockBodyScroll();
 }
 
+function updateAdminLoanPreviewPaginationUi() {
+  if (!el.adminLoanPreviewPageInfo || !el.adminLoanPreviewPrevBtn || !el.adminLoanPreviewNextBtn) {
+    return;
+  }
+
+  el.adminLoanPreviewPageInfo.textContent = `${adminPreviewPaginationMeta.page} / ${adminPreviewPaginationMeta.total_pages}`;
+  el.adminLoanPreviewPrevBtn.disabled = !adminPreviewPaginationMeta.has_prev;
+  el.adminLoanPreviewNextBtn.disabled = !adminPreviewPaginationMeta.has_next;
+}
+
+function renderAdminLoanPreviewModalRows() {
+  if (!el.adminLoanPreviewModalRows) {
+    return;
+  }
+
+  const schedule = adminPreviewScheduleCache || [];
+  if (schedule.length === 0) {
+    el.adminLoanPreviewModalRows.innerHTML = '<tr><td colspan="5">Sin plan previsualizado</td></tr>';
+    adminPreviewPaginationMeta = { page: 1, per_page: Number(el.adminLoanPreviewPerPage?.value || 10), total: 0, total_pages: 1, has_prev: false, has_next: false };
+    updateAdminLoanPreviewPaginationUi();
+    return;
+  }
+
+  const perPage = Math.max(Number(el.adminLoanPreviewPerPage?.value || adminPreviewPaginationMeta.per_page || 10), 1);
+  const total = schedule.length;
+  const totalPages = Math.max(Math.ceil(total / perPage), 1);
+  const page = Math.min(Math.max(Number(adminPreviewPaginationMeta.page || 1), 1), totalPages);
+  const start = (page - 1) * perPage;
+  const visibleRows = schedule.slice(start, start + perPage);
+
+  adminPreviewPaginationMeta = {
+    page,
+    per_page: perPage,
+    total,
+    total_pages: totalPages,
+    has_prev: page > 1,
+    has_next: page < totalPages
+  };
+
+  el.adminLoanPreviewModalRows.innerHTML = visibleRows
+    .map(
+      (item) =>
+        `<tr><td>${item.installment_number}</td><td>${item.due_date}</td><td>${Number(item.amount || 0).toFixed(2)}</td><td>${Number(item.principal_amount || 0).toFixed(2)}</td><td>${Number(item.interest_amount || 0).toFixed(2)}</td></tr>`
+    )
+    .join('');
+
+  updateAdminLoanPreviewPaginationUi();
+}
+
 function showAdminLoanPreviewModal(payload, values) {
   const schedule = payload.projected_schedule || [];
   if (!el.adminLoanPreviewModal || !el.adminLoanPreviewModalRows || !el.adminLoanPreviewMeta) {
@@ -226,16 +280,15 @@ function showAdminLoanPreviewModal(payload, values) {
   const monthlyPayment = Number(payload.monthly_payment || 0).toFixed(2);
   el.adminLoanPreviewMeta.textContent = `Cuenta: ${values.accountId} | Monto: S/ ${Number(values.amount || 0).toFixed(2)} | Meses: ${values.termMonths} | Interes anual: ${annualRate}% | Cuota mensual: S/ ${monthlyPayment}`;
 
-  if (schedule.length === 0) {
-    el.adminLoanPreviewModalRows.innerHTML = '<tr><td colspan="5">Sin plan previsualizado</td></tr>';
-  } else {
-    el.adminLoanPreviewModalRows.innerHTML = schedule
-      .map(
-        (item) =>
-          `<tr><td>${item.installment_number}</td><td>${item.due_date}</td><td>${Number(item.amount || 0).toFixed(2)}</td><td>${Number(item.principal_amount || 0).toFixed(2)}</td><td>${Number(item.interest_amount || 0).toFixed(2)}</td></tr>`
-      )
-      .join('');
-  }
+  adminPreviewPaginationMeta = {
+    page: 1,
+    per_page: Math.max(Number(el.adminLoanPreviewPerPage?.value || 10), 1),
+    total: schedule.length,
+    total_pages: Math.max(Math.ceil(schedule.length / Math.max(Number(el.adminLoanPreviewPerPage?.value || 10), 1)), 1),
+    has_prev: false,
+    has_next: schedule.length > Math.max(Number(el.adminLoanPreviewPerPage?.value || 10), 1)
+  };
+  renderAdminLoanPreviewModalRows();
 
   el.adminLoanPreviewModal.classList.remove('hidden');
   lockBodyScroll();
@@ -279,6 +332,7 @@ function resetAdminAccountLookupState() {
   persistState();
   clearAdminInstallmentsStatusTotalsCache();
   setAdminInstallmentsStatusTotals(0, 0);
+  setAdminAccountLookupValidation('');
 
   el.adminInspectLoanId.innerHTML = '';
   const option = document.createElement('option');
@@ -1473,6 +1527,34 @@ function bindEvents() {
     });
   }
 
+  if (el.adminLoanPreviewPerPage) {
+    el.adminLoanPreviewPerPage.addEventListener('change', () => {
+      adminPreviewPaginationMeta.page = 1;
+      renderAdminLoanPreviewModalRows();
+    });
+  }
+
+  if (el.adminLoanPreviewPrevBtn) {
+    el.adminLoanPreviewPrevBtn.addEventListener('click', () => {
+      if (adminPreviewPaginationMeta.page <= 1) {
+        return;
+      }
+      adminPreviewPaginationMeta.page -= 1;
+      renderAdminLoanPreviewModalRows();
+    });
+  }
+
+  if (el.adminLoanPreviewNextBtn) {
+    el.adminLoanPreviewNextBtn.addEventListener('click', () => {
+      const totalPages = adminPreviewPaginationMeta.total_pages || 1;
+      if (adminPreviewPaginationMeta.page >= totalPages) {
+        return;
+      }
+      adminPreviewPaginationMeta.page += 1;
+      renderAdminLoanPreviewModalRows();
+    });
+  }
+
   if (el.refreshBalanceBtn) {
     el.refreshBalanceBtn.addEventListener('click', async () => {
       try {
@@ -1841,6 +1923,24 @@ function bindEvents() {
     }
   });
 
+  document.getElementById('adminCancelCreateUserBtn').addEventListener('click', () => {
+    clearFormFields(document.getElementById('adminCreateUserForm'));
+    toggleAdminOperation('');
+    renderResponse(200, { message: 'Operacion cancelada. Formulario cerrado.' });
+  });
+
+  document.getElementById('adminCancelCreateLoanBtn').addEventListener('click', () => {
+    clearFormFields(document.getElementById('adminCreateLoanForm'));
+    toggleAdminOperation('');
+    renderResponse(200, { message: 'Operacion cancelada. Formulario cerrado.' });
+  });
+
+  document.getElementById('adminCancelAccountOpsBtn').addEventListener('click', () => {
+    clearFormFields(document.getElementById('adminAccountOpsForm'));
+    toggleAdminOperation('');
+    renderResponse(200, { message: 'Operacion cancelada. Formulario cerrado.' });
+  });
+
   document.getElementById('adminDeleteUserForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     const userId = document.getElementById('adminDeleteUserId').value.trim();
@@ -1896,6 +1996,8 @@ function bindEvents() {
 
     const lookup = el.adminLookupAccountId.value.trim();
     if (!lookup) {
+      resetAdminAccountLookupState();
+      setAdminAccountLookupValidation('Debes indicar un account ID o numero de cuenta valido.');
       renderResponse(422, { errors: 'Debes indicar account ID o numero de cuenta.' });
       return;
     }

@@ -271,6 +271,54 @@ Requiere usuario con role=manager.
 ### GET /api/v1/manager/users
 Vista de usuarios (listado de usuarios y direccion resumida).
 
+### GET /api/v1/manager/users/:id
+Retorna toda la informacion de un usuario especifico (perfil completo para el panel de gerencia).
+
+Respuesta ejemplo:
+{
+  "user": {
+    "id": 5,
+    "first_name": "Ana",
+    "last_name": "Lopez",
+    "email": "ana@example.com",
+    "phone": "+51998111222",
+    "role": "customer",
+    "active": true,
+    "blocked": false,
+    "deleted": false,
+    "status": "active",
+    "account_number": "1234567890",
+    "accounts": [
+      {
+        "id": 5,
+        "account_number": "1234567890",
+        "clabe": "123456789012345678",
+        "account_type": "user",
+        "balance": 1000.0,
+        "default": true
+      }
+    ],
+    "address": {
+      "country": "Peru",
+      "city": "Lima",
+      "province": "Lima",
+      "street": "Av. Principal",
+      "street_number": "123",
+      "district": "Miraflores",
+      "postal_code": "15074",
+      "reference": "Frente al parque"
+    },
+    "created_at": "2026-07-01T10:00:00.000Z",
+    "updated_at": "2026-07-10T12:00:00.000Z"
+  }
+}
+
+Notas:
+- `status` resume el estado del usuario: `active`, `blocked` o `deactivated` (deducido de `active`/`blocked`).
+- `deleted` siempre es `false` en esta respuesta: los usuarios se eliminan de forma definitiva (hard delete), por lo que un usuario eliminado retorna 404 en lugar de un flag `deleted: true`.
+- `account_number` corresponde a la cuenta por defecto (`default: true`); `accounts` incluye todas las cuentas del usuario.
+- Retorna 404 con `{ "errors": "Usuario no encontrado" }` si el `id` no existe.
+
 ### POST /api/v1/manager/users
 Agregar usuario desde panel gerente.
 
@@ -284,8 +332,17 @@ Body:
   "role": "customer"
 }
 
+### PATCH /api/v1/manager/users/:id/block
+Bloquea un usuario activo (no permite bloquear al propio usuario gerente ni a usuarios desactivados).
+
+### PATCH /api/v1/manager/users/:id/unblock
+Desbloquea un usuario previamente bloqueado.
+
+### PATCH /api/v1/manager/users/:id/deactivate
+Desactiva un usuario (limpia el flag `blocked`). No permite desactivar al propio usuario gerente.
+
 ### DELETE /api/v1/manager/users/:id
-Eliminar usuario desde panel gerente.
+Eliminar usuario desde panel gerente (hard delete, no reversible).
 
 ### GET /api/v1/manager/reports/overview
 Reporte ejecutivo:

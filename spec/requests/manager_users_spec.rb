@@ -12,6 +12,30 @@ RSpec.describe 'Manager::Users API', type: :request do
     }
   end
 
+  describe 'GET /api/v1/manager/users/:id' do
+    it 'returns full user detail including status and account info' do
+      get "/api/v1/manager/users/#{customer.id}", headers: headers, as: :json
+
+      expect(response).to have_http_status(:ok)
+      body = JSON.parse(response.body)['user']
+      default_account = customer.accounts.find_by(default: true)
+      expect(body['id']).to eq(customer.id)
+      expect(body['active']).to eq(true)
+      expect(body['blocked']).to eq(false)
+      expect(body['deleted']).to eq(false)
+      expect(body['status']).to eq('active')
+      expect(body['account_number']).to eq(default_account.account_number)
+      expect(body['accounts']).to be_an(Array)
+      expect(body['accounts'].map { |a| a['account_number'] }).to include(customer_account.account_number)
+    end
+
+    it 'returns not found for an unknown user' do
+      get '/api/v1/manager/users/999999', headers: headers, as: :json
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
   describe 'PATCH /api/v1/manager/users/:id/block' do
     it 'blocks a customer user' do
       patch "/api/v1/manager/users/#{customer.id}/block", headers: headers, as: :json
