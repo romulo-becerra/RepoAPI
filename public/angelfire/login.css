@@ -43,6 +43,16 @@ body {
   padding: 1.2rem;
 }
 
+.brand-image {
+  display: block;
+  width: 100%;
+  max-height: 260px;
+  object-fit: cover;
+  border-radius: 14px;
+  margin-bottom: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 .tag {
   margin: 0;
   text-transform: uppercase;
