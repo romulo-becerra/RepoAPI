@@ -80,6 +80,115 @@ h1 {
   gap: 0.35rem;
 }
 
+.nav-link {
+  color: #8fd8cf;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+  font-weight: 700;
+}
+
+.nav-link:hover,
+.nav-link:focus-visible {
+  color: #dff9f4;
+}
+
+.rates-widget {
+  margin-top: 0.9rem;
+}
+
+.rates-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.rates-link::before {
+  content: '▸';
+  font-size: 0.76rem;
+  transform: translateY(-1px);
+}
+
+.rates-link[aria-expanded='true']::before {
+  content: '▾';
+}
+
+.rates-panel {
+  margin-top: 0.55rem;
+  border: 1px solid rgba(143, 216, 207, 0.35);
+  border-radius: 12px;
+  background: rgba(14, 44, 58, 0.75);
+  padding: 0.65rem;
+}
+
+.rates-panel-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.4rem;
+}
+
+.rates-close-btn {
+  border-color: rgba(180, 204, 219, 0.6);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.rates-panel h3 {
+  margin: 0 0 0.55rem;
+  text-align: center;
+  font-size: 0.82rem;
+  color: #d9edf5;
+  letter-spacing: 0.02em;
+}
+
+.rates-source {
+  margin: 0 0 0.45rem;
+  font-size: 0.73rem;
+  color: #d8edf5;
+}
+
+.rates-source a {
+  color: #9fe7db;
+}
+
+.rates-updated {
+  margin: 0 0 0.5rem;
+  font-size: 0.71rem;
+  color: #c7deea;
+}
+
+.rates-caption {
+  margin: 0.55rem 0 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #d2e5ee;
+}
+
+.rates-table-wrap {
+  overflow-x: auto;
+}
+
+.rates-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 580px;
+  font-size: 0.71rem;
+  background: #f5f8fb;
+  color: #1b3340;
+}
+
+.rates-table th,
+.rates-table td {
+  border: 1px solid #c9d6df;
+  padding: 0.28rem 0.36rem;
+  text-align: left;
+}
+
+.rates-table thead th {
+  background: #dce6ee;
+  color: #123d66;
+  text-align: center;
+  font-weight: 800;
+}
+
 .forms-panel {
   display: grid;
   gap: 0.8rem;

@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AngelFire | Encuesta</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="survey.css" />
+  </head>
+  <body>
+    <main class="survey-shell">
+      <header class="hero">
+        <p class="tag">AngelFire Research Lab</p>
+        <h1>Encuesta de Experiencia Bancaria</h1>
+        <p>
+          Este formulario incluye varios elementos web interactivos para pruebas de automatizacion y UX.
+        </p>
+        <a class="nav-link" href="/angelfire/login.html" data-testid="survey-back-login">Volver al login</a>
+      </header>
+
+      <form id="surveyForm" class="survey-card" data-testid="survey-form" novalidate>
+        <h2>Perfil del cliente</h2>
+
+        <label for="fullName">Nombre completo (text input)</label>
+        <input id="fullName" name="full_name" type="text" placeholder="Ej: Ana Lopez" required data-testid="survey-full-name" />
+
+        <label for="email">Correo electronico</label>
+        <input id="email" name="email" type="email" placeholder="ana@example.com" required data-testid="survey-email" />
+
+        <label for="phone">Telefono</label>
+        <input id="phone" name="phone" type="tel" placeholder="+59170000000" data-testid="survey-phone" />
+
+        <label for="country">Pais (Country)</label>
+        <select id="country" name="country" required data-testid="survey-country">
+          <option value="">Selecciona una opcion</option>
+          <option value="AR">Argentina</option>
+          <option value="BO">Bolivia</option>
+          <option value="BR">Brasil</option>
+          <option value="CL">Chile</option>
+          <option value="CO">Colombia</option>
+          <option value="EC">Ecuador</option>
+          <option value="MX">Mexico</option>
+          <option value="PE">Peru</option>
+          <option value="PY">Paraguay</option>
+          <option value="UY">Uruguay</option>
+          <option value="VE">Venezuela</option>
+          <option value="US">Estados Unidos</option>
+          <option value="ES">Espana</option>
+        </select>
+
+        <label for="ageRange">Rango de edad (dropdown)</label>
+        <select id="ageRange" name="age_range" required data-testid="survey-age-range">
+          <option value="">Selecciona una opcion</option>
+          <option value="18-25">18-25</option>
+          <option value="26-35">26-35</option>
+          <option value="36-50">36-50</option>
+          <option value="51+">51+</option>
+        </select>
+
+        <label for="accountType">Tipo de cuenta principal (dropdown)</label>
+        <select id="accountType" name="account_type" required data-testid="survey-account-type">
+          <option value="">Selecciona una opcion</option>
+          <option value="ahorros">Cuenta de ahorros</option>
+          <option value="corriente">Cuenta corriente</option>
+          <option value="digital">Cuenta digital</option>
+          <option value="premium">Cuenta premium</option>
+        </select>
+
+        <label for="mainProduct">Producto principal usado (autocomplete)</label>
+        <input id="mainProduct" name="main_product" list="productList" placeholder="Cuenta de ahorros" data-testid="survey-main-product" />
+        <datalist id="productList">
+          <option value="Cuenta de ahorros"></option>
+          <option value="Cuenta corriente"></option>
+          <option value="Credito personal"></option>
+          <option value="Tarjeta de debito"></option>
+          <option value="Billetera digital"></option>
+        </datalist>
+
+        <h2>Uso de servicios</h2>
+
+        <fieldset id="channelGroup">
+          <legend>Canal preferido (radio button)</legend>
+          <label><input type="radio" name="channel" value="mobile" checked data-testid="survey-channel-mobile" /> App movil</label>
+          <label><input type="radio" name="channel" value="web" data-testid="survey-channel-web" /> Web</label>
+          <label><input type="radio" name="channel" value="agency" data-testid="survey-channel-agency" /> Agencia fisica</label>
+          <label><input type="radio" name="channel" value="atm" data-testid="survey-channel-atm" /> Cajero (ATM)</label>
+        </fieldset>
+
+        <fieldset id="operationsGroup">
+          <legend>Operaciones frecuentes (checkbox)</legend>
+          <label><input type="checkbox" name="operations" value="transferencias" data-testid="survey-op-transfers" /> Transferencias</label>
+          <label><input type="checkbox" name="operations" value="pagos" data-testid="survey-op-payments" /> Pago de servicios</label>
+          <label><input type="checkbox" name="operations" value="depositos" data-testid="survey-op-deposits" /> Depositos</label>
+          <label><input type="checkbox" name="operations" value="prestamos" data-testid="survey-op-loans" /> Prestamos</label>
+        </fieldset>
+
+        <label for="productsUsed">Productos usados (multi-select dropdown)</label>
+        <select id="productsUsed" name="products_used" multiple size="5" data-testid="survey-products-used">
+          <option value="ahorros">Cuenta de ahorros</option>
+          <option value="corriente">Cuenta corriente</option>
+          <option value="tarjeta_credito">Tarjeta de credito</option>
+          <option value="credito_hipotecario">Credito hipotecario</option>
+          <option value="seguros">Seguros</option>
+        </select>
+
+        <label for="usageFrequency">Frecuencia de uso de canales digitales (dropdown)</label>
+        <select id="usageFrequency" name="usage_frequency" required data-testid="survey-usage-frequency">
+          <option value="">Selecciona una opcion</option>
+          <option value="diario">Diario</option>
+          <option value="semanal">Semanal</option>
+          <option value="quincenal">Quincenal</option>
+          <option value="mensual">Mensual</option>
+          <option value="esporadico">Esporadico</option>
+        </select>
+
+        <label for="satisfaction">Nivel de satisfaccion: <output id="satisfactionOutput">7</output>/10</label>
+        <input id="satisfaction" name="satisfaction" type="range" min="1" max="10" value="7" data-testid="survey-satisfaction" />
+
+        <label for="nps">Probabilidad de recomendarnos (%)</label>
+        <input id="nps" name="nps" type="number" min="0" max="100" value="80" data-testid="survey-nps" />
+
+        <label for="preferredDate">Fecha ideal para contacto</label>
+        <input id="preferredDate" name="preferred_date" type="date" data-testid="survey-contact-date" />
+
+        <label for="preferredTime">Hora ideal para contacto</label>
+        <input id="preferredTime" name="preferred_time" type="time" data-testid="survey-contact-time" />
+
+        <label for="themeColor">Color favorito para el dashboard</label>
+        <input id="themeColor" name="theme_color" type="color" value="#0c8a7f" data-testid="survey-theme-color" />
+
+        <label for="avatarFile">Subir imagen de perfil (file input)</label>
+        <input id="avatarFile" name="avatar_file" type="file" accept="image/*" data-testid="survey-avatar-file" />
+
+        <label for="bankSite">Sitio bancario de referencia (url)</label>
+        <input id="bankSite" name="bank_site" type="url" placeholder="https://www.ejemplo.com" data-testid="survey-bank-site" />
+
+        <label for="comments">Comentarios (textarea)</label>
+        <textarea id="comments" name="comments" rows="4" placeholder="Comparte tu experiencia" data-testid="survey-comments"></textarea>
+
+        <label class="inline-check">
+          <input id="allowContact" name="allow_contact" type="checkbox" checked data-testid="survey-allow-contact" />
+          Acepto ser contactado para mejorar servicios
+        </label>
+
+        <div class="meter-area" aria-live="polite">
+          <p>Indice de experiencia detectado</p>
+          <meter id="experienceMeter" min="0" max="100" low="40" high="70" optimum="85" value="80">80</meter>
+          <progress id="completionProgress" max="100" value="35">35%</progress>
+        </div>
+
+        <details>
+          <summary>Ayuda para completar la encuesta</summary>
+          <p>Selecciona al menos un canal, una operacion frecuente y completa los datos requeridos.</p>
+        </details>
+
+        <div class="actions">
+          <button class="btn" type="submit" data-testid="survey-submit">Enviar encuesta</button>
+          <button class="btn ghost" type="reset" data-testid="survey-reset">Limpiar formulario</button>
+        </div>
+      </form>
+
+      <section class="survey-card result-card">
+        <h2>Salida de la encuesta</h2>
+        <p id="resultStatus">Status: listo para enviar</p>
+        <pre id="resultBox" data-testid="survey-result-box">Sin respuestas aun.</pre>
+      </section>
+    </main>
+    <script src="survey.js"></script>
+  </body>
+</html>
