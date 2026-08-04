@@ -7,6 +7,17 @@ const nps = document.getElementById('nps');
 const experienceMeter = document.getElementById('experienceMeter');
 const completionProgress = document.getElementById('completionProgress');
 const operationsGroup = document.getElementById('operationsGroup');
+const toggleHiddenDropdown = document.getElementById('toggleHiddenDropdown');
+const hiddenDropdownWrapper = document.getElementById('hiddenDropdownWrapper');
+const riskProfile = document.getElementById('riskProfile');
+
+const hiddenRiskOptions = [
+  { value: 'conservador', label: 'Conservador' },
+  { value: 'moderado', label: 'Moderado' },
+  { value: 'agresivo', label: 'Agresivo' }
+];
+
+let hiddenOptionsLoaded = false;
 
 const fieldRules = {
   full_name: {
@@ -278,6 +289,8 @@ function collectFormData() {
     operations: selectedValues(form.querySelectorAll('input[name="operations"]')),
     products_used: selectedOptions(form.products_used),
     usage_frequency: form.usage_frequency.value,
+    country_static: form.country_static.value,
+    risk_profile: form.risk_profile ? form.risk_profile.value : '',
     satisfaction: Number(form.satisfaction.value),
     nps: Number(form.nps.value),
     preferred_date: form.preferred_date.value,
@@ -291,6 +304,21 @@ function collectFormData() {
   };
 
   return data;
+}
+
+function loadHiddenDropdownOptions() {
+  if (hiddenOptionsLoaded || !riskProfile) {
+    return;
+  }
+
+  hiddenRiskOptions.forEach((item) => {
+    const option = document.createElement('option');
+    option.value = item.value;
+    option.textContent = item.label;
+    riskProfile.appendChild(option);
+  });
+
+  hiddenOptionsLoaded = true;
 }
 
 satisfaction.addEventListener('input', updateLiveWidgets);
@@ -339,5 +367,20 @@ form.addEventListener('submit', (event) => {
   resultStatus.textContent = 'Status: encuesta enviada';
   resultBox.textContent = JSON.stringify(payload, null, 2);
 });
+
+if (toggleHiddenDropdown && hiddenDropdownWrapper) {
+  toggleHiddenDropdown.addEventListener('click', () => {
+    const isHidden = hiddenDropdownWrapper.hasAttribute('hidden');
+    if (isHidden) {
+      loadHiddenDropdownOptions();
+      hiddenDropdownWrapper.removeAttribute('hidden');
+      toggleHiddenDropdown.textContent = 'Ocultar hidden dropdown';
+      return;
+    }
+
+    hiddenDropdownWrapper.setAttribute('hidden', '');
+    toggleHiddenDropdown.textContent = 'Mostrar hidden dropdown';
+  });
+}
 
 updateLiveWidgets();

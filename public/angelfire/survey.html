@@ -118,6 +118,33 @@
           <option value="esporadico">Esporadico</option>
         </select>
 
+        <h2>Seccion de dropdown estatico</h2>
+
+        <label for="countryStatic">Country (static dropdown con select)</label>
+        <select id="countryStatic" name="country_static" data-testid="survey-country-static">
+          <option value="AR">Argentina</option>
+          <option value="BO" selected>Bolivia</option>
+          <option value="BR">Brasil</option>
+          <option value="CL">Chile</option>
+          <option value="CO">Colombia</option>
+          <option value="MX">Mexico</option>
+          <option value="PE">Peru</option>
+          <option value="US">Estados Unidos</option>
+          <option value="ES">Espana</option>
+        </select>
+
+        <h2>Seccion de hidden dropdown</h2>
+        <p>Este dropdown se carga de forma diferida: sus opciones se crean cuando decides mostrarlo.</p>
+        <button id="toggleHiddenDropdown" class="btn ghost" type="button" data-testid="survey-toggle-hidden-dropdown">
+          Mostrar hidden dropdown
+        </button>
+        <div id="hiddenDropdownWrapper" hidden>
+          <label for="riskProfile">Perfil de riesgo (hidden dropdown)</label>
+          <select id="riskProfile" name="risk_profile" data-testid="survey-risk-profile">
+            <option value="">Selecciona una opcion</option>
+          </select>
+        </div>
+
         <label for="satisfaction">Nivel de satisfaccion: <output id="satisfactionOutput">7</output>/10</label>
         <input id="satisfaction" name="satisfaction" type="range" min="1" max="10" value="7" data-testid="survey-satisfaction" />
 
