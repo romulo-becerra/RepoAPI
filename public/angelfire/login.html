@@ -145,6 +145,47 @@
           </a>
         </p>
 
+        <section class="tables-showcase" aria-label="Tablas web para pruebas">
+          <h2>Static web table</h2>
+          <p class="rates-caption">Tabla estatica de tipos de cuenta y beneficios.</p>
+          <div class="rates-table-wrap">
+            <table class="rates-table" aria-label="Static web table">
+              <thead>
+                <tr>
+                  <th>Tipo de cuenta</th>
+                  <th>Mantenimiento</th>
+                  <th>Transferencias</th>
+                  <th>Atencion</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Basica</td><td>Bs 0</td><td>Nacionales</td><td>Standard</td></tr>
+                <tr><td>Digital</td><td>Bs 0</td><td>Nacionales + QR</td><td>Chat</td></tr>
+                <tr><td>Premium</td><td>Bs 40</td><td>Internacionales</td><td>Prioritaria</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h2>Dynamic web table</h2>
+          <p class="rates-caption">Tabla dinamica de estado de la sesion y tiempo de actualizacion.</p>
+          <div class="rates-panel-actions">
+            <button id="refreshDynamicTableBtn" type="button" class="btn ghost mini" data-testid="auth-refresh-dynamic-table">
+              Actualizar dynamic table
+            </button>
+          </div>
+          <div class="rates-table-wrap">
+            <table class="rates-table" aria-label="Dynamic web table">
+              <thead>
+                <tr>
+                  <th>Metric</th>
+                  <th>Value</th>
+                </tr>
+              </thead>
+              <tbody id="dynamicTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+
        <h2>Sponsors</h2>
          <p><a id="link-demo" class="nav-link" href="https://demowebshop.tricentis.com/" data-role="navigation" data-testid="main-parent-link" aria-label="Abrir Web Shop" title="Ir al Demo Web Shop">Demo Web Shop</a></p>
 

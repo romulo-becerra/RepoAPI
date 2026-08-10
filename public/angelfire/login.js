@@ -39,8 +39,26 @@ const el = {
   ratesSourceLink: document.getElementById('ratesSourceLink'),
   ratesOfficialBody: document.getElementById('ratesOfficialBody'),
   ratesCurrenciesBody: document.getElementById('ratesCurrenciesBody'),
-  ratesUfvBody: document.getElementById('ratesUfvBody')
+  ratesUfvBody: document.getElementById('ratesUfvBody'),
+  dynamicTableBody: document.getElementById('dynamicTableBody'),
+  refreshDynamicTableBtn: document.getElementById('refreshDynamicTableBtn')
 };
+
+function renderDynamicWebTable() {
+  if (!el.dynamicTableBody) {
+    return;
+  }
+
+  const now = new Date();
+  const rows = [
+    ['Current time', now.toLocaleString('es-BO')],
+    ['Is online', navigator.onLine ? 'true' : 'false'],
+    ['Has token', state.token ? 'true' : 'false'],
+    ['Last rates status', ratesLoaded ? 'loaded from API' : 'using local fallback']
+  ];
+
+  replaceRows(el.dynamicTableBody, rows);
+}
 
 function setRatesPanelOpen(open) {
   if (!el.ratesPanel || !el.toggleRatesLink) {
@@ -332,6 +350,12 @@ function bindEvents() {
     });
   }
 
+  if (el.refreshDynamicTableBtn) {
+    el.refreshDynamicTableBtn.addEventListener('click', () => {
+      renderDynamicWebTable();
+    });
+  }
+
   document.getElementById('goDashboardBtn').addEventListener('click', () => {
     window.location.href = '/angelfire/dashboard.html';
   });
@@ -354,6 +378,8 @@ function init() {
     setRatesPanelOpen(true);
     loadCurrencyRates();
   }
+
+  renderDynamicWebTable();
 }
 
 init();

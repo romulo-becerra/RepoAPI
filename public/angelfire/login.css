@@ -96,6 +96,15 @@ h1 {
   margin-top: 0.9rem;
 }
 
+.tables-showcase {
+  margin: 0.9rem 0;
+}
+
+.tables-showcase h2 {
+  margin: 0.65rem 0 0.35rem;
+  font-size: 1rem;
+}
+
 .rates-link {
   display: inline-flex;
   align-items: center;
