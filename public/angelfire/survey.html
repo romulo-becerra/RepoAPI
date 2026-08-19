@@ -21,7 +21,32 @@
           Este formulario incluye varios elementos web interactivos para pruebas de automatizacion y UX.
         </p>
         <a class="nav-link" href="/angelfire/login.html" data-testid="survey-back-login">Volver al login</a>
+        <a
+          id="surveyPracticeLink"
+          class="nav-link"
+          href="https://testautomationpractice.blogspot.com/"
+          target="_blank"
+          rel="noopener noreferrer"
+          role="link"
+          aria-label="Abrir Test Automation Practice"
+          title="Ir a Test Automation Practice"
+          data-testid="survey-practice-link"
+        >
+          Test Automation Practice
+        </a>
       </header>
+
+<h1>Reserva de cita</h1>
+
+<label for="date">Selecciona fecha:</label>
+<input id="date" type="date" />
+
+<div role="dialog" aria-label="Calendario">
+  <button aria-label="Anterior mes">«</button>
+  <button aria-label="Siguiente mes">»</button>
+
+</div>
+
 
       <form id="surveyForm" class="survey-card" data-testid="survey-form" novalidate>
         <h2>Perfil del cliente</h2>
@@ -34,6 +59,12 @@
 
         <label for="phone">Telefono</label>
         <input id="phone" name="phone" type="tel" placeholder="+59170000000" data-testid="survey-phone" />
+
+        <label for="birthDate">Fecha de nacimiento</label>
+        <input id="birthDate" name="birth_date" type="date" data-testid="survey-birth-date" />
+
+        <label for="accountDate">Fecha de apertura de cuenta</label>
+        <input id="accountDate" name="account_date" type="date" data-testid="survey-account-date" />
 
         <label for="country">Pais (Country)</label>
         <select id="country" name="country" required data-testid="survey-country">
