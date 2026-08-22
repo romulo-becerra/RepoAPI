@@ -4,6 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AngelFire | Encuesta</title>
+    <style>
+      #loginpageLink {
+        position: absolute;   /* lo posiciona respecto al body */
+        top: 10px;            /* distancia desde arriba */
+        right: 10px;          /* distancia desde la derecha */
+      }
+    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -13,6 +20,9 @@
     <link rel="stylesheet" href="survey.css" />
   </head>
   <body>
+      <p>
+        <a id="loginpageLink"class="nav-link" href="/angelfire/login.html" data-testid="survey-back-login">Volver al login</a> 
+       </p>
     <main class="survey-shell">
       <header class="hero">
         <p class="tag">AngelFire Research Lab</p>
@@ -20,9 +30,11 @@
         <p>
           Este formulario incluye varios elementos web interactivos para pruebas de automatizacion y UX.
         </p>
-        <a class="nav-link" href="/angelfire/login.html" data-testid="survey-back-login">Volver al login</a>
-        <a
-          id="surveyPracticeLink"
+      
+        </header>
+
+        <p>
+        <a id="surveyPracticeLink"
           class="nav-link"
           href="https://testautomationpractice.blogspot.com/"
           target="_blank"
@@ -30,24 +42,8 @@
           role="link"
           aria-label="Abrir Test Automation Practice"
           title="Ir a Test Automation Practice"
-          data-testid="survey-practice-link"
-        >
-          Test Automation Practice
-        </a>
-      </header>
-
-<h1>Reserva de cita</h1>
-
-<label for="date">Selecciona fecha:</label>
-<input id="date" type="date" />
-
-<div role="dialog" aria-label="Calendario">
-  <button aria-label="Anterior mes">«</button>
-  <button aria-label="Siguiente mes">»</button>
-
-</div>
-
-
+          data-testid="survey-practice-link" > Test Automation Practice</a>
+        </p>
       <form id="surveyForm" class="survey-card" data-testid="survey-form" novalidate>
         <h2>Perfil del cliente</h2>
 

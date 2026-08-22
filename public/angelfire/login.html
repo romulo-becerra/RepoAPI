@@ -16,6 +16,7 @@
     <main class="auth-shell">
       <section class="brand-panel">
         <img class="brand-image" src="assets/angelfire.jpg" alt="AngelFire" />
+
         <p class="tag">Institucion Financiera</p>
         <h1>AngelFire</h1>
         <p class="copy">
@@ -28,17 +29,52 @@
           <li>Tras ingresar, veras tu nombre y account_number en el panel.</li>
         </ul>
 
-        <div class="rates-widget">
+        <p>
+          <a id="surveyLink" class="nav-link" href="/angelfire/survey.html" data-testid="auth-survey-link" title="Abrir formulario de encuestas">
+            Formulario de encuestas
+          </a>
+        </p>
+
+        
+
+        <section class="tables-showcase" aria-label="Tablas web para pruebas">
+          <h2>Static web table</h2>
+          <p class="rates-caption">Tabla estatica de tipos de cuenta y beneficios.</p>
+          <div class="rates-table-wrap">
+            <table class="rates-table" name="static_web_table" aria-label="Static web table">
+              <thead>
+                <tr>
+                  <th>Tipo de cuenta</th>
+                  <th>Mantenimiento (Bs)</th>
+                  <th>Transferencias</th>
+                  <th>Atencion</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Basica</td><td>10</td><td>Nacionales</td><td>Standard</td></tr>
+                <tr><td>Digital</td><td>20</td><td>Nacionales + QR</td><td>Chat</td></tr>
+                <tr><td>Premium</td><td>40</td><td>Internacionales</td><td>Prioritaria</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="sponsors-panel" aria-label="Sponsors">
+          <h2>Sponsors</h2>
           <p>
-            <a
-              id="toggleRatesLink"
-              class="nav-link rates-link"
-              href="#"
-              data-testid="auth-toggle-currency-rates"
-              aria-controls="ratesPanel"
-              aria-expanded="false"
-              title="Ver tabla de cotizacion de monedas"
-            >
+            <a id="link-demo" class="nav-link" href="https://demowebshop.tricentis.com/" data-role="navigation" data-testid="main-parent-link" aria-label="Abrir Web Shop" title="Ir al Demo Web Shop">Demo Web Shop</a>
+          </p>
+          <img
+            class="brand-image"
+            src="assets/logo-sponsor.png"
+            alt="sponsor"
+            width="190"
+            height="100"
+          />
+
+<div class="rates-widget">
+          <p>
+            <a id="toggleRatesLink" class="nav-link rates-link" href="#" data-testid="auth-toggle-currency-rates" aria-controls="ratesPanel" title="Ver tabla de cotizacion de monedas">
               Cotizacion de monedas
             </a>
           </p>
@@ -139,64 +175,9 @@
           </section>
         </div>
 
-        <p>
-          <a id="surveyLink" class="nav-link" href="/angelfire/survey.html" data-testid="auth-survey-link" title="Abrir formulario de encuestas">
-            Formulario de encuestas
-          </a>
-        </p>
 
-        <section class="tables-showcase" aria-label="Tablas web para pruebas">
-          <h2>Static web table</h2>
-          <p class="rates-caption">Tabla estatica de tipos de cuenta y beneficios.</p>
-          <div class="rates-table-wrap">
-            <table class="rates-table" name="static_web_table" aria-label="Static web table">
-              <thead>
-                <tr>
-                  <th>Tipo de cuenta</th>
-                  <th>Mantenimiento (Bs)</th>
-                  <th>Transferencias</th>
-                  <th>Atencion</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr><td>Basica</td><td>10</td><td>Nacionales</td><td>Standard</td></tr>
-                <tr><td>Digital</td><td>20</td><td>Nacionales + QR</td><td>Chat</td></tr>
-                <tr><td>Premium</td><td>40</td><td>Internacionales</td><td>Prioritaria</td></tr>
-              </tbody>
-            </table>
-          </div>
-
-          <h2>Dynamic web table</h2>
-          <p class="rates-caption">Tabla dinamica de estado de la sesion y tiempo de actualizacion.</p>
-          <div class="rates-panel-actions">
-            <button id="refreshDynamicTableBtn" type="button" class="btn ghost mini" data-testid="auth-refresh-dynamic-table">
-              Actualizar dynamic table
-            </button>
-          </div>
-          <div class="rates-table-wrap">
-            <table class="rates-table" name="dynamic_web_table" aria-label="Dynamic web table">
-              <thead>
-                <tr>
-                  <th>Metric</th>
-                  <th>Value</th>
-                </tr>
-              </thead>
-              <tbody id="dynamicTableBody"></tbody>
-            </table>
-          </div>
         </section>
-
-       <h2>Sponsors</h2>
-         <p><a id="link-demo" class="nav-link" href="https://demowebshop.tricentis.com/" data-role="navigation" data-testid="main-parent-link" aria-label="Abrir Web Shop" title="Ir al Demo Web Shop">Demo Web Shop</a></p>
-
-       <img 
-          class="brand-image" 
-          src="assets/logo-sponsor.png" 
-          alt="sponsor" 
-          width="190" 
-          height="100"
-        />       
-        </section>
+      </section>
 
       <section class="forms-panel">
         <form id="loginForm" class="card">
