@@ -211,8 +211,10 @@ h1 {
 }
 
 .forms-panel {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0.8rem;
+  align-items: center;
 }
 
 .card {
@@ -222,6 +224,7 @@ h1 {
   padding: 0.95rem;
   display: grid;
   gap: 0.55rem;
+  width: min(420px, 100%);
 }
 
 .card h2 {
@@ -247,6 +250,7 @@ input {
   border-radius: 10px;
   padding: 0.58rem 0.65rem;
   font-family: inherit;
+  width: 100%;
 }
 
 input[type='date'] {
@@ -264,6 +268,9 @@ input[type='date'] {
   font-weight: 800;
   color: #fff;
   background: linear-gradient(120deg, var(--accent-700), var(--accent-600));
+  /* keep buttons compact instead of stretching full width */
+  width: auto;
+  justify-self: center;
 }
 
 .btn.alt {
@@ -291,6 +298,11 @@ input[type='date'] {
 .row-actions {
   display: flex;
   gap: 0.5rem;
+  width: 100%;
+}
+
+.row-actions .btn {
+  width: 48%;
 }
 
 .account-card {
@@ -333,5 +345,6 @@ pre {
   .row-actions {
     grid-template-columns: 1fr;
     display: grid;
+    width: 100%;
   }
 }
