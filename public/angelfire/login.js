@@ -44,6 +44,11 @@ const el = {
   refreshDynamicTableBtn: document.getElementById('refreshDynamicTableBtn')
 };
 
+// Controls for showing/hiding the credential UI when needed
+el.formsPanel = document.getElementById('formsPanel');
+el.showCredentialsBtn = document.getElementById('showCredentialsBtn');
+el.responseCard = document.getElementById('responseCard');
+
 function renderDynamicWebTable() {
   if (!el.dynamicTableBody) {
     return;
@@ -257,6 +262,13 @@ function showRegisterForm(show) {
   el.showRegisterBtn.classList.toggle('hidden', show);
 }
 
+function showCredentials(show) {
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) loginForm.classList.toggle('hidden', !show);
+  if (el.registerForm) el.registerForm.classList.toggle('hidden', !show);
+  if (el.responseCard) el.responseCard.classList.toggle('hidden', !show);
+}
+
 async function performLogin(isAdminIntent = false) {
   const accountNumber = el.loginAccountNumber.value.trim();
   const pin = el.loginPin.value.trim() || '1234';
@@ -356,6 +368,10 @@ function bindEvents() {
     });
   }
 
+  if (el.showCredentialsBtn) {
+    el.showCredentialsBtn.addEventListener('click', () => showCredentials(true));
+  }
+
   const goDashboardBtn = document.getElementById('goDashboardBtn');
   if (goDashboardBtn) {
     goDashboardBtn.addEventListener('click', () => {
@@ -375,6 +391,10 @@ function init() {
     if (el.createdAccountNumber) el.createdAccountNumber.textContent = state.accountNumber;
   }
   showRegisterForm(false);
+  // Hide credentials by default; show only when requested via query param or button
+  const showParam = queryParams.get('show') || queryParams.get('showLogin');
+  const shouldShow = showParam === '1' || showParam === 'true';
+  showCredentials(Boolean(shouldShow));
   bindEvents();
 
   if (previewRatesMode) {

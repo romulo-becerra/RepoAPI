@@ -179,8 +179,17 @@
         </section>
       </section>
 
-      <section class="forms-panel">
-        <form id="loginForm" class="card">
+      <section class="forms-panel" id="formsPanel">
+        <div class="intro-card card">
+          <h2>Bienvenido a AngelFire</h2>
+          <p>Para acceder al área privada, haz clic en <strong>Mostrar credenciales</strong> o visita desde la página principal usando el enlace "Login".</p>
+          <div class="row-actions">
+            <button id="showCredentialsBtn" class="btn">Mostrar credenciales</button>
+            <a class="btn ghost" href="/angelfire/index.html">Volver al inicio</a>
+          </div>
+        </div>
+
+        <form id="loginForm" class="card hidden">
           <h2>Login</h2>
           <input id="loginAccountNumber" placeholder="Numero de cuenta" required data-testid="auth-login-account-number" />
           <div class="pin-row">
@@ -211,7 +220,7 @@
 
         <!-- Sección 'Cuenta asignada' eliminada: no se usa en la UI de login -->
 
-        <section class="card response-card">
+        <section class="card response-card hidden" id="responseCard">
           <h2>Respuesta API</h2>
           <p id="responseStatus">Status: -</p>
           <pre id="responseBox" data-testid="auth-response-box">Listo para autenticar.</pre>
