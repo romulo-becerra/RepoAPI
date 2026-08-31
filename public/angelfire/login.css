@@ -348,3 +348,50 @@ pre {
     width: 100%;
   }
 }
+
+/* Landing page styles */
+.site-header {
+  background: linear-gradient(90deg, rgba(10,112,103,0.95), rgba(12,138,127,0.95));
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+}
+.site-nav {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.site-nav .nav-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.site-nav .nav-brand {
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: #fff;
+}
+.site-nav .nav-links {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+}
+.site-nav a { color: #fff; text-decoration: none; font-weight: 700; }
+.site-nav .nav-actions { display: flex; gap: 0.6rem; align-items: center; }
+.site-nav .nav-actions .btn.ghost { border: 1px solid rgba(255,255,255,0.25); color: #fff; background: transparent; }
+
+.hero-shell { max-width: 1180px; margin: 2rem auto; padding: 0 1.2rem; }
+.hero { background: linear-gradient(180deg, rgba(8,26,36,0.05), rgba(8,26,36,0)); padding: 2.2rem; border-radius: 12px; text-align: left; }
+.hero h1 { font-size: clamp(2rem, 4.5vw, 3rem); margin: 0 0 0.5rem; color: var(--ink-900); }
+.hero .lead { margin: 0 0 1rem; color: var(--ink-700); }
+.hero-cta { display: inline-block; padding: 0.8rem 1.1rem; border-radius: 10px; background: linear-gradient(120deg,var(--accent-600),var(--accent-700)); color: #fff; font-weight: 800; text-decoration: none; }
+
+.site-section { margin-top: 1.6rem; background: #fff; padding: 1rem; border-radius: 10px; }
+.site-footer { max-width: 1180px; margin: 2rem auto; padding: 0 1.2rem; color: #9fbfba; }
+
+/* Slight tweaks for intro card on login page */
+.intro-card p { margin: 0 0 0.6rem; }

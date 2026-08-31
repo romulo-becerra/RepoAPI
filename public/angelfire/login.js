@@ -395,6 +395,12 @@ function init() {
   const showParam = queryParams.get('show') || queryParams.get('showLogin');
   const shouldShow = showParam === '1' || showParam === 'true';
   showCredentials(Boolean(shouldShow));
+  // If register param present, open the register form after revealing credentials
+  const registerParam = queryParams.get('register');
+  const hashRegister = window.location.hash === '#register';
+  if ((registerParam === '1' || registerParam === 'true' || hashRegister) && Boolean(shouldShow)) {
+    showRegisterForm(true);
+  }
   bindEvents();
 
   if (previewRatesMode) {
