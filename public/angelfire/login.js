@@ -306,7 +306,7 @@ function bindEvents() {
       });
 
       const createdAccountNumber = registerPayload.account ? registerPayload.account.account_number : '';
-      el.createdAccountNumber.textContent = createdAccountNumber || '-';
+      if (el.createdAccountNumber) el.createdAccountNumber.textContent = createdAccountNumber || '-';
       el.loginAccountNumber.value = createdAccountNumber || '';
       el.loginPin.value = pin;
 
@@ -356,9 +356,12 @@ function bindEvents() {
     });
   }
 
-  document.getElementById('goDashboardBtn').addEventListener('click', () => {
-    window.location.href = '/angelfire/dashboard.html';
-  });
+  const goDashboardBtn = document.getElementById('goDashboardBtn');
+  if (goDashboardBtn) {
+    goDashboardBtn.addEventListener('click', () => {
+      window.location.href = '/angelfire/dashboard.html';
+    });
+  }
 }
 
 function init() {
@@ -369,7 +372,7 @@ function init() {
 
   if (state.accountNumber) {
     el.loginAccountNumber.value = state.accountNumber;
-    el.createdAccountNumber.textContent = state.accountNumber;
+    if (el.createdAccountNumber) el.createdAccountNumber.textContent = state.accountNumber;
   }
   showRegisterForm(false);
   bindEvents();
