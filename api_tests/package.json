@@ -1,0 +1,22 @@
+{
+  "name": "repoapi-api-tests",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Playwright API tests for RepoAPI",
+  "scripts": {
+    "test": "playwright test",
+    "test:unit": "playwright test tests/unit",
+    "test:api": "playwright test tests/api",
+    "report": "playwright show-report"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^22.15.0",
+    "dotenv": "^16.5.0",
+    "typescript": "^5.8.0",
+    "zod": "^3.24.0"
+  }
+}

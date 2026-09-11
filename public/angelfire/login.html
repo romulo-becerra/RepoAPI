@@ -43,6 +43,11 @@
           <li>Si no tienes cuenta, puedes abrir el formulario de registro.</li>
           <li>Tras ingresar, veras tu nombre y account_number en el panel.</li>
         </ul>
+        <p>
+          <a id="autoplayLink" class="nav-link" href="https://sdetqa.vercel.app/autoplay" data-testid="autoplay-link" title="AutoPlay page">
+            AutoPlay
+          </a>
+        </p>
 
         <p>
           <a id="surveyLink" class="nav-link" href="/angelfire/survey.html" data-testid="auth-survey-link" title="Abrir formulario de encuestas">
@@ -195,16 +200,16 @@
       </section>
 
       <section class="forms-panel" id="formsPanel">
-        <div class="intro-card card">
+        <div id="introCard" class="intro-card card hidden">
           <h2>Bienvenido a AngelFire</h2>
           <p>Para acceder al área privada, haz clic en <strong>Mostrar credenciales</strong> o visita desde la página principal usando el enlace "Login".</p>
           <div class="row-actions">
-            <button id="showCredentialsBtn" class="btn">Mostrar credenciales</button>
+            <button id="showCredentialsBtn" class="btn" type="button">Mostrar credenciales</button>
             <a class="btn ghost" href="/angelfire/index.html">Volver al inicio</a>
           </div>
         </div>
 
-        <form id="loginForm" class="card hidden">
+        <form id="loginForm" class="card">
           <h2>Login</h2>
           <input id="loginAccountNumber" placeholder="Numero de cuenta" required data-testid="auth-login-account-number" />
           <div class="pin-row">
