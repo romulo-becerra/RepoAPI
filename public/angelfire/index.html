@@ -3,16 +3,53 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AngelFire | Login</title>
-    <meta http-equiv="refresh" content="5; url=/angelfire/login.html" />
+    <title>AngelFire - Inicio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="login.css" />
   </head>
   <body>
-    <p><a id="link-demo" class="nav-link" href="https://demowebshop.tricentis.com/" data-role="navigation" data-testid="main-parent-link" aria-label="Abrir Demo Web Shop" title="Ir al Demo Web Shop">Demo Web Shop</a></p>
-    <script>
-      setTimeout(function() {
-        window.location.replace('/angelfire/login.html');
-      }, 5000);
-    </script>
-    <p>Redirigiendo a login...</p>
+    <header class="site-header">
+      <nav class="site-nav">
+        <div class="nav-left">
+          <div class="nav-brand">AngelFire</div>
+          <ul class="nav-links">
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="nav-actions">
+          <a class="btn" href="/angelfire/login.html?show=1">Acceder</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="hero-shell">
+      <section class="hero">
+        <h1>Confianza y seguridad para tus finanzas</h1>
+        <p class="lead">Operaciones seguras, experiencia digital ágil y soporte dedicado.</p>
+        <p>
+          <a class="btn hero-cta" href="/angelfire/login.html?show=1">Ingresar a mi cuenta</a>
+        </p>
+      </section>
+
+      <section id="about" class="site-section">
+        <h2>Sobre AngelFire</h2>
+        <p>AngelFire es una plataforma financiera de ejemplo pensada para demostrar APIs y flujos de usuario seguros.</p>
+      </section>
+
+      <section id="contact" class="site-section">
+        <h2>Contacto</h2>
+        <p>Soporte: soporte@angelfire.example</p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>&copy; AngelFire — Demo</p>
+    </footer>
   </body>
 </html>

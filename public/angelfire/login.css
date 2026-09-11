@@ -36,6 +36,7 @@ body {
 }
 
 .brand-panel {
+  position: relative;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 20px;
   background: rgba(8, 26, 36, 0.45);
@@ -80,9 +81,140 @@ h1 {
   gap: 0.35rem;
 }
 
+.nav-link {
+  color: #8fd8cf;
+  text-decoration: underline;
+  text-underline-offset: 0.12em;
+  font-weight: 700;
+}
+
+.nav-link:hover,
+.nav-link:focus-visible {
+  color: #dff9f4;
+}
+
+.rates-widget {
+  position: relative;
+  margin-top: 0.9rem;
+}
+
+.tables-showcase {
+  margin: 0.9rem 0;
+}
+
+.tables-showcase h2 {
+  margin: 0.65rem 0 0.35rem;
+  font-size: 1rem;
+}
+
+.rates-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.rates-link::before {
+  content: '▸';
+  font-size: 0.76rem;
+  transform: translateY(-1px);
+}
+
+.rates-link[aria-expanded='true']::before {
+  content: '▾';
+}
+
+.rates-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(100% + 0.35rem);
+  z-index: 20;
+  width: min(100%, 760px);
+  max-height: min(70vh, 560px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-top: 0;
+  border: 1px solid rgba(143, 216, 207, 0.35);
+  border-radius: 12px;
+  background: rgba(14, 44, 58, 0.75);
+  padding: 0.65rem;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.22);
+}
+
+.rates-panel-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.4rem;
+}
+
+.rates-close-btn {
+  border-color: rgba(180, 204, 219, 0.6);
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.rates-panel h3 {
+  margin: 0 0 0.55rem;
+  text-align: center;
+  font-size: 0.82rem;
+  color: #d9edf5;
+  letter-spacing: 0.02em;
+}
+
+.rates-source {
+  margin: 0 0 0.45rem;
+  font-size: 0.73rem;
+  color: #d8edf5;
+}
+
+.rates-source a {
+  color: #9fe7db;
+}
+
+.rates-updated {
+  margin: 0 0 0.5rem;
+  font-size: 0.71rem;
+  color: #c7deea;
+}
+
+.rates-caption {
+  margin: 0.55rem 0 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #d2e5ee;
+}
+
+.rates-table-wrap {
+  overflow-x: auto;
+}
+
+.rates-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 580px;
+  font-size: 0.71rem;
+  background: #f5f8fb;
+  color: #1b3340;
+}
+
+.rates-table th,
+.rates-table td {
+  border: 1px solid #c9d6df;
+  padding: 0.28rem 0.36rem;
+  text-align: left;
+}
+
+.rates-table thead th {
+  background: #dce6ee;
+  color: #123d66;
+  text-align: center;
+  font-weight: 800;
+}
+
 .forms-panel {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 0.8rem;
+  align-items: center;
 }
 
 .card {
@@ -92,6 +224,7 @@ h1 {
   padding: 0.95rem;
   display: grid;
   gap: 0.55rem;
+  width: min(420px, 100%);
 }
 
 .card h2 {
@@ -107,11 +240,24 @@ label {
   color: var(--ink-700);
 }
 
+.field-label {
+  display: grid;
+  gap: 0.35rem;
+}
+
 input {
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 0.58rem 0.65rem;
   font-family: inherit;
+  width: 100%;
+}
+
+input[type='date'] {
+  width: 100%;
+  min-height: 2.75rem;
+  color: var(--ink-900);
+  background: #fff;
 }
 
 .btn {
@@ -122,6 +268,9 @@ input {
   font-weight: 800;
   color: #fff;
   background: linear-gradient(120deg, var(--accent-700), var(--accent-600));
+  /* keep buttons compact instead of stretching full width */
+  width: auto;
+  justify-self: center;
 }
 
 .btn.alt {
@@ -149,6 +298,11 @@ input {
 .row-actions {
   display: flex;
   gap: 0.5rem;
+  width: 100%;
+}
+
+.row-actions .btn {
+  width: 48%;
 }
 
 .account-card {
@@ -180,9 +334,64 @@ pre {
     grid-template-columns: 1fr;
   }
 
+  .rates-panel {
+    position: static;
+    width: 100%;
+    max-height: none;
+    overflow: visible;
+  }
+
   .pin-row,
   .row-actions {
     grid-template-columns: 1fr;
     display: grid;
+    width: 100%;
   }
 }
+
+/* Landing page styles */
+.site-header {
+  background: linear-gradient(90deg, rgba(10,112,103,0.95), rgba(12,138,127,0.95));
+  color: #fff;
+  padding: 0.6rem 1.2rem;
+}
+.site-nav {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.site-nav .nav-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.site-nav .nav-brand {
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: #fff;
+}
+.site-nav .nav-links {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+}
+.site-nav a { color: #fff; text-decoration: none; font-weight: 700; }
+.site-nav .nav-actions { display: flex; gap: 0.6rem; align-items: center; }
+.site-nav .nav-actions .btn.ghost { border: 1px solid rgba(255,255,255,0.25); color: #fff; background: transparent; }
+
+.hero-shell { max-width: 1180px; margin: 2rem auto; padding: 0 1.2rem; }
+.hero { background: linear-gradient(180deg, rgba(8,26,36,0.05), rgba(8,26,36,0)); padding: 2.2rem; border-radius: 12px; text-align: left; }
+.hero h1 { font-size: clamp(2rem, 4.5vw, 3rem); margin: 0 0 0.5rem; color: var(--ink-900); }
+.hero .lead { margin: 0 0 1rem; color: var(--ink-700); }
+.hero-cta { display: inline-block; padding: 0.8rem 1.1rem; border-radius: 10px; background: linear-gradient(120deg,var(--accent-600),var(--accent-700)); color: #fff; font-weight: 800; text-decoration: none; }
+
+.site-section { margin-top: 1.6rem; background: #fff; padding: 1rem; border-radius: 10px; }
+.site-footer { max-width: 1180px; margin: 2rem auto; padding: 0 1.2rem; color: #9fbfba; }
+
+/* Slight tweaks for intro card on login page */
+.intro-card p { margin: 0 0 0.6rem; }

@@ -15,6 +15,9 @@ const defaultState = {
 };
 
 const state = loadState();
+const queryParams = new URLSearchParams(window.location.search);
+const previewRatesMode = queryParams.get('showRates') === '1';
+let ratesLoaded = false;
 
 const el = {
   responseStatus: document.getElementById('responseStatus'),
@@ -27,8 +30,166 @@ const el = {
   hideRegisterBtn: document.getElementById('hideRegisterBtn'),
   regPin: document.getElementById('regPin'),
   toggleLoginPinBtn: document.getElementById('toggleLoginPinBtn'),
-  toggleRegisterPinBtn: document.getElementById('toggleRegisterPinBtn')
+  toggleRegisterPinBtn: document.getElementById('toggleRegisterPinBtn'),
+  toggleRatesLink: document.getElementById('toggleRatesLink'),
+  ratesPanel: document.getElementById('ratesPanel'),
+  closeRatesBtn: document.getElementById('closeRatesBtn'),
+  ratesTitle: document.getElementById('ratesTitle'),
+  ratesUpdatedAt: document.getElementById('ratesUpdatedAt'),
+  ratesSourceLink: document.getElementById('ratesSourceLink'),
+  ratesOfficialBody: document.getElementById('ratesOfficialBody'),
+  ratesCurrenciesBody: document.getElementById('ratesCurrenciesBody'),
+  ratesUfvBody: document.getElementById('ratesUfvBody'),
+  dynamicTableBody: document.getElementById('dynamicTableBody'),
+  refreshDynamicTableBtn: document.getElementById('refreshDynamicTableBtn')
 };
+
+// Controls for showing/hiding the credential UI when needed
+el.formsPanel = document.getElementById('formsPanel');
+el.showCredentialsBtn = document.getElementById('showCredentialsBtn');
+el.responseCard = document.getElementById('responseCard');
+
+function renderDynamicWebTable() {
+  if (!el.dynamicTableBody) {
+    return;
+  }
+
+  const now = new Date();
+  const rows = [
+    ['Current time', now.toLocaleString('es-BO')],
+    ['Is online', navigator.onLine ? 'true' : 'false'],
+    ['Has token', state.token ? 'true' : 'false'],
+    ['Last rates status', ratesLoaded ? 'loaded from API' : 'using local fallback']
+  ];
+
+  replaceRows(el.dynamicTableBody, rows);
+}
+
+function setRatesPanelOpen(open) {
+  if (!el.ratesPanel || !el.toggleRatesLink) {
+    return;
+  }
+
+  el.ratesPanel.classList.toggle('hidden', !open);
+  el.toggleRatesLink.setAttribute('aria-expanded', String(open));
+}
+
+function normalizeCell(value) {
+  if (value === null || value === undefined || value === '') {
+    return '-';
+  }
+
+  return String(value);
+}
+
+function replaceRows(tbody, rows) {
+  if (!tbody || !Array.isArray(rows)) {
+    return;
+  }
+
+  tbody.replaceChildren();
+
+  rows.forEach((row) => {
+    const tr = document.createElement('tr');
+    row.forEach((cellValue) => {
+      const td = document.createElement('td');
+      td.textContent = normalizeCell(cellValue);
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+}
+
+function replaceUfvRow(tbody, ufv) {
+  if (!tbody || !ufv) {
+    return;
+  }
+
+  tbody.replaceChildren();
+  const tr = document.createElement('tr');
+
+  const header = document.createElement('th');
+  header.textContent = normalizeCell(ufv.country);
+  tr.appendChild(header);
+
+  [ufv.description, ufv.code, ufv.value].forEach((value) => {
+    const td = document.createElement('td');
+    td.textContent = normalizeCell(value);
+    tr.appendChild(td);
+  });
+
+  tbody.appendChild(tr);
+}
+
+function renderRatesPayload(payload) {
+  if (!payload) {
+    return;
+  }
+
+  if (el.ratesTitle && payload.title) {
+    el.ratesTitle.textContent = payload.title;
+  }
+
+  if (el.ratesSourceLink && payload.source_url) {
+    el.ratesSourceLink.href = payload.source_url;
+  }
+
+  if (el.ratesUpdatedAt) {
+    const status = payload.status === 'ok' ? 'fuente BCB' : 'datos de respaldo';
+    const updatedAt = payload.updated_at ? new Date(payload.updated_at).toLocaleString('es-BO') : 'sin fecha';
+    el.ratesUpdatedAt.textContent = `Actualizacion: ${updatedAt} (${status})`;
+  }
+
+  if (payload.official_rate) {
+    replaceRows(el.ratesOfficialBody, [[
+      payload.official_rate.country,
+      payload.official_rate.currency,
+      payload.official_rate.code,
+      payload.official_rate.tco_bs_usd
+    ]]);
+  }
+
+  if (Array.isArray(payload.currencies) && payload.currencies.length > 0) {
+    const rows = payload.currencies.map((row) => [
+      row.country_region,
+      row.currency,
+      row.code,
+      row.bs_per_unit,
+      row.fx_rate
+    ]);
+    replaceRows(el.ratesCurrenciesBody, rows);
+  }
+
+  if (payload.ufv) {
+    replaceUfvRow(el.ratesUfvBody, payload.ufv);
+  }
+}
+
+async function loadCurrencyRates() {
+  if (ratesLoaded) {
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/v1/currency_rates', {
+      headers: {
+        Accept: 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`status ${response.status}`);
+    }
+
+    const payload = await response.json();
+    renderRatesPayload(payload);
+    ratesLoaded = true;
+  } catch (_error) {
+    if (el.ratesUpdatedAt) {
+      el.ratesUpdatedAt.textContent = 'Actualizacion: no se pudo consultar API, usando tabla local.';
+    }
+  }
+}
 
 function loadState() {
   try {
@@ -101,6 +262,13 @@ function showRegisterForm(show) {
   el.showRegisterBtn.classList.toggle('hidden', show);
 }
 
+function showCredentials(show) {
+  const loginForm = document.getElementById('loginForm');
+  if (loginForm) loginForm.classList.toggle('hidden', !show);
+  if (el.registerForm) el.registerForm.classList.toggle('hidden', !show);
+  if (el.responseCard) el.responseCard.classList.toggle('hidden', !show);
+}
+
 async function performLogin(isAdminIntent = false) {
   const accountNumber = el.loginAccountNumber.value.trim();
   const pin = el.loginPin.value.trim() || '1234';
@@ -150,7 +318,7 @@ function bindEvents() {
       });
 
       const createdAccountNumber = registerPayload.account ? registerPayload.account.account_number : '';
-      el.createdAccountNumber.textContent = createdAccountNumber || '-';
+      if (el.createdAccountNumber) el.createdAccountNumber.textContent = createdAccountNumber || '-';
       el.loginAccountNumber.value = createdAccountNumber || '';
       el.loginPin.value = pin;
 
@@ -175,23 +343,72 @@ function bindEvents() {
     togglePinVisibility(el.regPin, el.toggleRegisterPinBtn);
   });
 
-  document.getElementById('goDashboardBtn').addEventListener('click', () => {
-    window.location.href = '/angelfire/dashboard.html';
-  });
+  if (el.toggleRatesLink && el.ratesPanel) {
+    el.toggleRatesLink.addEventListener('click', (event) => {
+      event.preventDefault();
+      const isOpen = !el.ratesPanel.classList.contains('hidden');
+      const nextOpen = !isOpen;
+      setRatesPanelOpen(nextOpen);
+
+      if (nextOpen) {
+        loadCurrencyRates();
+      }
+    });
+  }
+
+  if (el.closeRatesBtn) {
+    el.closeRatesBtn.addEventListener('click', () => {
+      setRatesPanelOpen(false);
+    });
+  }
+
+  if (el.refreshDynamicTableBtn) {
+    el.refreshDynamicTableBtn.addEventListener('click', () => {
+      renderDynamicWebTable();
+    });
+  }
+
+  if (el.showCredentialsBtn) {
+    el.showCredentialsBtn.addEventListener('click', () => showCredentials(true));
+  }
+
+  const goDashboardBtn = document.getElementById('goDashboardBtn');
+  if (goDashboardBtn) {
+    goDashboardBtn.addEventListener('click', () => {
+      window.location.href = '/angelfire/dashboard.html';
+    });
+  }
 }
 
 function init() {
-  if (state.token) {
+  if (state.token && !previewRatesMode) {
     window.location.href = '/angelfire/dashboard.html';
     return;
   }
 
   if (state.accountNumber) {
     el.loginAccountNumber.value = state.accountNumber;
-    el.createdAccountNumber.textContent = state.accountNumber;
+    if (el.createdAccountNumber) el.createdAccountNumber.textContent = state.accountNumber;
   }
   showRegisterForm(false);
+  // Hide credentials by default; show only when requested via query param or button
+  const showParam = queryParams.get('show') || queryParams.get('showLogin');
+  const shouldShow = showParam === '1' || showParam === 'true';
+  showCredentials(Boolean(shouldShow));
+  // If register param present, open the register form after revealing credentials
+  const registerParam = queryParams.get('register');
+  const hashRegister = window.location.hash === '#register';
+  if ((registerParam === '1' || registerParam === 'true' || hashRegister) && Boolean(shouldShow)) {
+    showRegisterForm(true);
+  }
   bindEvents();
+
+  if (previewRatesMode) {
+    setRatesPanelOpen(true);
+    loadCurrencyRates();
+  }
+
+  renderDynamicWebTable();
 }
 
 init();

@@ -62,6 +62,7 @@ Rails.application.routes.draw do
 
       post "register", to: "users#register"
       post "login", to: "users#login"
+      get "currency_rates", to: "currency_rates#index"
 
       get "/accounts/:account_id/transactions", to: "transactions#index"
 

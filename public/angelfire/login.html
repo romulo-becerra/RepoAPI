@@ -13,9 +13,25 @@
     <link rel="stylesheet" href="login.css" />
   </head>
   <body>
+    <header class="site-header">
+      <nav class="site-nav">
+        <div class="nav-left">
+          <div class="nav-brand">AngelFire</div>
+          <ul class="nav-links">
+            <li><a href="/angelfire/">Inicio</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="nav-actions">
+          <a class="btn" href="/angelfire/login.html?show=1">Acceder</a>
+        </div>
+      </nav>
+    </header>
     <main class="auth-shell">
       <section class="brand-panel">
         <img class="brand-image" src="assets/angelfire.jpg" alt="AngelFire" />
+
         <p class="tag">Institucion Financiera</p>
         <h1>AngelFire</h1>
         <p class="copy">
@@ -27,18 +43,168 @@
           <li>Si no tienes cuenta, puedes abrir el formulario de registro.</li>
           <li>Tras ingresar, veras tu nombre y account_number en el panel.</li>
         </ul>
+
+        <p>
+          <a id="surveyLink" class="nav-link" href="/angelfire/survey.html" data-testid="auth-survey-link" title="Abrir formulario de encuestas">
+            Formulario de encuestas
+          </a>
+        </p>
+
+        
+
+        <section class="tables-showcase" aria-label="Tablas web para pruebas">
+          <h2>Static web table</h2>
+          <p class="rates-caption">Tabla estatica de tipos de cuenta y beneficios.</p>
+          <div class="rates-table-wrap">
+            <table class="rates-table" name="static_web_table" aria-label="Static web table">
+              <thead>
+                <tr>
+                  <th>Tipo de cuenta</th>
+                  <th>Mantenimiento (Bs)</th>
+                  <th>Transferencias</th>
+                  <th>Atencion</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Basica</td><td>10</td><td>Nacionales</td><td>Standard</td></tr>
+                <tr><td>Digital</td><td>20</td><td>Nacionales + QR</td><td>Chat</td></tr>
+                <tr><td>Premium</td><td>40</td><td>Internacionales</td><td>Prioritaria</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="sponsors-panel" aria-label="Sponsors">
+          <h2>Sponsors</h2>
+          <p>
+            <a id="link-demo" class="nav-link" href="https://demowebshop.tricentis.com/" data-role="navigation" data-testid="main-parent-link" aria-label="Abrir Web Shop" title="Ir al Demo Web Shop">Demo Web Shop</a>
+          </p>
+          <img
+            class="brand-image"
+            src="assets/logo-sponsor.png"
+            alt="sponsor"
+            width="190"
+            height="100"
+          />
+
+<div class="rates-widget">
+          <p>
+            <a id="toggleRatesLink" class="nav-link rates-link" href="#" data-testid="auth-toggle-currency-rates" aria-controls="ratesPanel" title="Ver tabla de cotizacion de monedas">
+              Cotizacion de monedas
+            </a>
+          </p>
+
+          <section id="ratesPanel" class="rates-panel hidden" aria-live="polite">
+            <div class="rates-panel-actions">
+              <button
+                id="closeRatesBtn"
+                type="button"
+                class="btn ghost mini rates-close-btn"
+                data-testid="auth-close-currency-rates"
+                aria-label="Cerrar tabla de cotizaciones"
+              >
+                Cerrar
+              </button>
+            </div>
+            <p class="rates-source">
+              Fuente oficial:
+              <a id="ratesSourceLink" href="https://www.bcb.gob.bo/?q=cotizaciones_tc" target="_blank" rel="noopener noreferrer">Banco Central de Bolivia - Cotizaciones</a>
+            </p>
+            <h3 id="ratesTitle">TABLA DE COTIZACIONES DEL 1 DE AGOSTO DE 2026</h3>
+            <p id="ratesUpdatedAt" class="rates-updated">Actualizacion: datos locales</p>
+
+            <p class="rates-caption">Cotizacion Oficial del Boliviano respecto al Dolar (BCB)</p>
+            <div class="rates-table-wrap">
+              <table class="rates-table" aria-label="Cotizacion oficial BCB">
+                <thead>
+                  <tr>
+                    <th>Pais / Concepto</th>
+                    <th>Moneda</th>
+                    <th>Codigo</th>
+                    <th>Tipo de Cambio Oficial (TCO) (Bs/USD)</th>
+                  </tr>
+                </thead>
+                <tbody id="ratesOfficialBody">
+                  <tr>
+                    <td>ESTADOS UNIDOS</td>
+                    <td>DOLAR</td>
+                    <td>USD</td>
+                    <td>12.13</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p class="rates-caption">COTIZACION DE MONEDAS</p>
+            <div class="rates-table-wrap">
+              <table class="rates-table" aria-label="Cotizacion de monedas extranjeras">
+                <thead>
+                  <tr>
+                    <th>Pais / Region</th>
+                    <th>Moneda</th>
+                    <th>Codigo</th>
+                    <th>Tipo de Cambio en Bs por unidad de moneda extranjera</th>
+                    <th>Tipo Cambio en M.E.</th>
+                  </tr>
+                </thead>
+                <tbody id="ratesCurrenciesBody">
+                  <tr><td>ARGENTINA</td><td>PESO</td><td>ARS</td><td>0.00815</td><td>1,487.6575</td></tr>
+                  <tr><td>AUSTRALIA</td><td>DOLAR</td><td>AUD</td><td>8.53222</td><td>1.42167</td></tr>
+                  <tr><td>BRASIL</td><td>REAL</td><td>BRL</td><td>2.39175</td><td>5.0716</td></tr>
+                  <tr><td>CANADA</td><td>DOLAR</td><td>CAD</td><td>8.65316</td><td>1.4018</td></tr>
+                  <tr><td>CHILE</td><td>PESO</td><td>CLP</td><td>0.01303</td><td>930.86</td></tr>
+                  <tr><td>COLOMBIA</td><td>PESO</td><td>COP</td><td>0.00385</td><td>3,152.58</td></tr>
+                  <tr><td>COREA DEL SUR</td><td>WON</td><td>KRW</td><td>0.0084</td><td>1,443.21</td></tr>
+                  <tr><td>EMIRATOS ARABES</td><td>DIRHAM</td><td>AED</td><td>3.30248</td><td>3.673</td></tr>
+                  <tr><td>HONG KONG</td><td>DOLAR</td><td>HKD</td><td>1.54676</td><td>7.8422</td></tr>
+                  <tr><td>INDIA</td><td>RUPIA</td><td>INR</td><td>0.12716</td><td>95.3925</td></tr>
+                  <tr><td>JAPON</td><td>YEN</td><td>JPY</td><td>0.07621</td><td>159.16</td></tr>
+                  <tr><td>MEXICO</td><td>PESO</td><td>MXN</td><td>0.70014</td><td>17.3251</td></tr>
+                  <tr><td>NORUEGA</td><td>CORONA</td><td>NOK</td><td>1.2794</td><td>9.481</td></tr>
+                  <tr><td>PARAGUAY</td><td>GUARANI</td><td>PYG</td><td>0.00203</td><td>5.963</td></tr>
+                  <tr><td>PERU</td><td>NUEVO SOL</td><td>PEN</td><td>3.56922</td><td>3.3985</td></tr>
+                  <tr><td>REINO UNIDO</td><td>LIBRA</td><td>GBP</td><td>16.34264</td><td>0.74223</td></tr>
+                  <tr><td>REP. POPULAR CHINA</td><td>YUAN RENMINBI</td><td>CNY</td><td>1.79664</td><td>6.7515</td></tr>
+                  <tr><td>REP. POPULAR CHINA OFFSHORE</td><td>YUAN RENMINBI OFFSHORE</td><td>CNH</td><td>1.79627</td><td>6.7529</td></tr>
+                  <tr><td>SUECIA</td><td>CORONA</td><td>SEK</td><td>1.27357</td><td>9.5244</td></tr>
+                  <tr><td>SUIZA</td><td>FRANCO</td><td>CHF</td><td>15.00124</td><td>0.8086</td></tr>
+                  <tr><td>UNION EUROPEA</td><td>EURO</td><td>EUR</td><td>13.98223</td><td>0.86753</td></tr>
+                  <tr><td>URUGUAY</td><td>PESO</td><td>UYU</td><td>0.30125</td><td>40.265</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <p class="rates-caption">Cotizacion de UFV</p>
+            <div class="rates-table-wrap">
+              <table class="rates-table" aria-label="Cotizacion de UFV">
+                <tbody id="ratesUfvBody">
+                  <tr>
+                    <th>BOLIVIA (UFV)</th>
+                    <td>UNIDAD DE FOMENTO DE VIVIENDA</td>
+                    <td>Bs/UFV</td>
+                    <td>3.32157</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+
+
+        </section>
       </section>
 
-      <section class="sponsor-panel">
-       <h3>Sponsors</h3>
-       <img class="brand-image" src="assets/logo-sponsor.png" alt="sponsor" />
-       <li>Official Sponsor for Angelfire institucion.</li>
-       
-       <p><a id="link-demo" class="nav-link" href="https://demowebshop.tricentis.com/" data-role="navigation" data-testid="main-parent-link" aria-label="Abrir Web Shop" title="Ir al Demo Web Shop">Demo Web Shop</a></p>
-    </section>
+      <section class="forms-panel" id="formsPanel">
+        <div class="intro-card card">
+          <h2>Bienvenido a AngelFire</h2>
+          <p>Para acceder al área privada, haz clic en <strong>Mostrar credenciales</strong> o visita desde la página principal usando el enlace "Login".</p>
+          <div class="row-actions">
+            <button id="showCredentialsBtn" class="btn">Mostrar credenciales</button>
+            <a class="btn ghost" href="/angelfire/index.html">Volver al inicio</a>
+          </div>
+        </div>
 
-      <section class="forms-panel">
-        <form id="loginForm" class="card">
+        <form id="loginForm" class="card hidden">
           <h2>Login</h2>
           <input id="loginAccountNumber" placeholder="Numero de cuenta" required data-testid="auth-login-account-number" />
           <div class="pin-row">
@@ -67,14 +233,9 @@
           </div>
         </form>
 
-        <section class="card account-card" id="accountCard" aria-live="polite">
-          <h2>Cuenta asignada</h2>
-          <p>Account Number:</p>
-          <p id="createdAccountNumber" class="mono">-</p>
-          <button id="goDashboardBtn" class="btn ghost" type="button" data-testid="auth-go-dashboard">Ir al panel</button>
-        </section>
+        <!-- Sección 'Cuenta asignada' eliminada: no se usa en la UI de login -->
 
-        <section class="card response-card">
+        <section class="card response-card hidden" id="responseCard">
           <h2>Respuesta API</h2>
           <p id="responseStatus">Status: -</p>
           <pre id="responseBox" data-testid="auth-response-box">Listo para autenticar.</pre>
