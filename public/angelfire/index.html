@@ -12,44 +12,156 @@
     />
     <link rel="stylesheet" href="login.css" />
   </head>
-  <body>
+  <body class="landing-page">
     <header class="site-header">
       <nav class="site-nav">
         <div class="nav-left">
           <div class="nav-brand">AngelFire</div>
           <ul class="nav-links">
-            <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
+            <li><a href="#about">Sobre nosotros</a></li>
+            <li><a href="#features">Características</a></li>
+            <li><a href="#contact">Contacto</a></li>
+            <li><a id="autoplayLink" href="https://sdetqa.vercel.app/autoplay" data-testid="autoplay-link" title="AutoPlay page">AutoPlay</a></li>
           </ul>
         </div>
         <div class="nav-actions">
-          <a class="btn" href="/angelfire/login.html?show=1">Acceder</a>
+          <a class="btn ghost" href="/angelfire/login.html?show=1">Acceder</a>
         </div>
       </nav>
     </header>
 
-    <main class="hero-shell">
-      <section class="hero">
-        <h1>Confianza y seguridad para tus finanzas</h1>
-        <p class="lead">Operaciones seguras, experiencia digital ágil y soporte dedicado.</p>
+    <main class="landing-shell">
+      <section class="hero landing-hero">
+        <div class="hero-copy">
+          <span class="eyebrow">Plataforma financiera digital</span>
+          <h1>Confianza y seguridad para tus finanzas</h1>
+          <p class="lead">
+            Operaciones seguras, experiencia digital ágil y soporte dedicado para mover tu dinero
+            con total tranquilidad.
+          </p>
+          <div class="hero-actions">
+            <a class="btn hero-cta" href="/angelfire/login.html?show=1">Ingresar a mi cuenta</a>
+            <a class="btn ghost hero-secondary" href="#about">Conoce más</a>
+          </div>
+          <ul class="trust-points">
+            <li>Transferencias en tiempo real</li>
+            <li>Autenticación segura</li>
+            <li>Soporte 24/7</li>
+          </ul>
+        </div>
+
+        <div class="hero-panel" aria-label="Resumen financiero">
+          <div class="panel-header">
+            <span class="panel-tag">Resumen</span>
+            <span class="panel-pill">+12.4%</span>
+          </div>
+
+          <div class="balance-block">
+            <p class="label">Saldo disponible</p>
+            <h2>$24,850.00</h2>
+          </div>
+
+          <div class="mini-metrics">
+            <div class="metric-box">
+              <span>Ingresos</span>
+              <strong>$8,420</strong>
+            </div>
+            <div class="metric-box">
+              <span>Gastos</span>
+              <strong>$2,180</strong>
+            </div>
+          </div>
+
+          <div class="activity-list">
+            <div class="activity-item">
+              <span class="dot success"></span>
+              <div>
+                <strong>Pago recibido</strong>
+                <small>Hace 2 horas</small>
+              </div>
+              <b>+$1,240</b>
+            </div>
+            <div class="activity-item">
+              <span class="dot neutral"></span>
+              <div>
+                <strong>Transferencia</strong>
+                <small>Hoy</small>
+              </div>
+              <b>-$340</b>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="highlight-band" aria-label="Indicadores de confianza">
+        <div>
+          <strong>1.2M+</strong>
+          <span>movimientos seguros</span>
+        </div>
+        <div>
+          <strong>99.97%</strong>
+          <span>disponibilidad</span>
+        </div>
+        <div>
+          <strong>24/7</strong>
+          <span>atención humana</span>
+        </div>
+        <div>
+          <strong>256-bit</strong>
+          <span>encriptación</span>
+        </div>
+      </section>
+
+      <section id="about" class="site-section info-section">
+        <div class="section-header">
+          <span class="eyebrow">Sobre AngelFire</span>
+          <h2>Diseñado para personas y equipos que quieren control total</h2>
+        </div>
         <p>
-          <a class="btn hero-cta" href="/angelfire/login.html?show=1">Ingresar a mi cuenta</a>
+          AngelFire es una plataforma financiera de ejemplo pensada para demostrar APIs y flujos de
+          usuario seguros, con una experiencia moderna, clara y confiable en cada operación.
         </p>
       </section>
 
-      <section id="about" class="site-section">
-        <h2>Sobre AngelFire</h2>
-        <p>AngelFire es una plataforma financiera de ejemplo pensada para demostrar APIs y flujos de usuario seguros.</p>
+      <section id="features" class="site-section">
+        <div class="section-header centered">
+          <span class="eyebrow">¿Por qué elegirnos?</span>
+          <h2>Todo lo necesario para operar con tranquilidad</h2>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <h3>Rendimiento</h3>
+            <p>Acceso ágil a tus cuentas, transferencias y consultas con una interfaz enfocada en velocidad.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">🔒</div>
+            <h3>Seguridad</h3>
+            <p>Protección por capas, validaciones y flujos de autenticación diseñados para reducir riesgos.</p>
+          </article>
+          <article class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3>Visibilidad</h3>
+            <p>Monitorea tus movimientos, saldos y resultados con resúmenes claros y fáciles de entender.</p>
+          </article>
+        </div>
       </section>
 
-      <section id="contact" class="site-section">
-        <h2>Contacto</h2>
-        <p>Soporte: soporte@angelfire.example</p>
+      <section class="cta-banner">
+        <div>
+          <span class="eyebrow alt">Empieza hoy</span>
+          <h2>Haz crecer tus finanzas con una experiencia más segura</h2>
+        </div>
+        <a class="btn hero-cta" href="/angelfire/login.html?show=1">Abrir plataforma</a>
       </section>
     </main>
 
-    <footer class="site-footer">
-      <p>&copy; AngelFire — Demo</p>
+    <footer id="contact" class="site-footer">
+      <div class="footer-content">
+        <p>&copy; AngelFire — Demo financiera</p>
+        <p>Soporte: soporte@angelfire.example</p>
+      </div>
     </footer>
   </body>
 </html>

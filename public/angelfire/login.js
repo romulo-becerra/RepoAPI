@@ -47,7 +47,9 @@ const el = {
 // Controls for showing/hiding the credential UI when needed
 el.formsPanel = document.getElementById('formsPanel');
 el.showCredentialsBtn = document.getElementById('showCredentialsBtn');
+el.introCard = document.getElementById('introCard');
 el.responseCard = document.getElementById('responseCard');
+el.loginForm = document.getElementById('loginForm');
 
 function renderDynamicWebTable() {
   if (!el.dynamicTableBody) {
@@ -258,15 +260,18 @@ function togglePinVisibility(input, button) {
 }
 
 function showRegisterForm(show) {
-  el.registerForm.classList.toggle('hidden', !show);
-  el.showRegisterBtn.classList.toggle('hidden', show);
+  if (el.registerForm) el.registerForm.classList.toggle('hidden', !show);
+  if (el.loginForm) el.loginForm.classList.toggle('hidden', show);
+  if (el.showRegisterBtn) el.showRegisterBtn.classList.toggle('hidden', show);
+  if (el.responseCard) el.responseCard.classList.toggle('hidden', show);
 }
 
 function showCredentials(show) {
-  const loginForm = document.getElementById('loginForm');
-  if (loginForm) loginForm.classList.toggle('hidden', !show);
-  if (el.registerForm) el.registerForm.classList.toggle('hidden', !show);
+  if (el.loginForm) el.loginForm.classList.toggle('hidden', !show);
+  if (el.registerForm) el.registerForm.classList.toggle('hidden', true);
   if (el.responseCard) el.responseCard.classList.toggle('hidden', !show);
+  if (el.introCard) el.introCard.classList.toggle('hidden', show);
+  if (el.showRegisterBtn) el.showRegisterBtn.classList.toggle('hidden', !show);
 }
 
 async function performLogin(isAdminIntent = false) {
@@ -390,17 +395,22 @@ function init() {
     el.loginAccountNumber.value = state.accountNumber;
     if (el.createdAccountNumber) el.createdAccountNumber.textContent = state.accountNumber;
   }
+
+  showCredentials(true);
   showRegisterForm(false);
-  // Hide credentials by default; show only when requested via query param or button
+
   const showParam = queryParams.get('show') || queryParams.get('showLogin');
   const shouldShow = showParam === '1' || showParam === 'true';
-  showCredentials(Boolean(shouldShow));
-  // If register param present, open the register form after revealing credentials
+  if (shouldShow) {
+    showCredentials(true);
+  }
+
   const registerParam = queryParams.get('register');
   const hashRegister = window.location.hash === '#register';
-  if ((registerParam === '1' || registerParam === 'true' || hashRegister) && Boolean(shouldShow)) {
+  if (registerParam === '1' || registerParam === 'true' || hashRegister) {
     showRegisterForm(true);
   }
+
   bindEvents();
 
   if (previewRatesMode) {
