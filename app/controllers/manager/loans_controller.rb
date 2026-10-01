@@ -44,13 +44,13 @@ module Manager
       )
 
       loan = service.create_loan!(
-        performed_by_role: current_user.role,
+        performed_by_role: :manager,
         performed_by_user_id: current_user.id,
         performed_by_name: current_user.to_s
       )
 
       render json: {
-        message: "Préstamo aplicado por #{current_user.role}",
+        message: "Préstamo aplicado por gerente",
         account_id: @account.id,
         loan: {
           id: loan.id,

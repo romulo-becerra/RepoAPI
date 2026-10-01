@@ -19,8 +19,6 @@ class LoansController < ApplicationController
   end
 
   def create
-    return render json: { errors: "Solo Admin o Manager pueden originar prestamos" }, status: :forbidden unless current_user.management?
-
     service = LoanService.new(
       @account,
       amount: loan_create_params[:amount],
@@ -29,7 +27,7 @@ class LoansController < ApplicationController
     )
 
     loan = service.create_loan!(
-      performed_by_role: current_user.role,
+      performed_by_role: :user,
       performed_by_user_id: current_user.id,
       performed_by_name: current_user.to_s
     )

@@ -6,21 +6,9 @@ class ApplicationController < ActionController::API
   private
 
   def require_manager!
-    return if current_user&.management?
+    return if current_user&.manager?
 
-    render json: { errors: 'Acceso restringido a Admin o Manager' }, status: :forbidden
-  end
-
-  def require_admin!
-    return if current_user&.admin?
-
-    render json: { errors: 'Acceso restringido a rol Admin' }, status: :forbidden
-  end
-
-  def require_operations_staff!
-    return if current_user&.staff?
-
-    render json: { errors: 'Acceso restringido a personal autorizado' }, status: :forbidden
+    render json: { errors: 'Acceso restringido a rol gerente' }, status: :forbidden
   end
 
   def authenticate_request

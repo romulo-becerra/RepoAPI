@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_10_01_110000) do
+ActiveRecord::Schema[8.0].define(version: 2026_07_10_120000) do
   create_table "accounts", force: :cascade do |t|
     t.integer "user_id"
     t.string "account_number"
@@ -54,19 +54,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_110000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_loans_on_account_id"
-  end
-
-  create_table "login_events", force: :cascade do |t|
-    t.integer "user_id"
-    t.string "account_number", null: false
-    t.string "user_name"
-    t.integer "status", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_number"], name: "index_login_events_on_account_number"
-    t.index ["created_at"], name: "index_login_events_on_created_at"
-    t.index ["status"], name: "index_login_events_on_status"
-    t.index ["user_id"], name: "index_login_events_on_user_id"
   end
 
   create_table "recipients", force: :cascade do |t|
@@ -139,7 +126,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_110000) do
     t.string "phone"
     t.boolean "active", default: true, null: false
     t.boolean "blocked", default: false, null: false
-    t.date "date_of_birth"
     t.index ["active"], name: "index_users_on_active"
     t.index ["blocked"], name: "index_users_on_blocked"
     t.index ["phone"], name: "index_users_on_phone", unique: true
@@ -149,7 +135,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_110000) do
   add_foreign_key "accounts", "users"
   add_foreign_key "loan_installments", "loans"
   add_foreign_key "loans", "accounts"
-  add_foreign_key "login_events", "users", on_delete: :nullify
   add_foreign_key "recipients", "accounts"
   add_foreign_key "recipients", "users"
   add_foreign_key "services", "accounts"
