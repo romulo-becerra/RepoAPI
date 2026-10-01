@@ -40,7 +40,11 @@ Rails.application.routes.draw do
         get "reports/overview", to: "reports#overview"
         get "reports/loans", to: "reports#loans"
         get "reports/accounts_activity", to: "reports#accounts_activity"
-        resources :users, only: [ :index, :show, :create, :destroy ] do
+        get "logins/download", to: "logins#download"
+        get "logins", to: "logins#index"
+        get "operations/download", to: "operations#download"
+        get "operations", to: "operations#index"
+        resources :users, only: [ :index, :show, :create, :destroy, :update ] do
           member do
             patch :block
             patch :unblock
@@ -57,6 +61,7 @@ Rails.application.routes.draw do
         get "accounts/:account_id/loans/:loan_id/installments/download", to: "loans#download_installments"
         post "accounts/:account_id/deposit", to: "account_operations#deposit"
         post "accounts/:account_id/withdraw", to: "account_operations#withdraw"
+        post "accounts/:account_id/pay_service", to: "account_operations#pay_service"
         post "accounts/:account_id/loans/:loan_id/pay", to: "account_operations#pay_loan"
       end
 

@@ -305,6 +305,23 @@ input[type='date'] {
   width: 48%;
 }
 
+.admin-access {
+  width: 100%;
+  border-top: 1px solid var(--line);
+  padding-top: 0.65rem;
+  color: var(--ink-700);
+  font-size: 0.8rem;
+}
+
+.admin-access summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.admin-access .btn {
+  margin-top: 0.65rem;
+}
+
 .account-card {
   border-left: 5px solid #0c8a7f;
 }
@@ -327,6 +344,159 @@ pre {
 
 .hidden {
   display: none;
+}
+
+.registration-step-nav {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.35rem;
+  padding: 0;
+  margin: 0.2rem 0 0.8rem;
+  list-style: none;
+}
+
+.registration-step-nav li {
+  min-width: 0;
+}
+
+.registration-step {
+  width: 100%;
+  min-height: 2.7rem;
+  padding: 0.42rem 0.3rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink-700);
+  background: #f5f8fa;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1.25;
+  cursor: pointer;
+}
+
+.registration-step.is-current {
+  border-color: var(--accent-600);
+  color: #fff;
+  background: var(--accent-700);
+}
+
+.registration-step-panel {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.registration-step-panel.hidden {
+  display: none;
+}
+
+.registration-step-panel h3 {
+  margin: 0 0 0.15rem;
+  color: var(--ink-900);
+  font-size: 0.98rem;
+}
+
+.registration-actions {
+  justify-content: space-between;
+  margin-top: 0.35rem;
+}
+
+.registration-edit-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.registration-edit-actions .btn {
+  width: 48%;
+}
+
+.registration-review {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.8fr) minmax(0, 1.2fr);
+  gap: 0;
+  margin: 0;
+  border-top: 1px solid var(--line);
+}
+
+.registration-review dt,
+.registration-review dd {
+  margin: 0;
+  padding: 0.42rem 0.2rem;
+  border-bottom: 1px solid var(--line);
+  overflow-wrap: anywhere;
+  font-size: 0.76rem;
+}
+
+.registration-review dt {
+  color: var(--ink-700);
+  font-weight: 800;
+}
+
+.registration-review dd {
+  color: var(--ink-900);
+}
+
+.registration-pin-note {
+  margin: 0;
+  color: var(--ink-700);
+  font-size: 0.74rem;
+}
+
+.registration-success {
+  grid-template-columns: 2.4rem minmax(0, 1fr);
+  align-items: start;
+  border-left: 4px solid #17845d;
+  background: #f2faf6;
+}
+
+.registration-success-mark {
+  display: grid;
+  width: 2rem;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 50%;
+  background: #d8f0e3;
+  color: #176c4b;
+  font-weight: 800;
+}
+
+.registration-success-content {
+  display: grid;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.registration-success-content h2,
+.registration-success-content p {
+  margin: 0;
+}
+
+.registration-success-content h2 {
+  color: var(--ink-900);
+  font-size: 1rem;
+}
+
+.registration-account-number {
+  display: block;
+  padding: 0.7rem;
+  border: 1px dashed #75b797;
+  border-radius: 8px;
+  background: #fff;
+  color: #135d40;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 1.15rem;
+  overflow-wrap: anywhere;
+}
+
+.registration-success-note {
+  color: var(--ink-700);
+  font-size: 0.78rem;
+}
+
+.registration-success-content .btn {
+  justify-self: start;
+  margin-top: 0.2rem;
 }
 
 @media (max-width: 980px) {

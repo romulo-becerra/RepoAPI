@@ -6,6 +6,22 @@ Este documento describe los endpoints disponibles en la API del proyecto, incluy
 - La API base es: http://localhost:3001
 - Los endpoints están bajo el prefijo /api/v1
 - La autenticación se realiza mediante JWT en el header Authorization: Bearer <token>
+- El sistema usa la siguiente matriz de roles verificada: customer, cashier, manager y admin.
+
+## Matriz de permisos por rol
+
+| Rol | Permisos principales |
+| --- | --- |
+| customer | Consulta su propia cuenta, transferencias, pago de servicios, movimientos y estado de préstamos. |
+| cashier | Operaciones de caja y atención al cliente: depósito, retiro y operaciones sobre cuentas ajenas en ventanilla. |
+| manager | Reportes, consultas de gestión, operaciones de cuenta, originación de préstamos y revisión de logs. |
+| admin | Acceso completo: administración de usuarios, estados, roles, reportes, operaciones y gestión interna. |
+
+### Regla de acceso
+- customer solo puede operar sobre su propia cuenta y pagos de servicio asociados.
+- cashier puede realizar operaciones de caja, pero no crear usuarios ni administrar roles.
+- manager puede consultar y operar en gestión, pero no crear/bloquear usuarios de administración ni cambiar roles.
+- admin es el único rol con capacidad total para crear, eliminar, bloquear y cambiar el estado de usuarios y roles.
 
 ---
 
@@ -445,4 +461,6 @@ curl -X GET http://localhost:3001/api/v1/manager/accounts/9000000001/loans/6/ins
 ### 5) Mejora funcional aplicada
 
 - La consulta manager de cuenta acepta tanto account_id como account_number en :account_id.
+- El endpoint de resumen de cuenta para operaciones de personal autorizado también valida la cuenta antes de permitir continuar con depositos, retiros, pagos y prestamo: una cuenta invalida debe bloquear los campos y mostrar un mensaje de validacion; una cuenta valida muestra nombre del cliente asociado y habilita el flujo.
+- El acceso a la busqueda de cuenta aplica al staff autorizado (admin, manager y cashier) para la operacion de cuenta de usuario; el origen de prestamo sigue reservado a admin/manager, con la misma validacion previa de cuenta antes de habilitar monto, plazo y fecha.
 - Para mostrar totales paid/pending en frontend admin, se recomienda usar el endpoint /installments/summary en lugar de recorrer todas las páginas de /installments.

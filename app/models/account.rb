@@ -20,8 +20,8 @@ class Account < ApplicationRecord
 
   after_create :set_default, if: :default?
 
-  before_validation :generate_clabe, on: :create
-  before_validation :generate_account_number, on: :create
+  before_validation :generate_clabe, on: :create, if: -> { clabe.blank? }
+  before_validation :generate_account_number, on: :create, if: -> { account_number.blank? }
 
   validates :clabe, presence: true, uniqueness: true
   validates :account_number, presence: true, uniqueness: true
