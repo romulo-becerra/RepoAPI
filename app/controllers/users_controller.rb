@@ -7,30 +7,39 @@ class UsersController < ApplicationController
 
   def register
     attrs = registration_params
-    @user = User.new(attrs)
+    @user = User.new(attrs.slice(:first_name, :last_name, :email, :phone, :date_of_birth))
+    @user.pin = attrs[:pin]
 
-    if @user.save
-      @account = @user.accounts.first
-      @token = JsonWebToken.encode(user_id: @user.id)
-      render :register, status: :created
-    else
-      render json: { errors: @user.errors.full_messages }, status: :unprocessable_entity
+    User.transaction do
+      @user.save!
+      address_attributes = attrs[:address].to_h
+      @user.create_user_address!(address_attributes) if address_attributes.present?
     end
+
+    @account = @user.accounts.find_by(default: true) || @user.accounts.first
+    @token = JsonWebToken.encode(user_id: @user.id)
+    render :register, status: :created
+  rescue ActiveRecord::RecordInvalid => error
+    render json: { errors: error.record.errors.full_messages }, status: :unprocessable_entity
   end
 
   def login
     account = Account.find_by(account_number: params[:account_number])
+    user = account&.user
 
-    if account && account.user.authenticate_pin(params[:pin])
-      @user = account.user
-      unless @user.can_authenticate?
+    if user && user.authenticate_pin(params[:pin])
+      unless user.can_authenticate?
+        record_login_event(user, account.account_number, :blocked)
         return render json: { errors: "Usuario bloqueado o desactivado" }, status: :forbidden
       end
 
+      @user = user
+      record_login_event(user, account.account_number, :success)
       @account = account
       @token = JsonWebToken.encode(user_id: @user.id)
       render :login, status: :ok
     else
+      record_login_event(user, params[:account_number], :failure)
       render json: { errors: "Número de cuenta o PIN incorrecto" }, status: :unauthorized
     end
   end
@@ -76,15 +85,37 @@ class UsersController < ApplicationController
 
   private
 
+  def record_login_event(user, account_number, status)
+    LoginEvent.create!(
+      user: user,
+      account_number: account_number.to_s.strip.truncate(50).presence || "-",
+      user_name: user&.to_s,
+      status: status
+    )
+  end
+
   def registration_params
     payload = request.raw_post.presence || request.body.read.to_s
-    return params.permit(:first_name, :last_name, :email, :pin).to_h.symbolize_keys if payload.blank?
+    permitted = params.permit(
+      :first_name, :last_name, :email, :phone, :date_of_birth, :pin,
+      address: %i[country city province street street_number district postal_code reference]
+    )
+    return permitted.to_h.deep_symbolize_keys if payload.blank?
 
     data = JSON.parse(payload)
     return {} unless data.is_a?(Hash)
 
     data = data.with_indifferent_access
-    data.slice(:first_name, :last_name, :email, :pin)
+    address = data[:address].is_a?(Hash) ? data[:address].with_indifferent_access : {}
+    {
+      first_name: data[:first_name],
+      last_name: data[:last_name],
+      email: data[:email],
+      phone: data[:phone],
+      date_of_birth: data[:date_of_birth],
+      pin: data[:pin],
+      address: address.slice(:country, :city, :province, :street, :street_number, :district, :postal_code, :reference)
+    }
   rescue JSON::ParserError, TypeError
     params.permit(:first_name, :last_name, :email, :pin).to_h.symbolize_keys
   end

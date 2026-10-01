@@ -70,7 +70,7 @@
           <h2>Vistas del sistema</h2>
           <div class="row-actions">
             <button id="viewClientBtn" class="btn" type="button" data-testid="view-client-btn">Vista cliente</button>
-            <button id="viewAdminBtn" class="btn ghost" type="button" data-testid="view-admin-btn">Vista admin</button>
+            <button id="viewAdminBtn" class="btn ghost hidden" type="button" data-roles="admin,manager,cashier" data-testid="view-admin-btn">Vista admin</button>
           </div>
         </section>
 
@@ -101,12 +101,12 @@
           </section>
 
           <section class="operations-grid">
-            <form id="depositForm" class="panel">
+            <form id="depositForm" class="panel" data-roles="admin,manager,cashier">
               <h2>Deposito</h2>
               <label for="depositAmount">Monto</label>
               <input id="depositAmount" type="number" min="1" value="100" placeholder="Ej: 100" required data-testid="deposit-amount" />
               <label for="depositDescription">Detalle</label>
-              <input id="depositDescription" value="Deposito AngelFire" placeholder="Motivo del deposito" data-testid="deposit-description" />
+              <input id="depositDescription" value="Deposito AngelFire" placeholder="Motivo del deposito" data-i18n-value data-testid="deposit-description" />
               <button class="btn" type="submit" data-testid="deposit-submit">Aplicar deposito</button>
             </form>
 
@@ -115,7 +115,7 @@
               <label for="withdrawAmount">Monto</label>
               <input id="withdrawAmount" type="number" min="1" value="50" placeholder="Ej: 50" required data-testid="withdraw-amount" />
               <label for="withdrawDescription">Detalle</label>
-              <input id="withdrawDescription" value="Retiro AngelFire" placeholder="Motivo del retiro" data-testid="withdraw-description" />
+              <input id="withdrawDescription" value="Retiro AngelFire" placeholder="Motivo del retiro" data-i18n-value data-testid="withdraw-description" />
               <button class="btn" type="submit" data-testid="withdraw-submit">Aplicar retiro</button>
             </form>
 
@@ -126,8 +126,20 @@
               <label for="serviceAmount">Monto</label>
               <input id="serviceAmount" type="number" min="1" value="80" placeholder="Ej: 80" required data-testid="service-amount" />
               <label for="serviceDescription">Detalle</label>
-              <input id="serviceDescription" value="Pago de servicio AngelFire" placeholder="Motivo del pago" data-testid="service-description" />
+              <input id="serviceDescription" value="Pago de servicio AngelFire" placeholder="Motivo del pago" data-i18n-value data-testid="service-description" />
               <button class="btn" type="submit" data-testid="pay-service-submit">Pagar servicio</button>
+            </form>
+
+            <form id="transferForm" class="panel" data-roles="customer">
+              <h2>Transferencia</h2>
+              <label for="transferRecipient">Cuenta destino</label>
+              <input id="transferRecipient" placeholder="Numero de cuenta o account ID" required data-testid="transfer-recipient" />
+              <label for="transferAmount">Monto</label>
+              <input id="transferAmount" type="number" min="1" step="0.01" value="25" required data-testid="transfer-amount" />
+              <label for="transferDescription">Detalle</label>
+              <input id="transferDescription" value="Transferencia AngelFire" placeholder="Motivo de la transferencia" data-i18n-value data-testid="transfer-description" />
+              <p class="field-help" id="transferStatus" data-testid="transfer-status">Ingresa la cuenta destino para transferir saldo.</p>
+              <button class="btn" type="submit" data-testid="transfer-submit">Transferir</button>
             </form>
           </section>
 
@@ -305,7 +317,7 @@
         </section>
 
         <section id="adminView" class="hidden">
-          <section class="kpi-grid">
+          <section class="kpi-grid" data-roles="admin,manager">
             <article class="kpi">
               <p>Total usuarios</p>
               <h3 id="adminUsersCount" data-testid="admin-users-count">-</h3>
@@ -325,16 +337,16 @@
           </section>
 
           <section class="panel admin-ops-panel">
-            <h2>Operaciones admin para cliente/customer</h2>
+            <h2>Operaciones de personal autorizado</h2>
             <p class="field-help">Selecciona una operacion y recien se mostrara su formulario.</p>
             <div class="row-actions admin-op-selector">
-              <button class="btn ghost" type="button" data-admin-op="create-user" data-testid="admin-op-create-user">Crear usuario (admin)</button>
-              <button class="btn ghost" type="button" data-admin-op="create-loan" data-testid="admin-op-create-loan">Originar prestamo (admin)</button>
-              <button class="btn ghost" type="button" data-admin-op="account-ops" data-testid="admin-op-account-ops">Operar cuenta de usuario</button>
+              <button class="btn ghost" type="button" data-admin-op="create-user" data-roles="admin" data-testid="admin-op-create-user">Crear usuario (admin)</button>
+              <button class="btn ghost" type="button" data-admin-op="create-loan" data-roles="admin,manager" data-testid="admin-op-create-loan">Originar prestamo (admin)</button>
+              <button class="btn ghost" type="button" data-admin-op="account-ops" data-roles="admin,manager,cashier" data-testid="admin-op-account-ops">Operar cuenta de usuario</button>
             </div>
 
             <div class="admin-op-forms">
-              <form id="adminCreateUserForm" class="panel admin-op-card hidden" data-admin-op-card="create-user">
+              <form id="adminCreateUserForm" class="panel admin-op-card hidden" data-roles="admin" data-admin-op-card="create-user">
                 <h2>Crear usuario (admin)</h2>
                 <p class="field-help">Requeridos: nombre, apellido, email, PIN y rol.</p>
                 <input id="adminFirstName" placeholder="Nombre *" required data-testid="admin-first-name" />
@@ -344,7 +356,9 @@
                 <input id="adminPin" placeholder="PIN *" required data-testid="admin-pin" />
                 <select id="adminRole" data-testid="admin-role">
                   <option value="customer">customer</option>
+                  <option value="cashier">cashier</option>
                   <option value="manager">manager</option>
+                  <option value="admin">admin</option>
                 </select>
                 <div class="row-actions">
                   <button class="btn" type="submit" data-testid="admin-create-user-submit">Crear usuario</button>
@@ -352,32 +366,45 @@
                 </div>
               </form>
 
-              <form id="adminCreateLoanForm" class="panel admin-op-card hidden" data-admin-op-card="create-loan">
+              <form id="adminCreateLoanForm" class="panel admin-op-card hidden" data-roles="admin,manager" data-admin-op-card="create-loan">
                 <h2>Originar prestamo (admin)</h2>
                 <p class="field-help">Requeridos: account ID o numero de cuenta, monto, plazo y primera fecha de pago.</p>
-                <input id="adminLoanAccountId" placeholder="Account ID o numero de cuenta objetivo *" required data-testid="admin-loan-account-id" />
-                <input id="adminLoanAmount" type="number" min="1" step="0.01" placeholder="Monto del prestamo *" required data-testid="admin-loan-amount" />
-                <input id="adminLoanTermMonths" type="number" min="1" placeholder="Plazo en meses *" required data-testid="admin-loan-term-months" />
-                <input id="adminLoanFirstDueDate" type="date" required data-testid="admin-loan-first-due-date" />
                 <div class="row-actions">
-                  <button class="btn ghost" id="adminPreviewLoanBtn" type="button" data-testid="admin-preview-loan">Previsualizar plan</button>
-                  <button class="btn" id="adminCreateLoanBtn" type="button" data-testid="admin-create-loan">Aplicar prestamo</button>
+                  <input id="adminLoanAccountId" placeholder="Account ID o numero de cuenta objetivo *" required data-testid="admin-loan-account-id" />
+                  <button class="btn ghost" id="adminValidateLoanAccountBtn" type="button" data-testid="admin-validate-loan-account">Buscar cuenta</button>
+                </div>
+                <p id="adminLoanAccountValidation" class="field-help validation-error hidden" data-testid="admin-loan-account-validation"></p>
+                <p id="adminLoanAccountInfo" class="field-help" data-testid="admin-loan-account-info">Sin cuenta validada.</p>
+                <input id="adminLoanAmount" type="number" min="1" step="0.01" placeholder="Monto del prestamo *" required data-testid="admin-loan-amount" disabled />
+                <input id="adminLoanTermMonths" type="number" min="1" placeholder="Plazo en meses *" required data-testid="admin-loan-term-months" disabled />
+                <input id="adminLoanFirstDueDate" type="date" required data-testid="admin-loan-first-due-date" disabled />
+                <div class="row-actions">
+                  <button class="btn ghost" id="adminPreviewLoanBtn" type="button" data-testid="admin-preview-loan" disabled>Previsualizar plan</button>
+                  <button class="btn" id="adminCreateLoanBtn" type="button" data-testid="admin-create-loan" disabled>Aplicar prestamo</button>
                   <button class="btn ghost cancel-op" id="adminCancelCreateLoanBtn" type="button" data-testid="admin-cancel-create-loan">Cancelar operacion</button>
                 </div>
                 <p id="adminLoanRateHint" data-testid="admin-loan-rate-hint">Interes anual: -</p>
               </form>
 
-              <form id="adminAccountOpsForm" class="panel admin-op-card hidden" data-admin-op-card="account-ops">
+              <form id="adminAccountOpsForm" class="panel admin-op-card hidden" data-roles="admin,manager,cashier" data-admin-op-card="account-ops">
                 <h2>Operar cuenta de usuario</h2>
                 <p class="field-help">Requeridos: account ID o numero de cuenta y monto. Para pagar prestamo tambien se requiere loan ID.</p>
-                <input id="adminTargetAccountId" placeholder="Account ID o numero de cuenta objetivo *" required data-testid="admin-target-account-id" />
-                <input id="adminTargetLoanId" placeholder="Loan ID (solo para pagar prestamo)" data-testid="admin-target-loan-id" />
-                <input id="adminTargetAmount" type="number" min="0.01" step="0.01" placeholder="Monto *" required data-testid="admin-target-amount" />
-                <input id="adminTargetDescription" placeholder="Descripcion (opcional)" data-testid="admin-target-description" />
                 <div class="row-actions">
-                  <button class="btn" id="adminDepositTargetBtn" type="button" data-testid="admin-deposit-target">Depositar</button>
-                  <button class="btn alt" id="adminWithdrawTargetBtn" type="button" data-testid="admin-withdraw-target">Retirar</button>
-                  <button class="btn ghost" id="adminPayLoanTargetBtn" type="button" data-testid="admin-payloan-target">Pagar prestamo</button>
+                  <input id="adminTargetAccountId" placeholder="Account ID o numero de cuenta objetivo *" required data-testid="admin-target-account-id" />
+                  <button class="btn ghost" id="adminValidateTargetAccountBtn" type="button" data-testid="admin-validate-target-account">Buscar cuenta</button>
+                </div>
+                <p id="adminTargetAccountValidation" class="field-help validation-error hidden" data-testid="admin-target-account-validation"></p>
+                <p id="adminTargetAccountInfo" class="field-help" data-testid="admin-target-account-info">Sin cuenta validada.</p>
+                <input id="adminTargetLoanId" placeholder="Loan ID (solo para pagar prestamo)" data-testid="admin-target-loan-id" disabled />
+                <input id="adminTargetAmount" type="number" min="0.01" step="0.01" placeholder="Monto *" required data-testid="admin-target-amount" disabled />
+                <input id="adminTargetDescription" placeholder="Descripcion (opcional)" data-testid="admin-target-description" disabled />
+                <label for="adminTargetServiceId">Servicio (solo para pagar servicio)</label>
+                <select id="adminTargetServiceId" data-testid="admin-target-service-id" disabled></select>
+                <div class="row-actions">
+                  <button class="btn" id="adminDepositTargetBtn" type="button" disabled data-testid="admin-deposit-target">Depositar</button>
+                  <button class="btn alt" id="adminWithdrawTargetBtn" type="button" disabled data-testid="admin-withdraw-target">Retirar</button>
+                  <button class="btn ghost" id="adminPayLoanTargetBtn" type="button" disabled data-testid="admin-payloan-target">Pagar prestamo</button>
+                  <button class="btn ghost" id="adminPayServiceTargetBtn" type="button" disabled data-testid="admin-pay-service-target">Pagar servicio</button>
                   <button class="btn ghost cancel-op" id="adminCancelAccountOpsBtn" type="button" data-testid="admin-cancel-account-ops">Cancelar operacion</button>
                 </div>
               </form>
@@ -386,14 +413,14 @@
 
           <section class="operations-grid admin-ops-grid">
 
-            <form id="adminDeleteUserForm" class="panel">
+            <form id="adminDeleteUserForm" class="panel" data-roles="admin">
               <h2>Eliminar usuario</h2>
               <p class="field-help">Requerido: User ID.</p>
               <input id="adminDeleteUserId" placeholder="User ID *" required data-testid="admin-delete-user-id" />
               <button class="btn alt" type="submit" data-testid="admin-delete-user-submit">Eliminar usuario</button>
             </form>
 
-            <form id="adminUserStateForm" class="panel">
+            <form id="adminUserStateForm" class="panel" data-roles="admin">
               <h2>Estado de usuario</h2>
               <p class="field-help">Requerido: User ID para bloquear o desbloquear.</p>
               <input id="adminUserStateId" placeholder="User ID *" required data-testid="admin-user-state-id" />
@@ -403,14 +430,14 @@
               </div>
             </form>
 
-            <section class="panel">
+            <section class="panel" data-roles="admin,manager">
               <h2>Acciones admin</h2>
               <p>Refresca reportes y lista de usuarios del sistema.</p>
               <button id="refreshAdminDashboard" class="btn ghost" type="button" data-testid="refresh-admin-dashboard">Actualizar panel admin</button>
             </section>
           </section>
 
-          <section class="panel table-panel">
+          <section class="panel table-panel" data-roles="admin,manager">
             <div class="table-header">
               <h2>Consulta de cuenta y prestamo</h2>
             </div>
@@ -465,7 +492,7 @@
             </div>
           </section>
 
-          <section class="panel table-panel">
+          <section class="panel table-panel" data-roles="admin,manager">
             <div class="table-header">
               <h2>Archivos del usuario (admin)</h2>
               <button id="refreshAdminFilesBtn" class="btn ghost" type="button" data-testid="refresh-admin-files">Actualizar archivos</button>
@@ -486,7 +513,7 @@
             </table>
           </section>
 
-          <section class="panel table-panel">
+          <section class="panel table-panel" data-roles="admin,manager">
             <div class="table-header">
               <h2>Usuarios del sistema</h2>
               <div class="pager-controls">
@@ -520,7 +547,134 @@
             </table>
           </section>
 
-          <section class="panel table-panel">
+          <section class="panel table-panel" data-roles="admin,manager">
+            <div class="table-header">
+              <h2>Bitacora de operaciones</h2>
+              <button id="refreshOpsBtn" class="btn ghost" type="button" data-testid="refresh-operations">Actualizar</button>
+            </div>
+            <p class="field-help">Consulta depositos, debitos y pagos por dia, semana o mes desde la fecha indicada.</p>
+            <div class="row-actions">
+              <label>Periodo
+                <select id="opsPeriod" data-testid="ops-period">
+                  <option value="day">Dia</option>
+                  <option value="week">Semana</option>
+                  <option value="month">Mes</option>
+                </select>
+              </label>
+              <label>Fecha de consulta
+                <input id="opsDate" type="date" data-testid="ops-date" />
+              </label>
+              <label>Tipo de operacion
+                <select id="opsType" data-testid="ops-type">
+                  <option value="all">Todas</option>
+                  <option value="deposit">Depositos</option>
+                  <option value="withdraw">Retiros</option>
+                  <option value="transfer">Transferencias</option>
+                  <option value="loan_payment">Pago de prestamo</option>
+                  <option value="service_payment">Pago de servicios</option>
+                  <option value="atm_deposit">Deposito ATM</option>
+                  <option value="atm_withdrawal">Retiro ATM</option>
+                  <option value="debit">Debitos (todas las salidas)</option>
+                </select>
+              </label>
+              <label>Ejecutado por
+                <select id="opsActor" data-testid="ops-actor">
+                  <option value="all">Todos</option>
+                  <option value="manager">Admin</option>
+                  <option value="user">Usuario</option>
+                </select>
+              </label>
+            </div>
+            <div class="row-actions">
+              <label>Ver
+                <select id="opsPerPage" data-testid="ops-per-page">
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                </select>
+              </label>
+              <button id="opsPrevPageBtn" class="btn ghost mini" type="button" data-testid="ops-prev-page">Anterior</button>
+              <span id="opsPageInfo" data-testid="ops-page-info">1 / 1</span>
+              <button id="opsNextPageBtn" class="btn ghost mini" type="button" data-testid="ops-next-page">Siguiente</button>
+              <button id="opsDownloadBtn" class="btn" type="button" data-testid="ops-download">Descargar archivo</button>
+            </div>
+            <p id="opsSummary" data-testid="ops-summary">Sin operaciones registradas.</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th>Monto</th>
+                  <th>Descripcion</th>
+                  <th>Usuario</th>
+                  <th>Cuenta</th>
+                  <th>Ejecutado por</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="opsRows" data-testid="ops-rows">
+                <tr><td colspan="8">Sin operaciones</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel table-panel" data-roles="admin,manager">
+            <div class="table-header">
+              <h2>Reporte de inicios de sesion</h2>
+              <button id="refreshLoginsBtn" class="btn ghost" type="button" data-testid="refresh-logins">Actualizar</button>
+            </div>
+            <p class="field-help">Consulta los accesos exitosos, fallidos o bloqueados por dia, semana o mes.</p>
+            <div class="row-actions">
+              <label>Periodo
+                <select id="loginsPeriod" data-testid="logins-period">
+                  <option value="day">Dia</option>
+                  <option value="week">Semana</option>
+                  <option value="month">Mes</option>
+                </select>
+              </label>
+              <label>Fecha de consulta
+                <input id="loginsDate" type="date" data-testid="logins-date" />
+              </label>
+              <label>Resultado
+                <select id="loginsStatus" data-testid="logins-status">
+                  <option value="all">Todos</option>
+                  <option value="success">Exitoso</option>
+                  <option value="failure">Fallido</option>
+                  <option value="blocked">Bloqueado</option>
+                </select>
+              </label>
+            </div>
+            <div class="row-actions">
+              <label>Ver
+                <select id="loginsPerPage" data-testid="logins-per-page">
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                </select>
+              </label>
+              <button id="loginsPrevPageBtn" class="btn ghost mini" type="button" data-testid="logins-prev-page">Anterior</button>
+              <span id="loginsPageInfo" data-testid="logins-page-info">1 / 1</span>
+              <button id="loginsNextPageBtn" class="btn ghost mini" type="button" data-testid="logins-next-page">Siguiente</button>
+              <button id="loginsDownloadBtn" class="btn" type="button" data-testid="logins-download">Descargar archivo</button>
+            </div>
+            <p id="loginsSummary" data-testid="logins-summary">Sin inicios de sesion registrados.</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Resultado</th>
+                  <th>ID usuario</th>
+                  <th>Nombre</th>
+                  <th>Numero de cuenta</th>
+                </tr>
+              </thead>
+              <tbody id="loginsRows" data-testid="logins-rows">
+                <tr><td colspan="5">Sin accesos registrados</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel table-panel" data-roles="admin,manager">
             <div class="table-header">
               <h2>Bitacora de operaciones admin</h2>
             </div>
@@ -588,6 +742,7 @@
         </div>
       </div>
     </div>
-    <script src="app.js?v=20260711-2"></script>
+    <script src="i18n.js?v=20261002-1"></script>
+    <script src="app.js?v=20261002-1"></script>
   </body>
 </html>

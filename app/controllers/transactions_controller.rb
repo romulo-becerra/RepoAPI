@@ -97,8 +97,10 @@ class TransactionsController < ApplicationController
     return filtered_scope if actor_filter.blank? || actor_filter == "all"
 
     if actor_filter == "manager" || actor_filter == "admin"
-      return filtered_scope.where("description LIKE ?", "[actor:manager#%")
+      return filtered_scope.where("description LIKE ? OR description LIKE ?", "[actor:manager#%", "[actor:admin#%")
     end
+
+    return filtered_scope.where("description LIKE ?", "[actor:cashier#%") if actor_filter == "cashier"
 
     if actor_filter == "user"
       return filtered_scope.where("description LIKE ?", "[actor:user#%")
