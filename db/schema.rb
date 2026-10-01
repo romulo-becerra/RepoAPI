@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_10_01_110000) do
+ActiveRecord::Schema[8.0].define(version: 2026_10_01_130000) do
   create_table "accounts", force: :cascade do |t|
     t.integer "user_id"
     t.string "account_number"
@@ -21,6 +21,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_110000) do
     t.boolean "default", default: false
     t.integer "account_type", default: 0, null: false
     t.index ["user_id"], name: "index_accounts_on_user_id"
+  end
+
+  create_table "contacts", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "name", null: false
+    t.string "phone", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "phone"], name: "index_contacts_on_user_id_and_phone", unique: true
+    t.index ["user_id"], name: "index_contacts_on_user_id"
   end
 
   create_table "loan_installments", force: :cascade do |t|
@@ -147,6 +157,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_110000) do
   end
 
   add_foreign_key "accounts", "users"
+  add_foreign_key "contacts", "users"
   add_foreign_key "loan_installments", "loans"
   add_foreign_key "loans", "accounts"
   add_foreign_key "login_events", "users", on_delete: :nullify

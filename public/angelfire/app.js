@@ -115,6 +115,12 @@ const el = {
   adminInstallmentsPaidCount: document.getElementById('adminInstallmentsPaidCount'),
   adminInstallmentsPendingCount: document.getElementById('adminInstallmentsPendingCount'),
   adminUserFilesRows: document.getElementById('adminUserFilesRows'),
+  contactForm: document.getElementById('contactForm'),
+  contactName: document.getElementById('contactName'),
+  contactPhone: document.getElementById('contactPhone'),
+  contactsStatus: document.getElementById('contactsStatus'),
+  contactsList: document.getElementById('contactsList'),
+  contactsCount: document.getElementById('contactsCount'),
   userFilesRows: document.getElementById('userFilesRows'),
   userFileInput: document.getElementById('userFileInput'),
   adminAuditLog: document.getElementById('adminAuditLog'),
@@ -1789,6 +1795,65 @@ async function refreshUserFiles() {
     .join('');
 }
 
+function renderContacts(contacts) {
+  el.contactsCount.textContent = String(contacts.length);
+  el.contactsList.replaceChildren();
+  if (contacts.length === 0) {
+    const emptyState = document.createElement('p');
+    emptyState.className = 'contacts-empty';
+    emptyState.textContent = 'Todavia no tienes contactos.';
+    el.contactsList.append(emptyState);
+    return;
+  }
+
+  contacts.forEach((contact) => {
+    const row = document.createElement('article');
+    row.className = 'contact-row';
+
+    const details = document.createElement('div');
+    const name = document.createElement('h3');
+    name.textContent = contact.name;
+    const phone = document.createElement('p');
+    phone.textContent = contact.phone;
+    details.append(name, phone);
+
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'btn alt';
+    deleteButton.type = 'button';
+    deleteButton.textContent = 'Eliminar';
+    deleteButton.setAttribute('aria-label', `Eliminar contacto ${contact.name}`);
+    deleteButton.addEventListener('click', async () => {
+      const confirmed = await openActionModal({
+        title: 'Eliminar contacto',
+        message: `Se eliminara ${contact.name} de tus contactos. Deseas continuar?`,
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        tone: 'danger',
+        showCancel: true
+      });
+      if (!confirmed) return;
+
+      try {
+        await apiCall(`/api/v1/contacts/${contact.id}`, 'DELETE');
+        el.contactsStatus.textContent = 'Contacto eliminado.';
+        await refreshContacts();
+      } catch (error) {
+        el.contactsStatus.textContent = error.message || 'No se pudo eliminar el contacto.';
+      }
+    });
+
+    row.append(details, deleteButton);
+    el.contactsList.append(row);
+  });
+}
+
+async function refreshContacts() {
+  if (!hasManagerAccess()) return;
+
+  const payload = await apiCall('/api/v1/contacts', 'GET');
+  renderContacts(payload.contacts || []);
+}
+
 async function refreshAdminFilesForSelectedUser() {
   const userId = state.adminInspectUserId;
   if (!userId) {
@@ -2031,6 +2096,21 @@ async function refreshAdminDashboard() {
 }
 
 function bindEvents() {
+  el.contactForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const name = el.contactName.value.trim();
+    const phone = el.contactPhone.value.trim();
+
+    try {
+      await apiCall('/api/v1/contacts', 'POST', { contact: { name, phone } });
+      el.contactForm.reset();
+      el.contactsStatus.textContent = 'Contacto agregado.';
+      await refreshContacts();
+    } catch (error) {
+      el.contactsStatus.textContent = error.message || 'No se pudo agregar el contacto.';
+    }
+  });
+
   if (hasCustomModal()) {
     el.actionModalConfirmBtn.addEventListener('click', () => resolveActionModal(true));
     el.actionModalCancelBtn.addEventListener('click', () => resolveActionModal(false));
@@ -3294,6 +3374,7 @@ async function init() {
     await refreshUserFiles();
     if (hasManagerAccess()) {
       await refreshAdminDashboard();
+      await refreshContacts();
       await loadOperations();
       await loadLoginReport();
       if (state.adminInspectAccountLookup) {

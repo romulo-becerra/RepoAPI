@@ -19,6 +19,7 @@ Rails.application.routes.draw do
         end
       end
       resources :recipients, only: %i[index create destroy]
+      resources :contacts, only: %i[index create destroy]
       resources :services, only: [ :index, :show ]
       post "accounts/:id/pay_service", to: "accounts#pay_service"
       post "accounts/:id/transfer", to: "accounts#transfer"

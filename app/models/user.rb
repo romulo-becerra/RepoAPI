@@ -14,6 +14,7 @@
 class User < ApplicationRecord
   has_many :accounts, dependent: :destroy
   has_many :recipients, dependent: :destroy
+  has_many :contacts, dependent: :destroy
   has_many :user_files, dependent: :destroy
   has_one :user_address, dependent: :destroy
   has_one :account, -> { where(default: true) }, class_name: "Account"
