@@ -41,12 +41,26 @@ Verifica API operativa.
 ### POST /api/v1/register
 Registra cliente.
 
+El formulario web solicita datos personales, fecha de nacimiento y domicilio en tres pasos. Para mantener compatibilidad, `phone`, `date_of_birth` y `address` son opcionales para clientes API anteriores.
+
 Body:
 {
   "first_name": "Ana",
   "last_name": "Lopez",
   "email": "ana@example.com",
-  "pin": "1234"
+  "phone": "+59170000000",
+  "date_of_birth": "1990-04-12",
+  "pin": "1234",
+  "address": {
+    "country": "Bolivia",
+    "city": "La Paz",
+    "province": "La Paz",
+    "street": "Avenida Central",
+    "street_number": "123",
+    "district": "Centro",
+    "postal_code": "0001",
+    "reference": "Edificio azul"
+  }
 }
 
 ### POST /api/v1/login
@@ -367,6 +381,20 @@ Parametro opcional:
 Ejemplo:
 /api/v1/manager/reports/accounts_activity?days=15
 
+### GET /api/v1/manager/logins
+Reporte paginado de accesos de usuarios. Cada intento guarda fecha, resultado (`success`, `failure`, `blocked`), ID/nombre de usuario cuando la cuenta existe y el número de cuenta intentado. No se guardan PIN ni tokens.
+
+Query params:
+- `period`: `day` (por defecto), `week` o `month`.
+- `date`: fecha de referencia `YYYY-MM-DD` (por defecto, fecha actual).
+- `status`: `all` (por defecto), `success`, `failure` o `blocked`.
+- `page` y `per_page`: paginación (por defecto 10, máximo 50).
+
+La respuesta incluye `totals_by_status` para el periodo completo y `logins` con los registros de la página solicitada.
+
+### GET /api/v1/manager/logins/download
+Descarga el reporte de accesos en CSV usando los mismos filtros `period`, `date` y `status`. Columnas: `created_at`, `status`, `user_id`, `user_name`, `account_number`.
+
 ### POST /api/v1/manager/loans/:id/cancel
 Cancela prestamo (si no esta completed).
 
@@ -412,6 +440,12 @@ Resumen de cuenta para consulta operativa manager.
 
 Acepta account_id o account_number en :account_id.
 
+Uso operativo:
+- Debe ejecutarse antes de continuar con operaciones sobre una cuenta objetivo.
+- Si la cuenta no existe o no corresponde a un cliente valido, la UI debe mostrar error y bloquear la operacion.
+- Si la cuenta es valida, el frontend debe mostrar la cuenta + nombre del cliente y habilitar los campos de monto/servicio/prestamo.
+- Este resumen queda disponible para personal autorizado (admin, manager y cashier) al operar una cuenta de usuario; la creacion de prestamos se mantiene restrigida a admin/manager.
+
 ### GET /api/v1/manager/accounts/:account_id/loans/:loan_id/installments
 Plan de pagos paginado para manager.
 
@@ -445,6 +479,55 @@ Retiro por manager en cuenta objetivo.
 
 ### POST /api/v1/manager/accounts/:account_id/loans/:loan_id/pay
 Pago de prestamo por manager.
+
+### GET /api/v1/manager/operations
+Bitacora de operaciones para el panel de administracion: depositos, retiros, pagos de prestamo, pagos de servicio y transferencias.
+
+Query params:
+- `period`: `day` (por defecto), `week` o `month`. El rango se calcula alrededor de la fecha de consulta.
+- `date`: fecha de referencia en formato `YYYY-MM-DD` (por defecto, la fecha actual).
+- `operation_type`: `all` (por defecto), `deposit`, `withdraw`, `transfer`, `loan_payment`, `service_payment`, `atm_deposit`, `atm_withdrawal`, o los grupos `credit` y `debit`.
+- `performed_by`: `all` (por defecto), `manager` (operaciones ejecutadas por admin) o `user`.
+- `page` y `per_page`: paginacion (por defecto 10, maximo 50).
+
+Respuesta (paginada):
+```json
+{
+  "period": "month",
+  "date": "2026-09-30",
+  "range": { "from": "2026-09-01T00:00:00Z", "to": "2026-09-30T23:59:59Z" },
+  "page": 1,
+  "per_page": 10,
+  "total": 31,
+  "total_pages": 4,
+  "has_prev": false,
+  "has_next": true,
+  "total_amount": 4120.0,
+  "operations": [
+    {
+      "id": 186,
+      "created_at": "2026-09-29T05:00:29.206Z",
+      "transaction_type": "withdraw",
+      "amount": 70.0,
+      "description": "test MPC",
+      "status": "completed",
+      "account_id": 95,
+      "account_number": "5660550485",
+      "user_id": 90,
+      "user_name": "Nombre Apellido",
+      "performed_by_role": "user",
+      "performed_by_user_id": 90,
+      "performed_by_name": "Nombre Apellido",
+      "performed_by_label": "Nombre Apellido"
+    }
+  ]
+}
+```
+
+### GET /api/v1/manager/operations/download
+Descarga la bitacora de operaciones en CSV, aplicando los mismos filtros que el listado (`period`, `date`, `operation_type`, `performed_by`). La respuesta se envia como `text/csv` con `Content-Disposition: attachment`.
+
+Columnas: `id`, `created_at`, `transaction_type`, `amount`, `description`, `status`, `account_number`, `user_id`, `user_name`, `performed_by_role`, `performed_by_user_id`, `performed_by_name`.
 
 ## 9. Ejemplos cURL rapidos
 

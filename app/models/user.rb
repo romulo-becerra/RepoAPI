@@ -19,8 +19,10 @@ class User < ApplicationRecord
   has_one :account, -> { where(default: true) }, class_name: "Account"
   has_secure_password :pin, validations: false
 
+  attr_accessor :default_account_number
+
   attribute :role, :integer, default: 0
-  enum :role, { customer: 0, manager: 1 }, default: :customer
+  enum :role, { customer: 0, manager: 1, cashier: 2, admin: 3 }, default: :customer
 
   validates :first_name, presence: true
   validates :last_name, presence: true
@@ -43,6 +45,14 @@ class User < ApplicationRecord
     active? && !blocked?
   end
 
+  def staff?
+    admin? || manager? || cashier?
+  end
+
+  def management?
+    admin? || manager?
+  end
+
   def status_label
     return "deactivated" unless active?
     return "blocked" if blocked?
@@ -53,6 +63,11 @@ class User < ApplicationRecord
   private
 
   def create_default_account
-    accounts.create(default: true, balance: 1_000)
+    account_attributes = { default: true, balance: 1_000 }
+    if default_account_number.present?
+      account_attributes[:account_number] = default_account_number.to_s.strip
+    end
+
+    accounts.create(account_attributes)
   end
 end
