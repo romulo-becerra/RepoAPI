@@ -74,6 +74,31 @@
           </div>
         </section>
 
+        <section class="panel table-panel" data-roles="customer,manager,cashier,admin">
+          <div class="table-header">
+            <h2>Archivos del usuario</h2>
+            <button id="refreshFilesBtn" class="btn ghost" type="button" data-testid="refresh-files">Actualizar archivos</button>
+          </div>
+          <form id="uploadFileForm" class="row-actions" enctype="multipart/form-data">
+            <input id="userFileInput" type="file" accept=".txt,.csv,.json,image/png,image/jpeg,image/jpg,image/gif,image/webp,text/plain,text/csv,application/json" required data-testid="user-file-input" />
+            <button class="btn" type="submit" data-testid="upload-file-submit">Subir archivo</button>
+          </form>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Archivo</th>
+                <th>Tipo</th>
+                <th>Tamaño</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="userFilesRows" data-testid="user-files-rows">
+              <tr><td colspan="5">Sin archivos</td></tr>
+            </tbody>
+          </table>
+        </section>
+
         <section id="clientView">
           <section class="kpi-grid">
             <article class="kpi">
@@ -236,31 +261,6 @@
 
           <section class="panel table-panel">
             <div class="table-header">
-              <h2>Archivos del usuario</h2>
-              <button id="refreshFilesBtn" class="btn ghost" type="button" data-testid="refresh-files">Actualizar archivos</button>
-            </div>
-            <form id="uploadFileForm" class="row-actions" enctype="multipart/form-data">
-              <input id="userFileInput" type="file" accept=".txt,.csv,.json,image/png,image/jpeg,image/jpg,image/gif,image/webp,text/plain,text/csv,application/json" required data-testid="user-file-input" />
-              <button class="btn" type="submit" data-testid="upload-file-submit">Subir archivo</button>
-            </form>
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Archivo</th>
-                  <th>Tipo</th>
-                  <th>Tamaño</th>
-                  <th>Fecha</th>
-                </tr>
-              </thead>
-              <tbody id="userFilesRows" data-testid="user-files-rows">
-                <tr><td colspan="5">Sin archivos</td></tr>
-              </tbody>
-            </table>
-          </section>
-
-          <section class="panel table-panel">
-            <div class="table-header">
               <h2>Movimientos de cuenta</h2>
               <div class="pager-controls">
                 <label>Tipo
@@ -334,6 +334,23 @@
               <p>Actividad 30 dias</p>
               <h3 id="adminActivity" data-testid="admin-activity">-</h3>
             </article>
+          </section>
+
+          <section class="panel contacts-panel" data-roles="admin,manager" aria-labelledby="contactsTitle">
+            <h2 id="contactsTitle">Mis contactos (<span id="contactsCount">0</span>)</h2>
+            <form id="contactForm" class="contacts-add-form">
+              <label for="contactName">Nombre
+                <input id="contactName" name="name" placeholder="Nombre del contacto" maxlength="100" required data-testid="contact-name" />
+              </label>
+              <label for="contactPhone">Telefono
+                <input id="contactPhone" name="phone" type="tel" inputmode="tel" placeholder="Numero de telefono" pattern="[+]?[0-9]{4,15}" required data-testid="contact-phone" />
+              </label>
+              <button class="btn" type="submit" data-testid="contact-add">Agregar contacto</button>
+            </form>
+            <p id="contactsStatus" class="field-help" role="status" aria-live="polite"></p>
+            <div id="contactsList" class="contacts-list" data-testid="contacts-list">
+              <p class="contacts-empty">Todavia no tienes contactos.</p>
+            </div>
           </section>
 
           <section class="panel admin-ops-panel">

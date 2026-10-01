@@ -312,6 +312,66 @@ select {
   margin-bottom: 0.9rem;
 }
 
+.contacts-panel {
+  margin-bottom: 0.9rem;
+}
+
+.contacts-add-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  align-items: end;
+}
+
+.contacts-add-form label {
+  display: grid;
+  gap: 0.3rem;
+  color: var(--ink-700);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.contacts-add-form input {
+  width: 100%;
+}
+
+.contacts-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.contact-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #f4f7f8;
+}
+
+.contact-row h3,
+.contact-row p,
+.contacts-empty {
+  margin: 0;
+}
+
+.contact-row h3 {
+  font-size: 0.9rem;
+}
+
+.contact-row p {
+  margin-top: 0.2rem;
+  color: var(--ink-700);
+  font-size: 0.82rem;
+}
+
+.contacts-empty {
+  color: var(--ink-700);
+  font-size: 0.85rem;
+}
+
 .admin-op-selector {
   flex-wrap: wrap;
 }
@@ -648,6 +708,10 @@ pre {
   .grid-auth,
   .operations-grid,
   .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contacts-add-form {
     grid-template-columns: 1fr;
   }
 
