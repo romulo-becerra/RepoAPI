@@ -45,7 +45,10 @@ class AccountsController < ApplicationController
     @source_account = current_user.accounts.find_by(id: params[:id])
     return render json: { errors: "Cuenta de origen no encontrada" }, status: :not_found unless @source_account
 
-    recipient_account = Account.find(params[:recipient_account_id])
+    recipient_lookup = (params[:recipient_account_id].presence || params[:recipient_account_number]).to_s.strip
+    recipient_account = Account.find_by(id: recipient_lookup) || Account.find_by(account_number: recipient_lookup)
+    return render json: { errors: "Cuenta receptora no encontrada o no valida" }, status: :not_found unless recipient_account&.user?
+
     @amount = params[:amount].to_d
     description = params[:description]
 
@@ -93,6 +96,8 @@ class AccountsController < ApplicationController
   end
 
   def deposit
+    return render json: { errors: "Los clientes no pueden depositar por este canal" }, status: :forbidden unless current_user.staff?
+
     account = current_user.accounts.find_by(id: params[:id])
     return render json: { errors: "Cuenta no encontrada" }, status: :not_found unless account
 
@@ -100,7 +105,7 @@ class AccountsController < ApplicationController
       account,
       params[:amount],
       params[:description].presence || "Deposito en cuenta",
-      performed_by_role: :user,
+      performed_by_role: current_user.role,
       performed_by_user_id: current_user.id,
       performed_by_name: current_user.to_s
     )
@@ -125,7 +130,7 @@ class AccountsController < ApplicationController
       account,
       params[:amount],
       params[:description].presence || "Retiro en cuenta",
-      performed_by_role: :user,
+      performed_by_role: current_user.role,
       performed_by_user_id: current_user.id,
       performed_by_name: current_user.to_s
     )
@@ -155,7 +160,7 @@ class AccountsController < ApplicationController
       recipient_account,
       amount,
       description,
-      performed_by_role: :user,
+      performed_by_role: current_user.role,
       performed_by_user_id: current_user.id,
       performed_by_name: current_user.to_s
     )

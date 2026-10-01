@@ -26,7 +26,7 @@ class UserAddressesController < ApplicationController
   def set_user
     @user = User.find_by(id: params[:id])
     return render json: { errors: "Usuario no encontrado" }, status: :not_found unless @user
-    return if current_user.manager? || current_user.id == @user.id
+    return if current_user.management? || current_user.id == @user.id
 
     render json: { errors: "No autorizado para gestionar esta dirección" }, status: :forbidden
   end
