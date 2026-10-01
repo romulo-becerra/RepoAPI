@@ -19,8 +19,8 @@
           <div class="nav-brand">AngelFire</div>
           <ul class="nav-links">
             <li><a href="/angelfire/">Inicio</a></li>
-            <li><a href="#about">Sobre nosotros</a></li>
-            <li><a href="#contact">Contacto</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#contact">Contact</a></li>
           </ul>
         </div>
         <div class="nav-actions">
@@ -218,95 +218,24 @@
           </div>
           <div class="row-actions">
             <button class="btn" type="submit" data-testid="auth-login-submit">Ingresar</button>
-          </div>
-          <details class="admin-access">
-            <summary>Acceso para administradores</summary>
             <button class="btn alt" id="adminLoginBtn" type="button" data-testid="auth-admin-login-submit">Ingresar admin</button>
-          </details>
+          </div>
           <button class="btn ghost" id="showRegisterBtn" type="button" data-testid="auth-show-register">No tengo cuenta, registrarme</button>
         </form>
 
-        <section id="registrationSuccessCard" class="card registration-success hidden" aria-live="polite" aria-labelledby="registrationSuccessTitle">
-          <div class="registration-success-mark" aria-hidden="true">&#10003;</div>
-          <div class="registration-success-content">
-            <h2 id="registrationSuccessTitle">Cuenta creada correctamente</h2>
-            <p>Tu numero de cuenta es</p>
-            <strong id="createdAccountNumber" class="registration-account-number" data-testid="auth-created-account-number">-</strong>
-            <p class="registration-success-note">El numero ya esta escrito en el formulario de ingreso.</p>
-            <button id="continueToLoginBtn" class="btn" type="button" data-testid="auth-continue-to-login">Continuar al login</button>
-          </div>
-        </section>
-
-        <form id="registerForm" class="card registration-form hidden">
+        <form id="registerForm" class="card hidden">
           <h2>Registro</h2>
-          <ol class="registration-step-nav" role="tablist" aria-label="Pasos del registro">
-            <li><button id="registerPersonalTab" class="registration-step is-current" type="button" role="tab" aria-selected="true" aria-controls="registerPersonalStep" data-registration-step="0">1. Datos personales</button></li>
-            <li><button id="registerAddressTab" class="registration-step" type="button" role="tab" aria-selected="false" aria-controls="registerAddressStep" data-registration-step="1">2. Domicilio</button></li>
-            <li><button id="registerConfirmTab" class="registration-step" type="button" role="tab" aria-selected="false" aria-controls="registerConfirmStep" data-registration-step="2">3. Confirmacion</button></li>
-          </ol>
-
-          <section id="registerPersonalStep" class="registration-step-panel" data-registration-step-panel="0" role="tabpanel" aria-labelledby="registerPersonalTab">
-            <h3>Datos personales</h3>
-            <label for="regFirstName">First Name</label>
-            <input id="regFirstName" name="first_name" autocomplete="given-name" required data-testid="auth-register-first-name" />
-            <label for="regLastName">Last Name</label>
-            <input id="regLastName" name="last_name" autocomplete="family-name" required data-testid="auth-register-last-name" />
-            <label for="regEmail">Email</label>
-            <input id="regEmail" name="email" type="email" autocomplete="email" placeholder="email@example.com" required data-testid="auth-register-email" />
-            <label for="regPhone">Phone</label>
-            <input id="regPhone" name="phone" type="tel" autocomplete="tel" placeholder="+59170000000" pattern="\+?[0-9]{8,15}" data-testid="auth-register-phone" />
-            <label for="regDateOfBirth">Date of Birth</label>
-            <input id="regDateOfBirth" name="date_of_birth" type="date" autocomplete="bday" required data-testid="auth-register-date-of-birth" />
-            <label for="regPin">PIN (4 digitos)</label>
-            <div class="pin-row">
-              <input id="regPin" name="pin" type="password" inputmode="numeric" autocomplete="new-password" minlength="4" maxlength="4" pattern="[0-9]{4}" required data-testid="auth-register-pin" />
-              <button class="btn ghost mini" id="toggleRegisterPinBtn" type="button" data-testid="auth-toggle-register-pin">Ver PIN</button>
-            </div>
-            <div class="row-actions registration-actions">
-              <button class="btn" type="button" data-registration-next="1">Siguiente</button>
-              <button class="btn ghost" id="hideRegisterBtn" type="button" data-testid="auth-hide-register">Cancelar</button>
-            </div>
-          </section>
-
-          <section id="registerAddressStep" class="registration-step-panel hidden" data-registration-step-panel="1" role="tabpanel" aria-labelledby="registerAddressTab" hidden>
-            <h3>Address Details</h3>
-            <label for="regCountry">Country</label>
-            <input id="regCountry" name="country" autocomplete="country-name" required data-testid="auth-register-country" />
-            <label for="regCity">City</label>
-            <input id="regCity" name="city" autocomplete="address-level2" required data-testid="auth-register-city" />
-            <label for="regProvince">Province / State</label>
-            <input id="regProvince" name="province" autocomplete="address-level1" required data-testid="auth-register-province" />
-            <label for="regStreet">Street</label>
-            <input id="regStreet" name="street" autocomplete="address-line1" required data-testid="auth-register-street" />
-            <label for="regStreetNumber">Street number</label>
-            <input id="regStreetNumber" name="street_number" autocomplete="address-line2" data-testid="auth-register-street-number" />
-            <label for="regDistrict">District</label>
-            <input id="regDistrict" name="district" autocomplete="address-level3" data-testid="auth-register-district" />
-            <label for="regPostalCode">Postal code</label>
-            <input id="regPostalCode" name="postal_code" autocomplete="postal-code" data-testid="auth-register-postal-code" />
-            <label for="regAddressReference">Address reference</label>
-            <textarea id="regAddressReference" name="reference" rows="2" data-testid="auth-register-address-reference"></textarea>
-            <div class="row-actions registration-actions">
-              <button class="btn ghost" type="button" data-registration-back="0">Atras</button>
-              <button class="btn" type="button" data-registration-next="2">Siguiente</button>
-            </div>
-          </section>
-
-          <section id="registerConfirmStep" class="registration-step-panel hidden" data-registration-step-panel="2" role="tabpanel" aria-labelledby="registerConfirmTab" hidden>
-            <h3>Confirmacion de datos</h3>
-            <p>Revisa la informacion antes de crear tu cuenta.</p>
-            <p id="registerError" class="field-error" role="alert" hidden></p>
-            <dl id="registrationReview" class="registration-review"></dl>
-            <p class="registration-pin-note">Tu PIN se utilizara para iniciar sesion. No se muestra en este resumen.</p>
-            <div class="registration-edit-actions">
-              <button class="btn ghost" type="button" data-registration-back="1">Editar domicilio</button>
-              <button class="btn ghost" type="button" data-registration-back="0">Editar datos personales</button>
-            </div>
-            <div class="row-actions registration-actions">
-              <button class="btn" type="submit" data-testid="auth-register-submit">Confirmar y registrar</button>
-              <button class="btn ghost" id="cancelRegisterConfirmBtn" type="button">Cancelar</button>
-            </div>
-          </section>
+          <input id="regFirstName" placeholder="First name" required data-testid="auth-register-first-name" />
+          <input id="regLastName" placeholder="Last name" required data-testid="auth-register-last-name" />
+          <input id="regEmail" type="email" placeholder="email@example.com" required data-testid="auth-register-email" />
+          <div class="pin-row">
+            <input id="regPin" type="password" placeholder="PIN 4 digitos" value="1234" required data-testid="auth-register-pin" />
+            <button class="btn ghost mini" id="toggleRegisterPinBtn" type="button" data-testid="auth-toggle-register-pin">Ver PIN</button>
+          </div>
+          <div class="row-actions">
+            <button class="btn" type="submit" data-testid="auth-register-submit">Registrar</button>
+            <button class="btn ghost" id="hideRegisterBtn" type="button" data-testid="auth-hide-register">Cancelar</button>
+          </div>
         </form>
 
         <!-- Sección 'Cuenta asignada' eliminada: no se usa en la UI de login -->
@@ -318,7 +247,6 @@
         </section>
       </section>
     </main>
-    <script src="i18n.js?v=20261002-1"></script>
-    <script src="login.js?v=20261002-1"></script>
+    <script src="login.js"></script>
   </body>
 </html>

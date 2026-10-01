@@ -26,17 +26,6 @@ const defaultState = {
   adminInspectUserId: '',
   balanceAutoRefresh: false,
   activeView: 'client',
-  opsPeriod: 'day',
-  opsDate: '',
-  opsType: 'all',
-  opsActor: 'all',
-  opsPage: 1,
-  opsPerPage: 10,
-  loginsPeriod: 'day',
-  loginsDate: '',
-  loginsStatus: 'all',
-  loginsPage: 1,
-  loginsPerPage: 10,
   auditLog: []
 };
 
@@ -48,12 +37,7 @@ let adminUsersPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1
 let adminPlanPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
 let adminPreviewScheduleCache = [];
 let adminPreviewPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
-let opsPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
-let opsRequestId = 0;
-let loginsPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
-let loginsRequestId = 0;
 let adminInstallmentsStatusTotalsCache = {};
-let currentAdminOperation = '';
 let modalDecisionResolver = null;
 let modalCloseTimer = null;
 let balanceAutoRefreshTimer = null;
@@ -118,29 +102,6 @@ const el = {
   userFilesRows: document.getElementById('userFilesRows'),
   userFileInput: document.getElementById('userFileInput'),
   adminAuditLog: document.getElementById('adminAuditLog'),
-  opsPeriod: document.getElementById('opsPeriod'),
-  opsDate: document.getElementById('opsDate'),
-  opsType: document.getElementById('opsType'),
-  opsActor: document.getElementById('opsActor'),
-  opsPerPage: document.getElementById('opsPerPage'),
-  opsRows: document.getElementById('opsRows'),
-  opsSummary: document.getElementById('opsSummary'),
-  opsPageInfo: document.getElementById('opsPageInfo'),
-  opsPrevPageBtn: document.getElementById('opsPrevPageBtn'),
-  opsNextPageBtn: document.getElementById('opsNextPageBtn'),
-  opsRefreshBtn: document.getElementById('refreshOpsBtn'),
-  opsDownloadBtn: document.getElementById('opsDownloadBtn'),
-  loginsPeriod: document.getElementById('loginsPeriod'),
-  loginsDate: document.getElementById('loginsDate'),
-  loginsStatus: document.getElementById('loginsStatus'),
-  loginsPerPage: document.getElementById('loginsPerPage'),
-  loginsRows: document.getElementById('loginsRows'),
-  loginsSummary: document.getElementById('loginsSummary'),
-  loginsPageInfo: document.getElementById('loginsPageInfo'),
-  loginsPrevPageBtn: document.getElementById('loginsPrevPageBtn'),
-  loginsNextPageBtn: document.getElementById('loginsNextPageBtn'),
-  loginsRefreshBtn: document.getElementById('refreshLoginsBtn'),
-  loginsDownloadBtn: document.getElementById('loginsDownloadBtn'),
   permClient: document.getElementById('permClient'),
   permAdmin: document.getElementById('permAdmin'),
   permManagerUsers: document.getElementById('permManagerUsers'),
@@ -401,117 +362,6 @@ function setAdminAccountLookupValidation(message) {
   el.adminAccountLookupValidation.classList.remove('hidden');
 }
 
-function setTargetAccountValidation(message) {
-  const targetValidation = document.getElementById('adminTargetAccountValidation');
-  if (!targetValidation) {
-    return;
-  }
-
-  const text = String(message || '').trim();
-  if (!text) {
-    targetValidation.textContent = '';
-    targetValidation.classList.add('hidden');
-    return;
-  }
-
-  targetValidation.textContent = text;
-  targetValidation.classList.remove('hidden');
-}
-
-function setTargetOperationButtonsDisabled(disabled) {
-  const buttonIds = [
-    'adminDepositTargetBtn',
-    'adminWithdrawTargetBtn',
-    'adminPayLoanTargetBtn',
-    'adminPayServiceTargetBtn'
-  ];
-
-  buttonIds.forEach((buttonId) => {
-    const button = document.getElementById(buttonId);
-    if (button) {
-      button.disabled = disabled;
-    }
-  });
-}
-
-function setTargetOperationFieldsDisabled(disabled) {
-  const fieldIds = [
-    'adminTargetLoanId',
-    'adminTargetAmount',
-    'adminTargetDescription',
-    'adminTargetServiceId'
-  ];
-
-  fieldIds.forEach((fieldId) => {
-    const element = document.getElementById(fieldId);
-    if (!element) {
-      return;
-    }
-
-    element.disabled = disabled;
-  });
-}
-
-function setTargetAccountInfo(summary) {
-  const info = document.getElementById('adminTargetAccountInfo');
-  if (!info) {
-    return;
-  }
-
-  if (!summary) {
-    info.textContent = 'Sin cuenta validada.';
-    return;
-  }
-
-  const accountNumber = summary.account_number || summary.accountId || 'N/A';
-  const userName = summary.user_name || 'Cliente sin nombre';
-  const balance = Number(summary.balance || 0);
-  info.textContent = `Cuenta validada: ${accountNumber} - ${userName} | Saldo: S/ ${balance.toFixed(2)}`;
-}
-
-function setLoanAccountInfo(summary) {
-  const info = document.getElementById('adminLoanAccountInfo');
-  if (!info) {
-    return;
-  }
-
-  if (!summary) {
-    info.textContent = 'Sin cuenta validada.';
-    return;
-  }
-
-  const accountNumber = summary.account_number || summary.accountId || 'N/A';
-  const userName = summary.user_name || 'Cliente sin nombre';
-  const balance = Number(summary.balance || 0);
-  info.textContent = `Cuenta validada: ${accountNumber} - ${userName} | Saldo: S/ ${balance.toFixed(2)}`;
-}
-
-async function validateTargetAccountBalanceForAction(actionName, amount) {
-  const lookup = document.getElementById('adminTargetAccountId').value.trim();
-  if (!lookup || !amount || Number(amount) <= 0) {
-    return true;
-  }
-
-  try {
-    const summary = await apiCall(`/api/v1/manager/accounts/${lookup}/summary`, 'GET', null, 'manager');
-    const balance = Number(summary.balance || 0);
-    const requested = Number(amount);
-    if (requested > balance) {
-      const actionLabel = actionName === 'withdraw' ? 'retiro' : actionName === 'pay_loan' ? 'pago de préstamo' : 'pago de servicio';
-      const message = `Saldo insuficiente. La cuenta tiene S/ ${balance.toFixed(2)} y el ${actionLabel} requiere S/ ${requested.toFixed(2)}.`;
-      setTargetAccountValidation(message);
-      renderResponse(422, { errors: message });
-      return false;
-    }
-    setTargetAccountValidation('');
-    return true;
-  } catch (error) {
-    setTargetAccountValidation(normalizeAdminLookupErrorMessage(error.message));
-    renderResponse(422, { errors: error.message });
-    return false;
-  }
-}
-
 function normalizeAdminLookupErrorMessage(message) {
   const text = String(message || '').toLowerCase();
   if (text.includes('not found') || text.includes('no existe') || text.includes('no encontrado')) {
@@ -581,75 +431,12 @@ function persistState() {
   localStorage.setItem(storageKey, JSON.stringify(state));
 }
 
-function hasSessionToken() {
-  return Boolean(state.managerToken || state.token);
-}
-
-// Role matrix:
-//   admin   -> full control (user lifecycle, roles, reports, counter operations)
-//   manager -> management (inquiries, loan origination, reports, counter operations)
-//   cashier -> counter operations only (deposit/withdraw/loan payment/service payment)
-//   customer -> self service (withdraw, service payment, loan payment, transfer)
-const MANAGEMENT_ROLES = ['admin', 'manager'];
-const STAFF_ROLES = ['admin', 'manager', 'cashier'];
-const ADMIN_OPERATIONS = {
-  'create-user': 'admin',
-  'create-loan': 'manager',
-  'account-ops': 'cashier'
-};
-
 function hasManagerAccess() {
-  return MANAGEMENT_ROLES.includes(state.role) && hasSessionToken();
-}
-
-function hasAdminAccess() {
-  return state.role === 'admin' && hasSessionToken();
-}
-
-function hasStaffAccess() {
-  return STAFF_ROLES.includes(state.role) && hasSessionToken();
+  return state.role === 'manager' && Boolean(state.managerToken || state.token);
 }
 
 function hasClientAccess() {
   return Boolean(state.token);
-}
-
-function isClientRole() {
-  return state.role === 'customer';
-}
-
-function adminOperationAllowed(operationKey) {
-  const requiredRole = ADMIN_OPERATIONS[operationKey];
-  if (!requiredRole) {
-    return false;
-  }
-  if (!hasSessionToken()) {
-    return false;
-  }
-  if (requiredRole === 'admin') {
-    return hasAdminAccess();
-  }
-  if (requiredRole === 'manager') {
-    return hasManagerAccess();
-  }
-  return hasStaffAccess();
-}
-
-function applyRolePermissions() {
-  const role = state.role || '';
-  document.querySelectorAll('[data-roles]').forEach((node) => {
-    const allowed = (node.getAttribute('data-roles') || '')
-      .split(',')
-      .map((value) => value.trim())
-      .filter(Boolean);
-    node.classList.toggle('hidden', allowed.length > 0 && !allowed.includes(role));
-  });
-
-  if (el.viewAdminBtn && !hasStaffAccess() && state.activeView === 'admin') {
-    state.activeView = 'client';
-  }
-
-  renderAdminOperationVisibility(currentAdminOperation);
 }
 
 function pushAudit(eventText) {
@@ -677,7 +464,7 @@ function setPermissionBadge(node, enabled) {
 function renderPermissions() {
   setPermissionBadge(el.permClient, hasClientAccess());
   setPermissionBadge(el.permAdmin, hasManagerAccess());
-  setPermissionBadge(el.permManagerUsers, hasAdminAccess());
+  setPermissionBadge(el.permManagerUsers, hasManagerAccess());
 }
 
 function clearSession(keepBaseUrl = true) {
@@ -695,7 +482,6 @@ function updateHeader() {
   el.accountNumberValue.textContent = state.accountNumber || '-';
   el.userNameValue.textContent = state.fullName || '-';
   renderPermissions();
-  applyRolePermissions();
 }
 
 function toggleAccountMaintenance(mode) {
@@ -711,23 +497,10 @@ function toggleAccountMaintenance(mode) {
   }
 }
 
-function resolvePreferredView() {
-  const stored = state.activeView;
-  const fallback = hasStaffAccess() ? 'admin' : 'client';
-  if (stored === 'admin' && !hasStaffAccess()) {
-    return 'client';
-  }
-  return stored || fallback;
-}
-
 function setView(view) {
-  if (view === 'admin' && !hasStaffAccess()) {
-    renderResponse(403, { errors: 'La vista de operaciones requiere un rol Admin, Manager o Cashier.' });
+  if (view === 'admin' && !hasManagerAccess()) {
+    renderResponse(403, { errors: 'La vista admin requiere autenticacion manager.' });
     return;
-  }
-
-  if (view === 'admin') {
-    applyRolePermissions();
   }
 
   state.activeView = view;
@@ -984,252 +757,6 @@ function formatPerformedBy(tx) {
   return 'No disponible';
 }
 
-function formatDateTime(value) {
-  if (!value) {
-    return '-';
-  }
-
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return String(value);
-  }
-
-  return parsed.toLocaleString(window.AngelFireI18n?.localeTag() || 'es-BO');
-}
-
-function formatOpsRange(range) {
-  if (!range || !range.from || !range.to) {
-    return '-';
-  }
-
-  return `${formatDateTime(range.from)} - ${formatDateTime(range.to)}`;
-}
-
-function updateOpsPaginationUi() {
-  if (!el.opsPageInfo || !el.opsPrevPageBtn || !el.opsNextPageBtn) {
-    return;
-  }
-
-  el.opsPageInfo.textContent = `${opsPaginationMeta.page} / ${opsPaginationMeta.total_pages}`;
-  el.opsPrevPageBtn.disabled = !opsPaginationMeta.has_prev;
-  el.opsNextPageBtn.disabled = !opsPaginationMeta.has_next;
-}
-
-function currentOpsDate() {
-  return state.opsDate || new Date().toISOString().slice(0, 10);
-}
-
-// Query shared by the listing and the CSV download so both always describe
-// exactly the same set of operations.
-function buildOpsQuery() {
-  return new URLSearchParams({
-    period: state.opsPeriod || 'day',
-    date: currentOpsDate(),
-    operation_type: state.opsType || 'all',
-    performed_by: state.opsActor || 'all',
-    page: String(state.opsPage || 1),
-    per_page: String(state.opsPerPage || 10)
-  }).toString();
-}
-
-function opsRowHtml(operation) {
-  const actor = operation.performed_by_label || operation.performed_by_name || '-';
-  const user = operation.user_name
-    ? `${operation.user_name}${operation.user_id ? ` (ID ${operation.user_id})` : ''}`
-    : '-';
-
-  return `<tr><td>${formatDateTime(operation.created_at)}</td><td>${formatTransactionType(operation.transaction_type)}</td><td>${Number(operation.amount || 0).toFixed(2)}</td><td>${operation.description || '-'}</td><td>${user}</td><td>${operation.account_number || '-'}</td><td>${actor}</td><td>${operation.status || '-'}</td></tr>`;
-}
-
-async function loadOperations() {
-  if (!hasManagerAccess() || !el.opsRows) {
-    return;
-  }
-
-  // Changing the filters can start several requests in a row; only the newest
-  // one is allowed to paint, otherwise a slow earlier response would overwrite
-  // the current selection with stale data.
-  const requestId = opsRequestId + 1;
-  opsRequestId = requestId;
-
-  const payload = await apiCall(`/api/v1/manager/operations?${buildOpsQuery()}`, 'GET', null, 'manager');
-  if (requestId !== opsRequestId) {
-    return;
-  }
-
-  const rows = payload.operations || [];
-
-  opsPaginationMeta = {
-    page: Number(payload.page || 1),
-    per_page: Number(payload.per_page || state.opsPerPage || 10),
-    total: Number(payload.total || rows.length),
-    total_pages: Number(payload.total_pages || 1),
-    has_prev: Boolean(payload.has_prev),
-    has_next: Boolean(payload.has_next)
-  };
-  state.opsPage = opsPaginationMeta.page;
-  state.opsPerPage = opsPaginationMeta.per_page;
-  persistState();
-
-  el.opsRows.innerHTML = rows.length === 0
-    ? '<tr><td colspan="8">Sin operaciones</td></tr>'
-    : rows.map(opsRowHtml).join('');
-
-  if (el.opsSummary) {
-    el.opsSummary.textContent = `Operaciones: ${opsPaginationMeta.total} | Monto total: S/ ${Number(payload.total_amount || 0).toFixed(2)} | Rango: ${formatOpsRange(payload.range)}`;
-  }
-
-  updateOpsPaginationUi();
-  pushAudit(`Consulta bitacora de operaciones periodo=${state.opsPeriod} fecha=${currentOpsDate()} total=${opsPaginationMeta.total}`);
-}
-
-async function downloadOperations() {
-  const response = await fetch(`${state.baseUrl}/api/v1/manager/operations/download?${buildOpsQuery()}`, {
-    method: 'GET',
-    headers: {
-      Accept: 'text/csv',
-      Authorization: `Bearer ${state.managerToken || state.token}`
-    }
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    let payload;
-    try {
-      payload = text ? JSON.parse(text) : {};
-    } catch (_error) {
-      payload = { raw: text };
-    }
-    throw new Error(payload.errors || 'No se pudo descargar la bitacora de operaciones.');
-  }
-
-  const blob = await response.blob();
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `operations_${state.opsPeriod || 'day'}_${currentOpsDate()}.csv`;
-  document.body.append(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-  pushAudit(`Bitacora de operaciones descargada periodo=${state.opsPeriod} fecha=${currentOpsDate()}`);
-}
-
-function currentLoginsDate() {
-  return state.loginsDate || new Date().toISOString().slice(0, 10);
-}
-
-function buildLoginsQuery() {
-  return new URLSearchParams({
-    period: state.loginsPeriod || 'day',
-    date: currentLoginsDate(),
-    status: state.loginsStatus || 'all',
-    page: String(state.loginsPage || 1),
-    per_page: String(state.loginsPerPage || 10)
-  }).toString();
-}
-
-function updateLoginsPaginationUi() {
-  if (!el.loginsPageInfo || !el.loginsPrevPageBtn || !el.loginsNextPageBtn) {
-    return;
-  }
-
-  el.loginsPageInfo.textContent = `${loginsPaginationMeta.page} / ${loginsPaginationMeta.total_pages}`;
-  el.loginsPrevPageBtn.disabled = !loginsPaginationMeta.has_prev;
-  el.loginsNextPageBtn.disabled = !loginsPaginationMeta.has_next;
-}
-
-function loginReportRow(event) {
-  const cells = [
-    formatDateTime(event.created_at),
-    event.status,
-    event.user_id || '-',
-    event.user_name || 'Usuario no identificado',
-    event.account_number || '-'
-  ];
-  const row = document.createElement('tr');
-  cells.forEach((value) => {
-    const cell = document.createElement('td');
-    cell.textContent = value;
-    row.append(cell);
-  });
-  return row;
-}
-
-async function loadLoginReport() {
-  if (!hasManagerAccess() || !el.loginsRows) {
-    return;
-  }
-
-  const requestId = loginsRequestId + 1;
-  loginsRequestId = requestId;
-  const payload = await apiCall(`/api/v1/manager/logins?${buildLoginsQuery()}`, 'GET', null, 'manager');
-  if (requestId !== loginsRequestId) {
-    return;
-  }
-
-  const rows = payload.logins || [];
-  loginsPaginationMeta = {
-    page: Number(payload.page || 1),
-    per_page: Number(payload.per_page || state.loginsPerPage || 10),
-    total: Number(payload.total || 0),
-    total_pages: Number(payload.total_pages || 1),
-    has_prev: Boolean(payload.has_prev),
-    has_next: Boolean(payload.has_next)
-  };
-  state.loginsPage = loginsPaginationMeta.page;
-  state.loginsPerPage = loginsPaginationMeta.per_page;
-  persistState();
-
-  el.loginsRows.replaceChildren();
-  if (rows.length === 0) {
-    const row = document.createElement('tr');
-    const cell = document.createElement('td');
-    cell.colSpan = 5;
-    cell.textContent = 'Sin inicios de sesion registrados.';
-    row.append(cell);
-    el.loginsRows.append(row);
-  } else {
-    rows.forEach((event) => el.loginsRows.append(loginReportRow(event)));
-  }
-
-  const totals = payload.totals_by_status || {};
-  el.loginsSummary.textContent = `Inicios: ${payload.total || 0} | Exitosos: ${totals.success || 0} | Fallidos: ${totals.failure || 0} | Bloqueados: ${totals.blocked || 0} | Rango: ${formatOpsRange(payload.range)}`;
-  updateLoginsPaginationUi();
-  pushAudit(`Consulta de accesos periodo=${state.loginsPeriod} fecha=${currentLoginsDate()} total=${loginsPaginationMeta.total}`);
-}
-
-async function downloadLoginReport() {
-  const response = await fetch(`${state.baseUrl}/api/v1/manager/logins/download?${buildLoginsQuery()}`, {
-    method: 'GET',
-    headers: {
-      Accept: 'text/csv',
-      Authorization: `Bearer ${state.managerToken || state.token}`
-    }
-  });
-
-  if (!response.ok) {
-    const text = await response.text();
-    let payload;
-    try {
-      payload = text ? JSON.parse(text) : {};
-    } catch (_error) {
-      payload = { raw: text };
-    }
-    throw new Error(payload.errors || 'No se pudo descargar el reporte de accesos.');
-  }
-
-  const blob = await response.blob();
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `user_logins_${state.loginsPeriod || 'day'}_${currentLoginsDate()}.csv`;
-  document.body.append(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
-
 function updatePendingPaginationUi() {
   const page = pendingPaginationMeta.page || 1;
   const totalPages = pendingPaginationMeta.total_pages || 1;
@@ -1299,60 +826,6 @@ function updateAdminLoanRateHintFromAmount() {
   el.adminLoanRateHint.textContent = `Interes anual estimado: ${rate.toFixed(2)}%`;
 }
 
-async function validateLoanAccountForOperation() {
-  const lookup = document.getElementById('adminLoanAccountId').value.trim();
-  if (!lookup) {
-    setLoanAccountInfo(null);
-    setLoanAccountValidation('Debes indicar un account ID o numero de cuenta valido.');
-    document.getElementById('adminLoanAmount').disabled = true;
-    document.getElementById('adminLoanTermMonths').disabled = true;
-    document.getElementById('adminLoanFirstDueDate').disabled = true;
-    document.getElementById('adminPreviewLoanBtn').disabled = true;
-    document.getElementById('adminCreateLoanBtn').disabled = true;
-    renderResponse(422, { errors: 'Debes indicar account ID o numero de cuenta.' });
-    return false;
-  }
-
-  try {
-    const summary = await apiCall(`/api/v1/manager/accounts/${lookup}/summary`, 'GET', null, 'manager');
-    setLoanAccountInfo(summary);
-    setLoanAccountValidation('');
-    document.getElementById('adminLoanAmount').disabled = false;
-    document.getElementById('adminLoanTermMonths').disabled = false;
-    document.getElementById('adminLoanFirstDueDate').disabled = false;
-    document.getElementById('adminPreviewLoanBtn').disabled = false;
-    document.getElementById('adminCreateLoanBtn').disabled = false;
-    return true;
-  } catch (error) {
-    setLoanAccountInfo(null);
-    setLoanAccountValidation(normalizeAdminLookupErrorMessage(error.message));
-    document.getElementById('adminLoanAmount').disabled = true;
-    document.getElementById('adminLoanTermMonths').disabled = true;
-    document.getElementById('adminLoanFirstDueDate').disabled = true;
-    document.getElementById('adminPreviewLoanBtn').disabled = true;
-    document.getElementById('adminCreateLoanBtn').disabled = true;
-    renderResponse(422, { errors: error.message });
-    return false;
-  }
-}
-
-function setLoanAccountValidation(message) {
-  const validation = document.getElementById('adminLoanAccountValidation');
-  if (!validation) {
-    return;
-  }
-
-  const text = String(message || '').trim();
-  if (!text) {
-    validation.textContent = '';
-    validation.classList.add('hidden');
-    return;
-  }
-
-  validation.textContent = text;
-  validation.classList.remove('hidden');
-}
-
 function getAdminLoanFormValues() {
   return {
     accountId: document.getElementById('adminLoanAccountId').value.trim(),
@@ -1401,10 +874,6 @@ function formatUserStatus(user) {
 }
 
 function renderAdminUserActions(user) {
-  if (!hasAdminAccess()) {
-    return '';
-  }
-
   const isActive = user && user.active !== false;
   const isBlocked = user && user.blocked === true;
   const actions = [];
@@ -1421,29 +890,20 @@ function renderAdminUserActions(user) {
   return actions.join('');
 }
 
-function renderAdminOperationVisibility(selected) {
+function toggleAdminOperation(operationKey) {
+  const selected = String(operationKey || '').trim();
   const opCards = document.querySelectorAll('[data-admin-op-card]');
   const opButtons = document.querySelectorAll('[data-admin-op]');
 
   opCards.forEach((card) => {
     const cardOp = card.getAttribute('data-admin-op-card') || '';
-    card.classList.toggle('hidden', cardOp !== selected || !adminOperationAllowed(cardOp));
+    card.classList.toggle('hidden', cardOp !== selected);
   });
 
   opButtons.forEach((button) => {
     const buttonOp = button.getAttribute('data-admin-op') || '';
     button.classList.toggle('active-view', buttonOp === selected);
   });
-}
-
-function toggleAdminOperation(operationKey) {
-  let selected = String(operationKey || '').trim();
-  if (selected && !adminOperationAllowed(selected)) {
-    selected = '';
-    renderResponse(403, { errors: 'Tu rol no tiene permitida esa operacion.' });
-  }
-  currentAdminOperation = selected;
-  renderAdminOperationVisibility(selected);
 
   if (selected) {
     const selectedCard = document.querySelector(`[data-admin-op-card="${selected}"]`);
@@ -1457,8 +917,8 @@ function toggleAdminOperation(operationKey) {
 }
 
 async function executeAdminUserAction(action, userId, formId = null) {
-  if (!hasAdminAccess()) {
-    renderResponse(403, { errors: 'La gestion de usuarios esta restringida al rol Admin.' });
+  if (!hasManagerAccess()) {
+    renderResponse(403, { errors: 'Operacion restringida a manager.' });
     return;
   }
 
@@ -1637,20 +1097,12 @@ async function apiCall(path, method, body, authType = 'user') {
 async function refreshServices() {
   const payload = await apiCall('/api/v1/services', 'GET', null, 'public');
   const services = payload.services || payload || [];
-  const target = document.getElementById('adminTargetServiceId');
   el.serviceId.innerHTML = '';
-  if (target) {
-    target.innerHTML = '';
-  }
   services.forEach((service) => {
     const option = document.createElement('option');
     option.value = service.id;
     option.textContent = `${service.id} - ${service.name}`;
     el.serviceId.append(option);
-
-    if (target) {
-      target.append(option.cloneNode(true));
-    }
   });
 }
 
@@ -2136,7 +1588,6 @@ function bindEvents() {
     }
     try {
       await refreshAdminDashboard();
-      await loadOperations();
       setView('admin');
     } catch (error) {
       renderResponse(422, { errors: error.message });
@@ -2197,60 +1648,6 @@ function bindEvents() {
       await refreshInstallmentsForClient();
       clearFormFields(document.getElementById('payServiceForm'));
     } catch (error) {
-      await handleMutationError(error);
-    }
-  });
-
-  document.getElementById('transferForm').addEventListener('submit', async (event) => {
-    event.preventDefault();
-    if (!isClientRole()) {
-      renderResponse(403, { errors: 'Las transferencias estan disponibles para el rol customer.' });
-      return;
-    }
-    if (!state.accountId) {
-      renderResponse(422, { errors: 'No hay cuenta de origen disponible.' });
-      return;
-    }
-
-    const recipient = document.getElementById('transferRecipient').value.trim();
-    const amount = Number(document.getElementById('transferAmount').value);
-    const statusNode = document.getElementById('transferStatus');
-
-    if (!recipient) {
-      renderResponse(422, { errors: 'Debes indicar la cuenta destino.' });
-      return;
-    }
-    if (/^\d+$/.test(recipient) && recipient === String(state.accountNumber || '')) {
-      renderResponse(422, { errors: 'No puedes transferir a tu propia cuenta.' });
-      return;
-    }
-    if (!amount || amount <= 0) {
-      renderResponse(422, { errors: 'Debes indicar un monto valido mayor a cero.' });
-      return;
-    }
-
-    if (!await confirmMutationAction(`Se transferira S/ ${amount.toFixed(2)} a la cuenta ${recipient}. Deseas continuar?`, 'transferForm')) {
-      return;
-    }
-
-    try {
-      const payload = await apiCall(`/api/v1/accounts/${state.accountId}/transfer`, 'POST', {
-        recipient_account_number: recipient,
-        amount: amount,
-        description: document.getElementById('transferDescription').value.trim()
-      });
-      const destination = (payload.recipient_account && payload.recipient_account.account_number) || recipient;
-      if (statusNode) {
-        statusNode.textContent = `Transferencia aplicada a la cuenta ${destination}.`;
-      }
-      pushAudit(`Transferencia enviada cuenta_destino=${destination} monto=${amount.toFixed(2)}`);
-      await refreshClientDashboard();
-      await refreshInstallmentsForClient();
-      clearFormFields(document.getElementById('transferForm'));
-    } catch (error) {
-      if (statusNode) {
-        statusNode.textContent = error.message || 'No se pudo completar la transferencia.';
-      }
       await handleMutationError(error);
     }
   });
@@ -2496,8 +1893,8 @@ function bindEvents() {
 
   document.getElementById('adminCreateUserForm').addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (!hasAdminAccess()) {
-      renderResponse(403, { errors: 'La creacion de usuarios esta restringida al rol Admin.' });
+    if (!hasManagerAccess()) {
+      renderResponse(403, { errors: 'Operacion restringida a manager.' });
       return;
     }
     if (!await confirmMutationAction('Se creara un nuevo usuario. Deseas continuar?', 'adminCreateUserForm')) {
@@ -2582,155 +1979,6 @@ function bindEvents() {
     await executeAdminUserAction(action, userId);
   });
 
-  const reloadOperations = async () => {
-    try {
-      await loadOperations();
-    } catch (error) {
-      renderResponse(422, { errors: error.message });
-    }
-  };
-
-  if (el.opsPeriod) {
-    el.opsPeriod.addEventListener('change', async () => {
-      state.opsPeriod = el.opsPeriod.value;
-      state.opsPage = 1;
-      persistState();
-      await reloadOperations();
-    });
-  }
-
-  if (el.opsDate) {
-    el.opsDate.addEventListener('change', async () => {
-      state.opsDate = el.opsDate.value || new Date().toISOString().slice(0, 10);
-      state.opsPage = 1;
-      persistState();
-      await reloadOperations();
-    });
-  }
-
-  if (el.opsType) {
-    el.opsType.addEventListener('change', async () => {
-      state.opsType = el.opsType.value;
-      state.opsPage = 1;
-      persistState();
-      await reloadOperations();
-    });
-  }
-
-  if (el.opsActor) {
-    el.opsActor.addEventListener('change', async () => {
-      state.opsActor = el.opsActor.value;
-      state.opsPage = 1;
-      persistState();
-      await reloadOperations();
-    });
-  }
-
-  if (el.opsPerPage) {
-    el.opsPerPage.addEventListener('change', async () => {
-      state.opsPerPage = Number(el.opsPerPage.value);
-      state.opsPage = 1;
-      persistState();
-      await reloadOperations();
-    });
-  }
-
-  if (el.opsPrevPageBtn) {
-    el.opsPrevPageBtn.addEventListener('click', async () => {
-      if (!opsPaginationMeta.has_prev) {
-        return;
-      }
-      state.opsPage = Math.max(opsPaginationMeta.page - 1, 1);
-      persistState();
-      await reloadOperations();
-    });
-  }
-
-  if (el.opsNextPageBtn) {
-    el.opsNextPageBtn.addEventListener('click', async () => {
-      if (!opsPaginationMeta.has_next) {
-        return;
-      }
-      state.opsPage = opsPaginationMeta.page + 1;
-      persistState();
-      await reloadOperations();
-    });
-  }
-
-  if (el.opsRefreshBtn) {
-    el.opsRefreshBtn.addEventListener('click', reloadOperations);
-  }
-
-  if (el.opsDownloadBtn) {
-    el.opsDownloadBtn.addEventListener('click', async () => {
-      try {
-        await downloadOperations();
-      } catch (error) {
-        await handleMutationError(error);
-      }
-    });
-  }
-
-  const reloadLoginReport = async () => {
-    try {
-      await loadLoginReport();
-    } catch (error) {
-      renderResponse(422, { errors: error.message });
-    }
-  };
-
-  [el.loginsPeriod, el.loginsDate, el.loginsStatus, el.loginsPerPage].forEach((control) => {
-    if (!control) {
-      return;
-    }
-
-    control.addEventListener('change', async () => {
-      state.loginsPeriod = el.loginsPeriod.value;
-      state.loginsDate = el.loginsDate.value || new Date().toISOString().slice(0, 10);
-      state.loginsStatus = el.loginsStatus.value;
-      state.loginsPerPage = Number(el.loginsPerPage.value);
-      state.loginsPage = 1;
-      persistState();
-      await reloadLoginReport();
-    });
-  });
-
-  if (el.loginsPrevPageBtn) {
-    el.loginsPrevPageBtn.addEventListener('click', async () => {
-      if (!loginsPaginationMeta.has_prev) {
-        return;
-      }
-      state.loginsPage = loginsPaginationMeta.page - 1;
-      persistState();
-      await reloadLoginReport();
-    });
-  }
-
-  if (el.loginsNextPageBtn) {
-    el.loginsNextPageBtn.addEventListener('click', async () => {
-      if (!loginsPaginationMeta.has_next) {
-        return;
-      }
-      state.loginsPage = loginsPaginationMeta.page + 1;
-      persistState();
-      await reloadLoginReport();
-    });
-  }
-
-  if (el.loginsRefreshBtn) {
-    el.loginsRefreshBtn.addEventListener('click', reloadLoginReport);
-  }
-
-  if (el.loginsDownloadBtn) {
-    el.loginsDownloadBtn.addEventListener('click', async () => {
-      try {
-        await downloadLoginReport();
-      } catch (error) {
-        await handleMutationError(error);
-      }
-    });
-  }
-
   document.getElementById('refreshAdminDashboard').addEventListener('click', async () => {
     try {
       await refreshAdminDashboard();
@@ -2763,53 +2011,6 @@ function bindEvents() {
       setAdminAccountLookupValidation(normalizeAdminLookupErrorMessage(error.message));
       renderResponse(422, { errors: error.message });
     }
-  });
-
-  const validateTargetAccountForOperation = async () => {
-    const lookup = document.getElementById('adminTargetAccountId').value.trim();
-    if (!lookup) {
-      setTargetOperationButtonsDisabled(true);
-      setTargetOperationFieldsDisabled(true);
-      setTargetAccountInfo(null);
-      setTargetAccountValidation('Debes indicar un account ID o numero de cuenta valido.');
-      renderResponse(422, { errors: 'Debes indicar account ID o numero de cuenta.' });
-      return false;
-    }
-
-    try {
-      const summary = await apiCall(`/api/v1/manager/accounts/${lookup}/summary`, 'GET', null, 'manager');
-      setTargetOperationButtonsDisabled(false);
-      setTargetOperationFieldsDisabled(false);
-      setTargetAccountInfo(summary);
-      setTargetAccountValidation('');
-      return true;
-    } catch (error) {
-      setTargetOperationButtonsDisabled(true);
-      setTargetOperationFieldsDisabled(true);
-      setTargetAccountInfo(null);
-      setTargetAccountValidation(normalizeAdminLookupErrorMessage(error.message));
-      renderResponse(422, { errors: error.message });
-      return false;
-    }
-  };
-
-  document.getElementById('adminValidateTargetAccountBtn').addEventListener('click', async () => {
-    await validateTargetAccountForOperation();
-  });
-
-  document.getElementById('adminTargetAccountId').addEventListener('input', () => {
-    const lookup = document.getElementById('adminTargetAccountId').value.trim();
-    if (!lookup) {
-      setTargetOperationButtonsDisabled(true);
-      setTargetOperationFieldsDisabled(true);
-      setTargetAccountInfo(null);
-      setTargetAccountValidation('Debes indicar un account ID o numero de cuenta valido.');
-      return;
-    }
-    setTargetOperationButtonsDisabled(true);
-    setTargetOperationFieldsDisabled(true);
-    setTargetAccountInfo(null);
-    setTargetAccountValidation('');
   });
 
   el.adminInspectLoanId.addEventListener('change', async () => {
@@ -2923,11 +2124,6 @@ function bindEvents() {
       return;
     }
 
-    const isValidTarget = await validateLoanAccountForOperation();
-    if (!isValidTarget) {
-      return;
-    }
-
     const values = getAdminLoanFormValues();
     const validationError = validateAdminLoanFormValues(values);
     if (validationError) {
@@ -2949,32 +2145,6 @@ function bindEvents() {
     }
   });
 
-  document.getElementById('adminValidateLoanAccountBtn').addEventListener('click', async () => {
-    await validateLoanAccountForOperation();
-  });
-
-  document.getElementById('adminLoanAccountId').addEventListener('input', () => {
-    const lookup = document.getElementById('adminLoanAccountId').value.trim();
-    if (!lookup) {
-      setLoanAccountInfo(null);
-      setLoanAccountValidation('Debes indicar un account ID o numero de cuenta valido.');
-      document.getElementById('adminLoanAmount').disabled = true;
-      document.getElementById('adminLoanTermMonths').disabled = true;
-      document.getElementById('adminLoanFirstDueDate').disabled = true;
-      document.getElementById('adminPreviewLoanBtn').disabled = true;
-      document.getElementById('adminCreateLoanBtn').disabled = true;
-      return;
-    }
-
-    setLoanAccountInfo(null);
-    setLoanAccountValidation('');
-    document.getElementById('adminLoanAmount').disabled = true;
-    document.getElementById('adminLoanTermMonths').disabled = true;
-    document.getElementById('adminLoanFirstDueDate').disabled = true;
-    document.getElementById('adminPreviewLoanBtn').disabled = true;
-    document.getElementById('adminCreateLoanBtn').disabled = true;
-  });
-
   document.getElementById('adminLoanAmount').addEventListener('input', () => {
     updateAdminLoanRateHintFromAmount();
   });
@@ -2984,12 +2154,6 @@ function bindEvents() {
       renderResponse(403, { errors: 'Operacion restringida a manager.' });
       return;
     }
-
-    const isValidTarget = await validateLoanAccountForOperation();
-    if (!isValidTarget) {
-      return;
-    }
-
     if (!await confirmMutationAction('Se creara el prestamo para la cuenta indicada. Deseas continuar?', 'adminCreateLoanForm')) {
       return;
     }
@@ -3017,12 +2181,8 @@ function bindEvents() {
   });
 
   document.getElementById('adminDepositTargetBtn').addEventListener('click', async () => {
-    if (!hasStaffAccess()) {
-      renderResponse(403, { errors: 'Operacion restringida a personal autorizado.' });
-      return;
-    }
-    const isValidTarget = await validateTargetAccountForOperation();
-    if (!isValidTarget) {
+    if (!hasManagerAccess()) {
+      renderResponse(403, { errors: 'Operacion restringida a manager.' });
       return;
     }
     if (!await confirmMutationAction('Se depositara saldo en la cuenta objetivo. Deseas continuar?', 'adminAccountOpsForm')) {
@@ -3053,12 +2213,8 @@ function bindEvents() {
   });
 
   document.getElementById('adminWithdrawTargetBtn').addEventListener('click', async () => {
-    if (!hasStaffAccess()) {
-      renderResponse(403, { errors: 'Operacion restringida a personal autorizado.' });
-      return;
-    }
-    const isValidTarget = await validateTargetAccountForOperation();
-    if (!isValidTarget) {
+    if (!hasManagerAccess()) {
+      renderResponse(403, { errors: 'Operacion restringida a manager.' });
       return;
     }
     if (!await confirmMutationAction('Se retirara saldo de la cuenta objetivo. Deseas continuar?', 'adminAccountOpsForm', 'danger')) {
@@ -3075,11 +2231,6 @@ function bindEvents() {
       renderResponse(422, { errors: 'Debes indicar un monto valido mayor a cero.' });
       return;
     }
-    const hasBalance = await validateTargetAccountBalanceForAction('withdraw', amount);
-    if (!hasBalance) {
-      return;
-    }
-
     try {
       await apiCall(`/api/v1/manager/accounts/${accountId}/withdraw`, 'POST', {
         amount: amount,
@@ -3094,12 +2245,8 @@ function bindEvents() {
   });
 
   document.getElementById('adminPayLoanTargetBtn').addEventListener('click', async () => {
-    if (!hasStaffAccess()) {
-      renderResponse(403, { errors: 'Operacion restringida a personal autorizado.' });
-      return;
-    }
-    const isValidTarget = await validateTargetAccountForOperation();
-    if (!isValidTarget) {
+    if (!hasManagerAccess()) {
+      renderResponse(403, { errors: 'Operacion restringida a manager.' });
       return;
     }
     if (!await confirmMutationAction('Se aplicara el pago del prestamo objetivo. Deseas continuar?', 'adminAccountOpsForm')) {
@@ -3121,63 +2268,12 @@ function bindEvents() {
       renderResponse(422, { errors: 'Debes indicar un monto valido mayor a cero.' });
       return;
     }
-    const hasBalance = await validateTargetAccountBalanceForAction('pay_loan', amount);
-    if (!hasBalance) {
-      return;
-    }
 
     try {
       await apiCall(`/api/v1/manager/accounts/${accountId}/loans/${loanId}/pay`, 'POST', {
         amount: amount
       }, 'manager');
       pushAudit(`Pago de prestamo por gerente account_id=${accountId} loan_id=${loanId}`);
-      await refreshAdminDashboard();
-      clearFormFields(document.getElementById('adminAccountOpsForm'));
-    } catch (error) {
-      await handleMutationError(error);
-    }
-  });
-
-  document.getElementById('adminPayServiceTargetBtn').addEventListener('click', async () => {
-    if (!hasStaffAccess()) {
-      renderResponse(403, { errors: 'Operacion restringida a personal autorizado.' });
-      return;
-    }
-    const isValidTarget = await validateTargetAccountForOperation();
-    if (!isValidTarget) {
-      return;
-    }
-    if (!await confirmMutationAction('Se aplicara el pago del servicio en la cuenta objetivo. Deseas continuar?', 'adminAccountOpsForm')) {
-      return;
-    }
-
-    const accountId = document.getElementById('adminTargetAccountId').value.trim();
-    const serviceId = document.getElementById('adminTargetServiceId').value;
-    const amount = Number(document.getElementById('adminTargetAmount').value);
-    if (!accountId) {
-      renderResponse(422, { errors: 'Debes indicar account_id objetivo.' });
-      return;
-    }
-    if (!serviceId) {
-      renderResponse(422, { errors: 'Debes seleccionar un servicio.' });
-      return;
-    }
-    if (!amount || amount <= 0) {
-      renderResponse(422, { errors: 'Debes indicar un monto valido mayor a cero.' });
-      return;
-    }
-    const hasBalance = await validateTargetAccountBalanceForAction('pay_service', amount);
-    if (!hasBalance) {
-      return;
-    }
-
-    try {
-      await apiCall(`/api/v1/manager/accounts/${accountId}/pay_service`, 'POST', {
-        service_id: Number(serviceId),
-        amount: amount,
-        description: document.getElementById('adminTargetDescription').value.trim()
-      }, 'manager');
-      pushAudit(`Pago de servicio por ${state.role} account_id=${accountId} service_id=${serviceId}`);
       await refreshAdminDashboard();
       clearFormFields(document.getElementById('adminAccountOpsForm'));
     } catch (error) {
@@ -3224,51 +2320,11 @@ function hydrateInputs() {
   if (el.balanceAutoIndicator) {
     el.balanceAutoIndicator.classList.toggle('hidden', !state.balanceAutoRefresh);
   }
-  if (el.opsPeriod) {
-    el.opsPeriod.value = state.opsPeriod || 'day';
-    state.opsPeriod = el.opsPeriod.value;
-  }
-  if (el.opsDate) {
-    state.opsDate = state.opsDate || new Date().toISOString().slice(0, 10);
-    el.opsDate.value = state.opsDate;
-  }
-  if (el.opsType) {
-    el.opsType.value = state.opsType || 'all';
-    state.opsType = el.opsType.value;
-  }
-  if (el.opsActor) {
-    el.opsActor.value = state.opsActor || 'all';
-    state.opsActor = el.opsActor.value;
-  }
-  if (el.opsPerPage) {
-    const opsPerPage = Number(state.opsPerPage || 10);
-    el.opsPerPage.value = String([10, 20, 50].includes(opsPerPage) ? opsPerPage : 10);
-    state.opsPerPage = Number(el.opsPerPage.value);
-  }
-  if (el.loginsPeriod) {
-    el.loginsPeriod.value = state.loginsPeriod || 'day';
-    state.loginsPeriod = el.loginsPeriod.value;
-  }
-  if (el.loginsDate) {
-    state.loginsDate = state.loginsDate || new Date().toISOString().slice(0, 10);
-    el.loginsDate.value = state.loginsDate;
-  }
-  if (el.loginsStatus) {
-    el.loginsStatus.value = state.loginsStatus || 'all';
-    state.loginsStatus = el.loginsStatus.value;
-  }
-  if (el.loginsPerPage) {
-    const loginsPerPage = Number(state.loginsPerPage || 10);
-    el.loginsPerPage.value = String([10, 20, 50].includes(loginsPerPage) ? loginsPerPage : 10);
-    state.loginsPerPage = Number(el.loginsPerPage.value);
-  }
   updateAdminLoanRateHintFromAmount();
   updatePendingPaginationUi();
   updateTransactionsPaginationUi();
   updateAdminUsersPaginationUi();
   updateAdminPlanPaginationUi();
-  updateOpsPaginationUi();
-  updateLoginsPaginationUi();
   toggleAdminOperation('');
   renderAuditLog();
   updateHeader();
@@ -3282,7 +2338,7 @@ async function init() {
 
   ensureDashboardUiElements();
   hydrateInputs();
-  const preferredView = resolvePreferredView();
+  const preferredView = state.activeView || (state.role === 'manager' ? 'admin' : 'client');
   setView(preferredView);
   setDefaultDate();
   bindEvents();
@@ -3294,8 +2350,6 @@ async function init() {
     await refreshUserFiles();
     if (hasManagerAccess()) {
       await refreshAdminDashboard();
-      await loadOperations();
-      await loadLoginReport();
       if (state.adminInspectAccountLookup) {
         await refreshAdminAccountSummary(state.adminInspectAccountLookup);
       }

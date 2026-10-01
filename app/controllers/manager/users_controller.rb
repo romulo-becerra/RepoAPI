@@ -1,7 +1,6 @@
 module Manager
   class UsersController < ApplicationController
     before_action :require_manager!
-    before_action :require_admin!, only: %i[create update destroy block unblock deactivate]
 
     def index
       per_page = [params[:per_page].to_i, 1].max
@@ -37,45 +36,14 @@ module Manager
     end
 
     def create
-      attributes = manager_user_params
-      role = attributes[:role].presence || "customer"
-      return render json: { errors: "Rol no valido" }, status: :unprocessable_entity unless User.roles.key?(role)
-
-      if attributes[:account_number].present? && Account.exists?(account_number: attributes[:account_number].to_s.strip)
-        return render json: { errors: "Numero de cuenta ya existe" }, status: :unprocessable_entity
-      end
-
-      user = User.new(attributes.except(:role, :account_number))
-      user.default_account_number = attributes[:account_number].to_s.strip if attributes[:account_number].present?
-      user.role = role
+      user = User.new(manager_user_params)
+      user.role = manager_user_params[:role].presence || :customer
 
       if user.save
         render json: {
           message: "Usuario creado por gerente",
           user: serialize_user(user.reload)
         }, status: :created
-      else
-        render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
-      end
-    end
-
-    def update
-      user = User.find_by(id: params[:id])
-      return render json: { errors: "Usuario no encontrado" }, status: :not_found unless user
-
-      permitted = params.permit(:first_name, :last_name, :email, :phone, :pin)
-      if permitted[:email].present?
-        existing = User.where.not(id: user.id).find_by(email: permitted[:email].strip)
-        return render json: { errors: "Correo electronico ya existe" }, status: :unprocessable_entity if existing
-      end
-
-      user.assign_attributes(permitted.to_h)
-      if user.valid?
-        user.save!
-        render json: {
-          message: "Usuario actualizado correctamente",
-          user: serialize_user(user.reload)
-        }, status: :ok
       else
         render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
       end
@@ -137,7 +105,7 @@ module Manager
     private
 
     def manager_user_params
-      params.permit(:first_name, :last_name, :email, :phone, :pin, :role, :account_number)
+      params.permit(:first_name, :last_name, :email, :phone, :pin, :role)
     end
 
     def serialize_user(user)

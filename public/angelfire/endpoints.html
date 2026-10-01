@@ -242,50 +242,16 @@
           <select id="authFilter">
             <option value="all">Todo acceso</option>
             <option value="public">Publico</option>
-            <option value="customer">Customer</option>
-            <option value="cashier">Cashier</option>
-            <option value="management">Manager / Admin</option>
-            <option value="admin">Admin</option>
+            <option value="user">Bearer user/manager</option>
+            <option value="manager">Bearer manager</option>
           </select>
         </div>
         <div class="chip-row">
           <span class="chip ok">Publico: sin Authorization</span>
-          <span class="chip warn">Customer: solo su propia cuenta y operaciones de cliente</span>
-          <span class="chip warn">Cashier: operaciones de caja y atención</span>
-          <span class="chip warn">Management: manager/admin con reportes y gestión</span>
-          <span class="chip warn">Admin: control total del sistema</span>
+          <span class="chip warn">User: Authorization: Bearer user_token</span>
+          <span class="chip warn">Manager: Authorization: Bearer manager_token</span>
           <span class="chip">Multipart: usar form-data (archivo)</span>
         </div>
-      </section>
-
-      <section class="panel">
-        <h2>Matriz de permisos del sistema</h2>
-        <table>
-          <thead>
-            <tr>
-              <th>Rol</th>
-              <th>Operaciones visibles</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td><strong>customer</strong></td>
-              <td>Cuenta propia, transferencias, pagos, movimientos y consultas de préstamo.</td>
-            </tr>
-            <tr>
-              <td><strong>cashier</strong></td>
-              <td>Depósitos, retiros, atención de cuenta y operaciones de caja; sin administración de usuarios.</td>
-            </tr>
-            <tr>
-              <td><strong>manager</strong></td>
-              <td>Reportes, gestión, consultas de usuarios y cuentas, originación de préstamos y auditoría.</td>
-            </tr>
-            <tr>
-              <td><strong>admin</strong></td>
-              <td>Todo lo anterior más creación, eliminación, bloqueo y manejo de usuarios y roles.</td>
-            </tr>
-          </tbody>
-        </table>
       </section>
 
       <section class="panel table-wrap">
@@ -323,80 +289,74 @@ Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
       </section>
     </div>
 
-    <script src="i18n.js?v=20261002-1"></script>
     <script>
       const endpoints = [
         { method: 'GET', path: '/up', auth: 'public', desc: 'Health check de Rails', payload: '-', sample: 'GET {{baseUrl}}/up' },
         { method: 'GET', path: '/', auth: 'public', desc: 'Estado base del servicio', payload: '-', sample: 'GET {{baseUrl}}/' },
 
-        { method: 'POST', path: '/api/v1/register', auth: 'public', desc: 'Registro de usuario', payload: '{"first_name","last_name","email","phone?","date_of_birth","pin","address"}', sample: 'POST {{baseUrl}}/api/v1/register' },
+        { method: 'POST', path: '/api/v1/register', auth: 'public', desc: 'Registro de usuario', payload: '{"first_name","last_name","email","pin"}', sample: 'POST {{baseUrl}}/api/v1/register' },
         { method: 'POST', path: '/api/v1/login', auth: 'public', desc: 'Login por account_number + pin', payload: '{"account_number","pin"}', sample: 'POST {{baseUrl}}/api/v1/login' },
-        { method: 'POST', path: '/api/v1/logout', auth: 'customer', desc: 'Cerrar sesion', payload: '-', sample: 'POST {{baseUrl}}/api/v1/logout' },
+        { method: 'POST', path: '/api/v1/logout', auth: 'user', desc: 'Cerrar sesion', payload: '-', sample: 'POST {{baseUrl}}/api/v1/logout' },
 
-        { method: 'GET', path: '/api/v1/accounts', auth: 'customer', desc: 'Listar cuentas del usuario autenticado', payload: '-', sample: 'GET {{baseUrl}}/api/v1/accounts' },
-        { method: 'POST', path: '/api/v1/accounts', auth: 'customer', desc: 'Crear nueva cuenta del usuario', payload: '{}', sample: 'POST {{baseUrl}}/api/v1/accounts' },
-        { method: 'GET', path: '/api/v1/accounts/:id', auth: 'customer', desc: 'Detalle de cuenta + prestamo activo', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/accounts/12' },
-        { method: 'GET', path: '/api/v1/accounts/:id/balance', auth: 'customer', desc: 'Saldo de cuenta', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/accounts/12/balance' },
-        { method: 'GET', path: '/api/v1/accounts/:id/summary', auth: 'customer', desc: 'Resumen mensual (income/expense)', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/accounts/12/summary' },
-        { method: 'POST', path: '/api/v1/accounts/:id/deposit', auth: 'customer', desc: 'Depositar en cuenta propia', payload: '{"amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/deposit' },
-        { method: 'POST', path: '/api/v1/accounts/:id/withdraw', auth: 'customer', desc: 'Retirar de cuenta propia', payload: '{"amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/withdraw' },
-        { method: 'POST', path: '/api/v1/accounts/:id/transfer', auth: 'customer', desc: 'Transferir a otra cuenta', payload: '{"recipient_account_id","amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/transfer' },
-        { method: 'POST', path: '/api/v1/accounts/:id/pay_service', auth: 'customer', desc: 'Pago de servicio', payload: '{"service_id","amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/pay_service' },
+        { method: 'GET', path: '/api/v1/accounts', auth: 'user', desc: 'Listar cuentas del usuario autenticado', payload: '-', sample: 'GET {{baseUrl}}/api/v1/accounts' },
+        { method: 'POST', path: '/api/v1/accounts', auth: 'user', desc: 'Crear nueva cuenta del usuario', payload: '{}', sample: 'POST {{baseUrl}}/api/v1/accounts' },
+        { method: 'GET', path: '/api/v1/accounts/:id', auth: 'user', desc: 'Detalle de cuenta + prestamo activo', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/accounts/12' },
+        { method: 'GET', path: '/api/v1/accounts/:id/balance', auth: 'user', desc: 'Saldo de cuenta', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/accounts/12/balance' },
+        { method: 'GET', path: '/api/v1/accounts/:id/summary', auth: 'user', desc: 'Resumen mensual (income/expense)', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/accounts/12/summary' },
+        { method: 'POST', path: '/api/v1/accounts/:id/deposit', auth: 'user', desc: 'Depositar en cuenta propia', payload: '{"amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/deposit' },
+        { method: 'POST', path: '/api/v1/accounts/:id/withdraw', auth: 'user', desc: 'Retirar de cuenta propia', payload: '{"amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/withdraw' },
+        { method: 'POST', path: '/api/v1/accounts/:id/transfer', auth: 'user', desc: 'Transferir a otra cuenta', payload: '{"recipient_account_id","amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/transfer' },
+        { method: 'POST', path: '/api/v1/accounts/:id/pay_service', auth: 'user', desc: 'Pago de servicio', payload: '{"service_id","amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/pay_service' },
 
-        { method: 'GET', path: '/api/v1/accounts/:account_id/transactions', auth: 'customer', desc: 'Movimientos paginados (filtros)', payload: 'query: page, per_page, transaction_filter', sample: 'GET {{baseUrl}}/api/v1/accounts/12/transactions?page=1&per_page=10' },
-        { method: 'POST', path: '/api/v1/accounts/:account_id/transactions', auth: 'customer', desc: 'Transferencia via recurso transactions', payload: '{"recipient_id","amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/transactions' },
+        { method: 'GET', path: '/api/v1/accounts/:account_id/transactions', auth: 'user', desc: 'Movimientos paginados (filtros)', payload: 'query: page, per_page, transaction_filter', sample: 'GET {{baseUrl}}/api/v1/accounts/12/transactions?page=1&per_page=10' },
+        { method: 'POST', path: '/api/v1/accounts/:account_id/transactions', auth: 'user', desc: 'Transferencia via recurso transactions', payload: '{"recipient_id","amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/transactions' },
 
-        { method: 'GET', path: '/api/v1/accounts/:account_id/loans', auth: 'customer', desc: 'Listar prestamos de la cuenta', payload: '-', sample: 'GET {{baseUrl}}/api/v1/accounts/12/loans' },
-        { method: 'POST', path: '/api/v1/accounts/:account_id/loans', auth: 'customer', desc: 'Crear prestamo (si habilitado)', payload: '{"amount","term_months","first_due_date"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/loans' },
-        { method: 'GET', path: '/api/v1/accounts/:account_id/loans/:id', auth: 'customer', desc: 'Detalle de prestamo', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/accounts/12/loans/5' },
-        { method: 'POST', path: '/api/v1/accounts/:account_id/loans/:id/pay', auth: 'customer', desc: 'Pago de prestamo', payload: '{"amount","paid_on?"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/loans/5/pay' },
-        { method: 'GET', path: '/api/v1/accounts/:account_id/loans/:id/installments', auth: 'customer', desc: 'Cuotas pagadas y pendientes (paginadas pendientes)', payload: 'query: page, per_page', sample: 'GET {{baseUrl}}/api/v1/accounts/12/loans/5/installments?page=1&per_page=10' },
+        { method: 'GET', path: '/api/v1/accounts/:account_id/loans', auth: 'user', desc: 'Listar prestamos de la cuenta', payload: '-', sample: 'GET {{baseUrl}}/api/v1/accounts/12/loans' },
+        { method: 'POST', path: '/api/v1/accounts/:account_id/loans', auth: 'user', desc: 'Crear prestamo (si habilitado)', payload: '{"amount","term_months","first_due_date"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/loans' },
+        { method: 'GET', path: '/api/v1/accounts/:account_id/loans/:id', auth: 'user', desc: 'Detalle de prestamo', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/accounts/12/loans/5' },
+        { method: 'POST', path: '/api/v1/accounts/:account_id/loans/:id/pay', auth: 'user', desc: 'Pago de prestamo', payload: '{"amount","paid_on?"}', sample: 'POST {{baseUrl}}/api/v1/accounts/12/loans/5/pay' },
+        { method: 'GET', path: '/api/v1/accounts/:account_id/loans/:id/installments', auth: 'user', desc: 'Cuotas pagadas y pendientes (paginadas pendientes)', payload: 'query: page, per_page', sample: 'GET {{baseUrl}}/api/v1/accounts/12/loans/5/installments?page=1&per_page=10' },
 
-        { method: 'GET', path: '/api/v1/recipients', auth: 'customer', desc: 'Listar destinatarios', payload: '-', sample: 'GET {{baseUrl}}/api/v1/recipients' },
-        { method: 'POST', path: '/api/v1/recipients', auth: 'customer', desc: 'Crear destinatario', payload: '{"name","account_id"}', sample: 'POST {{baseUrl}}/api/v1/recipients' },
-        { method: 'DELETE', path: '/api/v1/recipients/:id', auth: 'customer', desc: 'Eliminar destinatario', payload: 'path :id', sample: 'DELETE {{baseUrl}}/api/v1/recipients/8' },
-        { method: 'GET', path: '/api/v1/recipients/search', auth: 'customer', desc: 'Buscar destinatarios', payload: 'query segun implementacion', sample: 'GET {{baseUrl}}/api/v1/recipients/search?query=juan' },
+        { method: 'GET', path: '/api/v1/recipients', auth: 'user', desc: 'Listar destinatarios', payload: '-', sample: 'GET {{baseUrl}}/api/v1/recipients' },
+        { method: 'POST', path: '/api/v1/recipients', auth: 'user', desc: 'Crear destinatario', payload: '{"name","account_id"}', sample: 'POST {{baseUrl}}/api/v1/recipients' },
+        { method: 'DELETE', path: '/api/v1/recipients/:id', auth: 'user', desc: 'Eliminar destinatario', payload: 'path :id', sample: 'DELETE {{baseUrl}}/api/v1/recipients/8' },
+        { method: 'GET', path: '/api/v1/recipients/search', auth: 'user', desc: 'Buscar destinatarios', payload: 'query segun implementacion', sample: 'GET {{baseUrl}}/api/v1/recipients/search?query=juan' },
 
         { method: 'GET', path: '/api/v1/services', auth: 'public', desc: 'Listar servicios', payload: '-', sample: 'GET {{baseUrl}}/api/v1/services' },
         { method: 'GET', path: '/api/v1/services/:id', auth: 'public', desc: 'Detalle de servicio', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/services/1' },
 
-        { method: 'POST', path: '/api/v1/atm/accounts/:id/deposit', auth: 'cashier', desc: 'Deposito ATM / caja', payload: '{"amount"}', sample: 'POST {{baseUrl}}/api/v1/atm/accounts/12/deposit' },
-        { method: 'POST', path: '/api/v1/atm/accounts/:id/withdraw', auth: 'cashier', desc: 'Retiro ATM / caja', payload: '{"amount"}', sample: 'POST {{baseUrl}}/api/v1/atm/accounts/12/withdraw' },
-        { method: 'GET', path: '/api/v1/atm/accounts/:id/balance', auth: 'cashier', desc: 'Saldo ATM / caja', payload: '-', sample: 'GET {{baseUrl}}/api/v1/atm/accounts/12/balance' },
-        { method: 'GET', path: '/api/v1/atm/accounts/:id/statement', auth: 'cashier', desc: 'Estado de cuenta ATM / caja', payload: '-', sample: 'GET {{baseUrl}}/api/v1/atm/accounts/12/statement' },
+        { method: 'POST', path: '/api/v1/atm/accounts/:id/deposit', auth: 'user', desc: 'Deposito ATM', payload: '{"amount"}', sample: 'POST {{baseUrl}}/api/v1/atm/accounts/12/deposit' },
+        { method: 'POST', path: '/api/v1/atm/accounts/:id/withdraw', auth: 'user', desc: 'Retiro ATM', payload: '{"amount"}', sample: 'POST {{baseUrl}}/api/v1/atm/accounts/12/withdraw' },
+        { method: 'GET', path: '/api/v1/atm/accounts/:id/balance', auth: 'user', desc: 'Saldo ATM', payload: '-', sample: 'GET {{baseUrl}}/api/v1/atm/accounts/12/balance' },
+        { method: 'GET', path: '/api/v1/atm/accounts/:id/statement', auth: 'user', desc: 'Estado de cuenta ATM', payload: '-', sample: 'GET {{baseUrl}}/api/v1/atm/accounts/12/statement' },
 
-        { method: 'PATCH', path: '/api/v1/users/:id', auth: 'customer', desc: 'Actualizar datos de usuario', payload: '{"first_name?","last_name?","email?","phone?","pin?"}', sample: 'PATCH {{baseUrl}}/api/v1/users/3' },
-        { method: 'PUT', path: '/api/v1/users/:id/pin', auth: 'customer', desc: 'Cambiar PIN', payload: '{"current_pin","new_pin"}', sample: 'PUT {{baseUrl}}/api/v1/users/3/pin' },
-        { method: 'GET', path: '/api/v1/users/:id/profile', auth: 'customer', desc: 'Perfil del usuario', payload: '-', sample: 'GET {{baseUrl}}/api/v1/users/3/profile' },
-        { method: 'GET', path: '/api/v1/users/:id/address', auth: 'customer', desc: 'Obtener direccion', payload: '-', sample: 'GET {{baseUrl}}/api/v1/users/3/address' },
-        { method: 'PUT', path: '/api/v1/users/:id/address', auth: 'customer', desc: 'Crear/actualizar direccion', payload: '{"country","city","province","street", ...}', sample: 'PUT {{baseUrl}}/api/v1/users/3/address' },
-        { method: 'GET', path: '/api/v1/users/:id/files', auth: 'customer', desc: 'Listar archivos usuario', payload: '-', sample: 'GET {{baseUrl}}/api/v1/users/3/files' },
-        { method: 'POST', path: '/api/v1/users/:id/files', auth: 'customer', desc: 'Subir archivo (texto o imagen)', payload: 'multipart/form-data: file', sample: 'POST {{baseUrl}}/api/v1/users/3/files' },
-        { method: 'DELETE', path: '/api/v1/users/:id/files/:file_id', auth: 'customer', desc: 'Eliminar archivo', payload: 'path :file_id', sample: 'DELETE {{baseUrl}}/api/v1/users/3/files/10' },
+        { method: 'PATCH', path: '/api/v1/users/:id', auth: 'user', desc: 'Actualizar datos de usuario', payload: '{"first_name?","last_name?","email?","phone?","pin?"}', sample: 'PATCH {{baseUrl}}/api/v1/users/3' },
+        { method: 'PUT', path: '/api/v1/users/:id/pin', auth: 'user', desc: 'Cambiar PIN', payload: '{"current_pin","new_pin"}', sample: 'PUT {{baseUrl}}/api/v1/users/3/pin' },
+        { method: 'GET', path: '/api/v1/users/:id/profile', auth: 'user', desc: 'Perfil del usuario', payload: '-', sample: 'GET {{baseUrl}}/api/v1/users/3/profile' },
+        { method: 'GET', path: '/api/v1/users/:id/address', auth: 'user', desc: 'Obtener direccion', payload: '-', sample: 'GET {{baseUrl}}/api/v1/users/3/address' },
+        { method: 'PUT', path: '/api/v1/users/:id/address', auth: 'user', desc: 'Crear/actualizar direccion', payload: '{"country","city","province","street", ...}', sample: 'PUT {{baseUrl}}/api/v1/users/3/address' },
+        { method: 'GET', path: '/api/v1/users/:id/files', auth: 'user', desc: 'Listar archivos usuario', payload: '-', sample: 'GET {{baseUrl}}/api/v1/users/3/files' },
+        { method: 'POST', path: '/api/v1/users/:id/files', auth: 'user', desc: 'Subir archivo (texto o imagen)', payload: 'multipart/form-data: file', sample: 'POST {{baseUrl}}/api/v1/users/3/files' },
+        { method: 'DELETE', path: '/api/v1/users/:id/files/:file_id', auth: 'user', desc: 'Eliminar archivo', payload: 'path :file_id', sample: 'DELETE {{baseUrl}}/api/v1/users/3/files/10' },
 
-        { method: 'GET', path: '/api/v1/manager/reports/overview', auth: 'management', desc: 'Reporte ejecutivo general', payload: '-', sample: 'GET {{baseUrl}}/api/v1/manager/reports/overview' },
-        { method: 'GET', path: '/api/v1/manager/reports/loans', auth: 'management', desc: 'Reporte de prestamos', payload: 'query: status?', sample: 'GET {{baseUrl}}/api/v1/manager/reports/loans?status=active' },
-        { method: 'GET', path: '/api/v1/manager/reports/accounts_activity', auth: 'management', desc: 'Actividad de cuentas', payload: 'query: days?', sample: 'GET {{baseUrl}}/api/v1/manager/reports/accounts_activity?days=30' },
-        { method: 'GET', path: '/api/v1/manager/logins', auth: 'management', desc: 'Reporte de accesos por dia, semana o mes', payload: 'query: period, date, status, page, per_page', sample: 'GET {{baseUrl}}/api/v1/manager/logins?period=month&date=2026-09-30' },
-        { method: 'GET', path: '/api/v1/manager/logins/download', auth: 'management', desc: 'Descargar reporte de accesos en CSV', payload: 'query: period, date, status', sample: 'GET {{baseUrl}}/api/v1/manager/logins/download?period=month&date=2026-09-30' },
+        { method: 'GET', path: '/api/v1/manager/reports/overview', auth: 'manager', desc: 'Reporte ejecutivo general', payload: '-', sample: 'GET {{baseUrl}}/api/v1/manager/reports/overview' },
+        { method: 'GET', path: '/api/v1/manager/reports/loans', auth: 'manager', desc: 'Reporte de prestamos', payload: 'query: status?', sample: 'GET {{baseUrl}}/api/v1/manager/reports/loans?status=active' },
+        { method: 'GET', path: '/api/v1/manager/reports/accounts_activity', auth: 'manager', desc: 'Actividad de cuentas', payload: 'query: days?', sample: 'GET {{baseUrl}}/api/v1/manager/reports/accounts_activity?days=30' },
 
-        { method: 'GET', path: '/api/v1/manager/users', auth: 'management', desc: 'Usuarios paginados', payload: 'query: page, per_page', sample: 'GET {{baseUrl}}/api/v1/manager/users?page=1&per_page=20' },
-        { method: 'POST', path: '/api/v1/manager/users', auth: 'admin', desc: 'Crear usuario por admin', payload: '{"first_name","last_name","email","pin","role","phone?"}', sample: 'POST {{baseUrl}}/api/v1/manager/users' },
-        { method: 'DELETE', path: '/api/v1/manager/users/:id', auth: 'admin', desc: 'Eliminar usuario', payload: 'path :id', sample: 'DELETE {{baseUrl}}/api/v1/manager/users/40' },
+        { method: 'GET', path: '/api/v1/manager/users', auth: 'manager', desc: 'Usuarios paginados', payload: 'query: page, per_page', sample: 'GET {{baseUrl}}/api/v1/manager/users?page=1&per_page=20' },
+        { method: 'POST', path: '/api/v1/manager/users', auth: 'manager', desc: 'Crear usuario por manager', payload: '{"first_name","last_name","email","pin","role","phone?"}', sample: 'POST {{baseUrl}}/api/v1/manager/users' },
+        { method: 'DELETE', path: '/api/v1/manager/users/:id', auth: 'manager', desc: 'Eliminar usuario', payload: 'path :id', sample: 'DELETE {{baseUrl}}/api/v1/manager/users/40' },
 
-        { method: 'POST', path: '/api/v1/manager/loans/:id/cancel', auth: 'management', desc: 'Cancelar prestamo', payload: 'path :id', sample: 'POST {{baseUrl}}/api/v1/manager/loans/9/cancel' },
-        { method: 'POST', path: '/api/v1/manager/accounts/:account_id/loans/preview', auth: 'management', desc: 'Previsualizar plan de pagos', payload: '{"amount","term_months","first_due_date"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/preview' },
-        { method: 'POST', path: '/api/v1/manager/accounts/:account_id/loans', auth: 'management', desc: 'Originar prestamo en cuenta objetivo', payload: '{"amount","term_months","first_due_date"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/loans' },
-        { method: 'GET', path: '/api/v1/manager/accounts/:account_id/summary', auth: 'management', desc: 'Resumen por cuenta (saldo + prestamos)', payload: ':account_id o account_number', sample: 'GET {{baseUrl}}/api/v1/manager/accounts/9000000001/summary' },
-        { method: 'GET', path: '/api/v1/manager/accounts/:account_id/loans/:loan_id/installments', auth: 'management', desc: 'Plan de pagos paginado', payload: 'query: page, per_page', sample: 'GET {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/installments?page=1&per_page=10' },
-        { method: 'GET', path: '/api/v1/manager/accounts/:account_id/loans/:loan_id/installments/summary', auth: 'management', desc: 'Resumen de cuotas (paid/pending)', payload: '-', sample: 'GET {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/installments/summary' },
-        { method: 'GET', path: '/api/v1/manager/accounts/:account_id/loans/:loan_id/installments/download', auth: 'management', desc: 'Descargar plan de pagos CSV', payload: '-', sample: 'GET {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/installments/download' },
-
-        { method: 'GET', path: '/api/v1/manager/operations', auth: 'management', desc: 'Bitacora de operaciones por dia, semana o mes', payload: 'query: period, date, operation_type, performed_by, page, per_page', sample: 'GET {{baseUrl}}/api/v1/manager/operations?period=month&date=2026-09-30' },
-        { method: 'GET', path: '/api/v1/manager/operations/download', auth: 'management', desc: 'Descargar bitacora de operaciones en CSV', payload: 'query: period, date, operation_type, performed_by', sample: 'GET {{baseUrl}}/api/v1/manager/operations/download?period=month&date=2026-09-30' },
-        { method: 'POST', path: '/api/v1/manager/accounts/:account_id/deposit', auth: 'cashier', desc: 'Depositar por caja/cajero', payload: '{"amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/deposit' },
-        { method: 'POST', path: '/api/v1/manager/accounts/:account_id/withdraw', auth: 'cashier', desc: 'Retirar por caja/cajero', payload: '{"amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/withdraw' },
-        { method: 'POST', path: '/api/v1/manager/accounts/:account_id/loans/:loan_id/pay', auth: 'management', desc: 'Pagar prestamo por gestión', payload: '{"amount","paid_on?"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/pay' }
+        { method: 'POST', path: '/api/v1/manager/loans/:id/cancel', auth: 'manager', desc: 'Cancelar prestamo', payload: 'path :id', sample: 'POST {{baseUrl}}/api/v1/manager/loans/9/cancel' },
+        { method: 'POST', path: '/api/v1/manager/accounts/:account_id/loans/preview', auth: 'manager', desc: 'Previsualizar plan de pagos', payload: '{"amount","term_months","first_due_date"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/preview' },
+        { method: 'POST', path: '/api/v1/manager/accounts/:account_id/loans', auth: 'manager', desc: 'Originar prestamo en cuenta objetivo', payload: '{"amount","term_months","first_due_date"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/loans' },
+        { method: 'GET', path: '/api/v1/manager/accounts/:account_id/summary', auth: 'manager', desc: 'Resumen por cuenta (saldo + prestamos)', payload: ':account_id o account_number', sample: 'GET {{baseUrl}}/api/v1/manager/accounts/9000000001/summary' },
+        { method: 'GET', path: '/api/v1/manager/accounts/:account_id/loans/:loan_id/installments', auth: 'manager', desc: 'Plan de pagos paginado', payload: 'query: page, per_page', sample: 'GET {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/installments?page=1&per_page=10' },
+        { method: 'GET', path: '/api/v1/manager/accounts/:account_id/loans/:loan_id/installments/summary', auth: 'manager', desc: 'Resumen de cuotas (paid/pending)', payload: '-', sample: 'GET {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/installments/summary' },
+        { method: 'GET', path: '/api/v1/manager/accounts/:account_id/loans/:loan_id/installments/download', auth: 'manager', desc: 'Descargar plan de pagos CSV', payload: '-', sample: 'GET {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/installments/download' },
+        { method: 'POST', path: '/api/v1/manager/accounts/:account_id/deposit', auth: 'manager', desc: 'Depositar por manager', payload: '{"amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/deposit' },
+        { method: 'POST', path: '/api/v1/manager/accounts/:account_id/withdraw', auth: 'manager', desc: 'Retirar por manager', payload: '{"amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/withdraw' },
+        { method: 'POST', path: '/api/v1/manager/accounts/:account_id/loans/:loan_id/pay', auth: 'manager', desc: 'Pagar prestamo por manager', payload: '{"amount","paid_on?"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/pay' }
       ];
 
       const body = document.getElementById('endpointsBody');

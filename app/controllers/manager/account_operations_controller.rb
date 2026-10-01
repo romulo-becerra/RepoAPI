@@ -1,6 +1,6 @@
 module Manager
   class AccountOperationsController < ApplicationController
-    before_action :require_operations_staff!
+    before_action :require_manager!
     before_action :set_account
 
     def summary
@@ -34,13 +34,13 @@ module Manager
         @account,
         params[:amount],
         params[:description].presence || "Deposito aplicado por gerente",
-        performed_by_role: current_user.role,
+        performed_by_role: :manager,
         performed_by_user_id: current_user.id,
         performed_by_name: current_user.to_s
       )
 
       render json: {
-        message: "Deposito aplicado por #{current_user.role}",
+        message: "Deposito aplicado por gerente",
         account_id: @account.id,
         user_id: @account.user_id,
         balance: @account.reload.balance,
@@ -57,13 +57,13 @@ module Manager
         @account,
         params[:amount],
         params[:description].presence || "Retiro aplicado por gerente",
-        performed_by_role: current_user.role,
+        performed_by_role: :manager,
         performed_by_user_id: current_user.id,
         performed_by_name: current_user.to_s
       )
 
       render json: {
-        message: "Retiro aplicado por #{current_user.role}",
+        message: "Retiro aplicado por gerente",
         account_id: @account.id,
         user_id: @account.user_id,
         balance: @account.reload.balance,
@@ -77,35 +77,6 @@ module Manager
       render json: { errors: e.message }, status: :unprocessable_entity
     end
 
-    def pay_service
-      service = Service.includes(:account).find_by(id: params[:service_id])
-      return render json: { errors: "Servicio no encontrado" }, status: :not_found unless service
-
-      transaction = TransactionService.new.transfer!(
-        @account,
-        service.account,
-        params[:amount],
-        params[:description].presence || "Pago de servicio aplicado por #{current_user.role}",
-        performed_by_role: current_user.role,
-        performed_by_user_id: current_user.id,
-        performed_by_name: current_user.to_s
-      )
-
-      render json: {
-        message: "Pago de servicio aplicado",
-        account_id: @account.id,
-        user_id: @account.user_id,
-        balance: @account.reload.balance,
-        transaction_id: transaction.id,
-        transaction_type: transaction.transaction_type,
-        amount: transaction.amount.to_f
-      }, status: :ok
-    rescue InsufficientFundsError => error
-      render json: { errors: error.message }, status: :payment_required
-    rescue InvalidAmountError, InvalidTransactionError => error
-      render json: { errors: error.message }, status: :unprocessable_entity
-    end
-
     def pay_loan
       loan = @account.loans.find_by(id: params[:loan_id])
       return render json: { errors: "Préstamo no encontrado para la cuenta" }, status: :not_found unless loan
@@ -114,13 +85,13 @@ module Manager
         loan,
         amount: params[:amount],
         paid_on: params[:paid_on],
-        performed_by_role: current_user.role,
+        performed_by_role: :manager,
         performed_by_user_id: current_user.id,
         performed_by_name: current_user.to_s
       )
 
       render json: {
-        message: "Pago de préstamo aplicado por #{current_user.role}",
+        message: "Pago de préstamo aplicado por gerente",
         account_id: @account.id,
         user_id: @account.user_id,
         account_balance: @account.reload.balance,
