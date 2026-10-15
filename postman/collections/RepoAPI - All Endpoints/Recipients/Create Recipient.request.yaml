@@ -1,0 +1,21 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/recipients"
+method: POST
+headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: text
+  content: |-
+    {
+      "account_number": "00000000",
+      "name": "Destino Test"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      var j = pm.response.json();
+      if (j.recipient && j.recipient.id) pm.environment.set('recipient_id', j.recipient.id);
+    language: text/javascript
+order: 2000

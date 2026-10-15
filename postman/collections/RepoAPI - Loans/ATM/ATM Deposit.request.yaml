@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/atm/accounts/{{account_id}}/deposit"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+body:
+  type: text
+  content: |-
+    {
+      "pin": "{{pin}}",
+      "amount": 1000,
+      "description": "Deposito ATM"
+    }
+order: 1000

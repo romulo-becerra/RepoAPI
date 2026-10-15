@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/manager/reports/accounts_activity?days=30"
+method: GET
+headers:
+  Authorization: Bearer {{manager_token}}
+queryParams:
+  days: "30"
+order: 3000

@@ -1,0 +1,9 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/atm/accounts/{{account_id}}/statement?pin={{pin}}"
+method: GET
+headers:
+  Authorization: Bearer {{token}}
+  Accept: application/json
+queryParams:
+  pin: "{{pin}}"
+order: 4000

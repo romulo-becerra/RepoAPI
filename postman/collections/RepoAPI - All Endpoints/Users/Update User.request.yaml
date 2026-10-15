@@ -1,0 +1,17 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/users/{{user_id}}"
+method: PATCH
+headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: text
+  content: |-
+    {
+      "first_name": "Updated",
+      "last_name": "User",
+      "phone": "+51999111222",
+      "date_of_birth": "1992-06-15"
+    }
+order: 1000

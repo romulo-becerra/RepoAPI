@@ -329,9 +329,10 @@ Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
         { method: 'GET', path: '/up', auth: 'public', desc: 'Health check de Rails', payload: '-', sample: 'GET {{baseUrl}}/up' },
         { method: 'GET', path: '/', auth: 'public', desc: 'Estado base del servicio', payload: '-', sample: 'GET {{baseUrl}}/' },
 
-        { method: 'POST', path: '/api/v1/register', auth: 'public', desc: 'Registro de usuario', payload: '{"first_name","last_name","email","phone?","date_of_birth","pin","address"}', sample: 'POST {{baseUrl}}/api/v1/register' },
-        { method: 'POST', path: '/api/v1/login', auth: 'public', desc: 'Login por account_number + pin', payload: '{"account_number","pin"}', sample: 'POST {{baseUrl}}/api/v1/login' },
+        { method: 'POST', path: '/api/v1/register', auth: 'public', desc: 'Registro de usuario (fecha de nacimiento opcional)', payload: '{"first_name","last_name","email","phone?","date_of_birth?","pin","address?"}', sample: 'POST {{baseUrl}}/api/v1/register' },
+        { method: 'POST', path: '/api/v1/login', auth: 'public', desc: 'Login por account_number + pin; devuelve date_of_birth', payload: '{"account_number","pin"}', sample: 'POST {{baseUrl}}/api/v1/login' },
         { method: 'POST', path: '/api/v1/logout', auth: 'customer', desc: 'Cerrar sesion', payload: '-', sample: 'POST {{baseUrl}}/api/v1/logout' },
+        { method: 'GET', path: '/api/v1/currency_rates', auth: 'public', desc: 'Consultar tipos de cambio', payload: '-', sample: 'GET {{baseUrl}}/api/v1/currency_rates' },
 
         { method: 'GET', path: '/api/v1/accounts', auth: 'customer', desc: 'Listar cuentas del usuario autenticado', payload: '-', sample: 'GET {{baseUrl}}/api/v1/accounts' },
         { method: 'POST', path: '/api/v1/accounts', auth: 'customer', desc: 'Crear nueva cuenta del usuario', payload: '{}', sample: 'POST {{baseUrl}}/api/v1/accounts' },
@@ -353,21 +354,26 @@ Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
         { method: 'GET', path: '/api/v1/accounts/:account_id/loans/:id/installments', auth: 'customer', desc: 'Cuotas pagadas y pendientes (paginadas pendientes)', payload: 'query: page, per_page', sample: 'GET {{baseUrl}}/api/v1/accounts/12/loans/5/installments?page=1&per_page=10' },
 
         { method: 'GET', path: '/api/v1/recipients', auth: 'customer', desc: 'Listar destinatarios', payload: '-', sample: 'GET {{baseUrl}}/api/v1/recipients' },
-        { method: 'POST', path: '/api/v1/recipients', auth: 'customer', desc: 'Crear destinatario', payload: '{"name","account_id"}', sample: 'POST {{baseUrl}}/api/v1/recipients' },
+        { method: 'POST', path: '/api/v1/recipients', auth: 'customer', desc: 'Crear destinatario por CLABE', payload: '{"recipient":{"name","clabe"}}', sample: 'POST {{baseUrl}}/api/v1/recipients' },
         { method: 'DELETE', path: '/api/v1/recipients/:id', auth: 'customer', desc: 'Eliminar destinatario', payload: 'path :id', sample: 'DELETE {{baseUrl}}/api/v1/recipients/8' },
-        { method: 'GET', path: '/api/v1/recipients/search', auth: 'customer', desc: 'Buscar destinatarios', payload: 'query segun implementacion', sample: 'GET {{baseUrl}}/api/v1/recipients/search?query=juan' },
+        { method: 'GET', path: '/api/v1/recipients/search', auth: 'customer', desc: 'Buscar destinatario por CLABE', payload: 'query: clabe', sample: 'GET {{baseUrl}}/api/v1/recipients/search?clabe=123456789012345678' },
 
-        { method: 'GET', path: '/api/v1/services', auth: 'public', desc: 'Listar servicios', payload: '-', sample: 'GET {{baseUrl}}/api/v1/services' },
-        { method: 'GET', path: '/api/v1/services/:id', auth: 'public', desc: 'Detalle de servicio', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/services/1' },
+        { method: 'GET', path: '/api/v1/contacts', auth: 'management', desc: 'Listar contactos de usuario', payload: '-', sample: 'GET {{baseUrl}}/api/v1/contacts' },
+        { method: 'POST', path: '/api/v1/contacts', auth: 'management', desc: 'Crear contacto', payload: '{"name","phone"}', sample: 'POST {{baseUrl}}/api/v1/contacts' },
+        { method: 'DELETE', path: '/api/v1/contacts/:id', auth: 'management', desc: 'Eliminar contacto', payload: 'path :id', sample: 'DELETE {{baseUrl}}/api/v1/contacts/8' },
 
-        { method: 'POST', path: '/api/v1/atm/accounts/:id/deposit', auth: 'cashier', desc: 'Deposito ATM / caja', payload: '{"amount"}', sample: 'POST {{baseUrl}}/api/v1/atm/accounts/12/deposit' },
-        { method: 'POST', path: '/api/v1/atm/accounts/:id/withdraw', auth: 'cashier', desc: 'Retiro ATM / caja', payload: '{"amount"}', sample: 'POST {{baseUrl}}/api/v1/atm/accounts/12/withdraw' },
-        { method: 'GET', path: '/api/v1/atm/accounts/:id/balance', auth: 'cashier', desc: 'Saldo ATM / caja', payload: '-', sample: 'GET {{baseUrl}}/api/v1/atm/accounts/12/balance' },
-        { method: 'GET', path: '/api/v1/atm/accounts/:id/statement', auth: 'cashier', desc: 'Estado de cuenta ATM / caja', payload: '-', sample: 'GET {{baseUrl}}/api/v1/atm/accounts/12/statement' },
+        { method: 'GET', path: '/api/v1/services', auth: 'customer', desc: 'Listar servicios', payload: '-', sample: 'GET {{baseUrl}}/api/v1/services' },
+        { method: 'GET', path: '/api/v1/services/:id', auth: 'customer', desc: 'Detalle de servicio', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/services/1' },
 
-        { method: 'PATCH', path: '/api/v1/users/:id', auth: 'customer', desc: 'Actualizar datos de usuario', payload: '{"first_name?","last_name?","email?","phone?","pin?"}', sample: 'PATCH {{baseUrl}}/api/v1/users/3' },
+        { method: 'POST', path: '/api/v1/atm/accounts/:id/deposit', auth: 'customer', desc: 'Deposito ATM (requiere PIN)', payload: '{"pin","amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/atm/accounts/12/deposit' },
+        { method: 'POST', path: '/api/v1/atm/accounts/:id/withdraw', auth: 'customer', desc: 'Retiro ATM (requiere PIN)', payload: '{"pin","amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/atm/accounts/12/withdraw' },
+        { method: 'GET', path: '/api/v1/atm/accounts/:id/balance', auth: 'customer', desc: 'Saldo ATM (requiere PIN)', payload: 'query: pin', sample: 'GET {{baseUrl}}/api/v1/atm/accounts/12/balance?pin=1234' },
+        { method: 'GET', path: '/api/v1/atm/accounts/:id/statement', auth: 'customer', desc: 'Estado de cuenta ATM (requiere PIN)', payload: 'query: pin', sample: 'GET {{baseUrl}}/api/v1/atm/accounts/12/statement?pin=1234' },
+
+        { method: 'PUT', path: '/api/v1/users/:id', auth: 'customer', desc: 'Actualizar perfil (incluye date_of_birth)', payload: '{"first_name?","last_name?","email?","phone?","date_of_birth?","pin?"}', sample: 'PUT {{baseUrl}}/api/v1/users/3' },
+        { method: 'PATCH', path: '/api/v1/users/:id', auth: 'customer', desc: 'Actualizar parcialmente el perfil (incluye date_of_birth)', payload: '{"first_name?","last_name?","email?","phone?","date_of_birth?","pin?"}', sample: 'PATCH {{baseUrl}}/api/v1/users/3' },
         { method: 'PUT', path: '/api/v1/users/:id/pin', auth: 'customer', desc: 'Cambiar PIN', payload: '{"current_pin","new_pin"}', sample: 'PUT {{baseUrl}}/api/v1/users/3/pin' },
-        { method: 'GET', path: '/api/v1/users/:id/profile', auth: 'customer', desc: 'Perfil del usuario', payload: '-', sample: 'GET {{baseUrl}}/api/v1/users/3/profile' },
+        { method: 'GET', path: '/api/v1/users/:id/profile', auth: 'customer', desc: 'Perfil del usuario, incluye date_of_birth', payload: '-', sample: 'GET {{baseUrl}}/api/v1/users/3/profile' },
         { method: 'GET', path: '/api/v1/users/:id/address', auth: 'customer', desc: 'Obtener direccion', payload: '-', sample: 'GET {{baseUrl}}/api/v1/users/3/address' },
         { method: 'PUT', path: '/api/v1/users/:id/address', auth: 'customer', desc: 'Crear/actualizar direccion', payload: '{"country","city","province","street", ...}', sample: 'PUT {{baseUrl}}/api/v1/users/3/address' },
         { method: 'GET', path: '/api/v1/users/:id/files', auth: 'customer', desc: 'Listar archivos usuario', payload: '-', sample: 'GET {{baseUrl}}/api/v1/users/3/files' },
@@ -380,8 +386,14 @@ Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
         { method: 'GET', path: '/api/v1/manager/logins', auth: 'management', desc: 'Reporte de accesos por dia, semana o mes', payload: 'query: period, date, status, page, per_page', sample: 'GET {{baseUrl}}/api/v1/manager/logins?period=month&date=2026-09-30' },
         { method: 'GET', path: '/api/v1/manager/logins/download', auth: 'management', desc: 'Descargar reporte de accesos en CSV', payload: 'query: period, date, status', sample: 'GET {{baseUrl}}/api/v1/manager/logins/download?period=month&date=2026-09-30' },
 
-        { method: 'GET', path: '/api/v1/manager/users', auth: 'management', desc: 'Usuarios paginados', payload: 'query: page, per_page', sample: 'GET {{baseUrl}}/api/v1/manager/users?page=1&per_page=20' },
-        { method: 'POST', path: '/api/v1/manager/users', auth: 'admin', desc: 'Crear usuario por admin', payload: '{"first_name","last_name","email","pin","role","phone?"}', sample: 'POST {{baseUrl}}/api/v1/manager/users' },
+        { method: 'GET', path: '/api/v1/manager/users', auth: 'management', desc: 'Usuarios paginados, incluye date_of_birth', payload: 'query: page, per_page', sample: 'GET {{baseUrl}}/api/v1/manager/users?page=1&per_page=20' },
+        { method: 'GET', path: '/api/v1/manager/users/:id', auth: 'management', desc: 'Detalle de usuario, incluye date_of_birth', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/manager/users/40' },
+        { method: 'POST', path: '/api/v1/manager/users', auth: 'admin', desc: 'Crear usuario por admin', payload: '{"first_name","last_name","email","pin","role","phone?","date_of_birth?"}', sample: 'POST {{baseUrl}}/api/v1/manager/users' },
+        { method: 'PUT', path: '/api/v1/manager/users/:id', auth: 'admin', desc: 'Actualizar usuario por admin (incluye date_of_birth)', payload: '{"first_name?","last_name?","email?","phone?","pin?","date_of_birth?"}', sample: 'PUT {{baseUrl}}/api/v1/manager/users/40' },
+        { method: 'PATCH', path: '/api/v1/manager/users/:id', auth: 'admin', desc: 'Actualizar usuario por admin (incluye date_of_birth)', payload: '{"first_name?","last_name?","email?","phone?","pin?","date_of_birth?"}', sample: 'PATCH {{baseUrl}}/api/v1/manager/users/40' },
+        { method: 'PATCH', path: '/api/v1/manager/users/:id/block', auth: 'admin', desc: 'Bloquear usuario', payload: 'path :id', sample: 'PATCH {{baseUrl}}/api/v1/manager/users/40/block' },
+        { method: 'PATCH', path: '/api/v1/manager/users/:id/unblock', auth: 'admin', desc: 'Desbloquear usuario', payload: 'path :id', sample: 'PATCH {{baseUrl}}/api/v1/manager/users/40/unblock' },
+        { method: 'PATCH', path: '/api/v1/manager/users/:id/deactivate', auth: 'admin', desc: 'Desactivar usuario', payload: 'path :id', sample: 'PATCH {{baseUrl}}/api/v1/manager/users/40/deactivate' },
         { method: 'DELETE', path: '/api/v1/manager/users/:id', auth: 'admin', desc: 'Eliminar usuario', payload: 'path :id', sample: 'DELETE {{baseUrl}}/api/v1/manager/users/40' },
 
         { method: 'POST', path: '/api/v1/manager/loans/:id/cancel', auth: 'management', desc: 'Cancelar prestamo', payload: 'path :id', sample: 'POST {{baseUrl}}/api/v1/manager/loans/9/cancel' },
@@ -450,13 +462,47 @@ Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
         return JSON.stringify(obj, null, 2);
       }
 
+      function bodyExampleForEndpoint(endpoint) {
+        if (endpoint.path === '/api/v1/register') {
+          return JSON.stringify({
+            first_name: 'Ana',
+            last_name: 'Lopez',
+            email: 'ana@example.com',
+            phone: '+59170000000',
+            date_of_birth: '1990-04-12',
+            pin: '1234',
+            address: {
+              country: 'Bolivia',
+              city: 'La Paz'
+            }
+          }, null, 2);
+        }
+        if (endpoint.path === '/api/v1/contacts' && endpoint.method === 'POST') {
+          return JSON.stringify({ contact: { name: 'Ana Lopez', phone: '+59170000000' } }, null, 2);
+        }
+        if (endpoint.path === '/api/v1/recipients' && endpoint.method === 'POST') {
+          return JSON.stringify({ recipient: { name: 'Carlos', clabe: '123456789012345678' } }, null, 2);
+        }
+
+        return bodyExampleFromPayload(endpoint.payload);
+      }
+
       function responseExampleForEndpoint(endpoint) {
         const p = endpoint.path;
         if (p === '/api/v1/login') {
-          return JSON.stringify({ message: 'Inicio de sesión exitoso', token: '<jwt>', user: { id: 1, role: 'customer' }, account: { id: 10, account_number: '9000000001' } }, null, 2);
+          return JSON.stringify({ message: 'Inicio de sesión exitoso', token: '<jwt>', user: { id: 1, date_of_birth: '1990-04-12', role: 'customer' }, account: { id: 10, account_number: '9000000001' } }, null, 2);
         }
         if (p === '/api/v1/register') {
-          return JSON.stringify({ message: 'Usuario registrado exitosamente', token: '<jwt>', user: { id: 2 }, account: { account_number: '9000000002' } }, null, 2);
+          return JSON.stringify({ message: 'Usuario registrado exitosamente', token: '<jwt>', user: { id: 2, date_of_birth: '1990-04-12' }, account: { account_number: '9000000002' } }, null, 2);
+        }
+        if (p === '/api/v1/users/:id/profile') {
+          return JSON.stringify({ user: { id: 3, first_name: 'Angel', date_of_birth: '1990-04-12', role: 'customer' } }, null, 2);
+        }
+        if (p === '/api/v1/users/:id') {
+          return JSON.stringify({ user: { id: 3, first_name: 'Angel', date_of_birth: '1990-04-12' } }, null, 2);
+        }
+        if (p.includes('/manager/users')) {
+          return JSON.stringify({ message: 'Usuario procesado', user: { id: 5, first_name: 'Angel', date_of_birth: '1990-04-12', role: 'customer' } }, null, 2);
         }
         if (p.includes('/transactions')) {
           return JSON.stringify({ total: 1, page: 1, per_page: 10, transactions: [ { id: 1, transaction_type: 'deposit', amount: 100.5 } ] }, null, 2);
@@ -480,20 +526,22 @@ Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
       }
 
       function completeExample(endpoint) {
-        const url = endpoint.sample.replace(/^\w+\s+/, '');
+        const url = endpoint.sample.replace(/^\w+\s+/, '').replace('{{baseUrl}}', 'http://localhost:3001');
         const isMultipart = endpoint.payload.includes('multipart/form-data');
-        const bodyExample = bodyExampleFromPayload(endpoint.payload);
-        const authHeader = endpoint.auth === 'public' ? '' : ' \\\n+  -H "Authorization: Bearer <token>"';
-        const contentTypeHeader = isMultipart ? '' : ' \\\n+  -H "Content-Type: application/json"';
-        const bodyPart = bodyExample && !isMultipart
-          ? ` \\\n+  -d '${bodyExample.replaceAll("'", "\\\\'")}'`
-          : '';
+        const bodyExample = bodyExampleForEndpoint(endpoint);
+        const authHeader = endpoint.auth === 'public' ? '' : ' -H "Authorization: Bearer $TOKEN"';
+        const contentTypeHeader = isMultipart ? '' : ' \\\n  -H "Content-Type: application/json"';
+        const bodyPart = isMultipart
+          ? ' \\\n  -F "file=@/ruta/archivo.png"'
+          : bodyExample
+            ? ` \\\n  -d '${bodyExample.replaceAll("'", "\\\\'")}'`
+            : '';
 
         let result = `REQUEST\n${endpoint.method} ${url}\nAuth: ${endpoint.auth}\n`;
         if (bodyExample) {
           result += `\nBODY EJEMPLO\n${bodyExample}\n`;
         }
-        result += `\nCURL\ncurl -X ${endpoint.method} "${url}" \\\n+  -H "Accept: application/json"${contentTypeHeader}${authHeader}${bodyPart}\n`;
+        result += `\nCURL\ncurl -X ${endpoint.method} "${url}" \\\n  -H "Accept: application/json"${contentTypeHeader}${authHeader}${bodyPart}\n`;
         result += `\nRESPUESTA EJEMPLO\n${responseExampleForEndpoint(endpoint)}`;
         return result;
       }

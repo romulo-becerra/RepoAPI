@@ -1,0 +1,15 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/accounts/{{account_id}}/withdraw"
+method: POST
+headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: text
+  content: |-
+    {
+      "amount": 200,
+      "description": "Retiro de prueba"
+    }
+order: 5000
