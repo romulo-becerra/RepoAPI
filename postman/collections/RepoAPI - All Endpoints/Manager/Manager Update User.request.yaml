@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/manager/users/{{managed_user_id}}"
+method: PATCH
+headers:
+  Authorization: ******
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: text
+  content: |-
+    {
+      "date_of_birth": "1992-06-15"
+    }
+order: 6000

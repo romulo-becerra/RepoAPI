@@ -154,6 +154,7 @@ const el = {
   profileLastName: document.getElementById('profileLastName'),
   profileEmail: document.getElementById('profileEmail'),
   profilePhone: document.getElementById('profilePhone'),
+  profileDateOfBirth: document.getElementById('profileDateOfBirth'),
   logoutBtn: document.getElementById('logoutBtn'),
   accountMaintenanceSection: document.getElementById('accountMaintenanceSection'),
   showProfileSectionBtn: document.getElementById('showProfileSectionBtn'),
@@ -1772,6 +1773,7 @@ async function refreshProfileData() {
   el.profileLastName.value = user.last_name || '';
   el.profileEmail.value = user.email || '';
   el.profilePhone.value = user.phone || '';
+  el.profileDateOfBirth.value = user.date_of_birth || '';
 }
 
 async function refreshUserFiles() {
@@ -2533,7 +2535,8 @@ function bindEvents() {
     const payload = {
       first_name: el.profileFirstName.value.trim(),
       last_name: el.profileLastName.value.trim(),
-      email: el.profileEmail.value.trim()
+      email: el.profileEmail.value.trim(),
+      date_of_birth: el.profileDateOfBirth.value
     };
 
     const phone = el.profilePhone.value.trim();
@@ -2592,8 +2595,12 @@ function bindEvents() {
       role: document.getElementById('adminRole').value
     };
     const phone = document.getElementById('adminPhone').value.trim();
+    const dateOfBirth = document.getElementById('adminDateOfBirth').value;
     if (phone) {
       payload.phone = phone;
+    }
+    if (dateOfBirth) {
+      payload.date_of_birth = dateOfBirth;
     }
 
     try {

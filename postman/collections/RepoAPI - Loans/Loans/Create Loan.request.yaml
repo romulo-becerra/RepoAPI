@@ -1,0 +1,22 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/accounts/{{account_id}}/loans"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+body:
+  type: text
+  content: |-
+    {
+      "amount": 120000,
+      "term_months": 24,
+      "first_due_date": "2026-08-15"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Create loan status 201', function () { pm.response.to.have.status(201); });
+      var json = pm.response.json();
+      if (json.loan && json.loan.id) { pm.environment.set('loan_id', json.loan.id); }
+    language: text/javascript
+order: 1000

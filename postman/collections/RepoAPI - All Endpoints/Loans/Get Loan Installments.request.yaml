@@ -1,0 +1,7 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/accounts/{{account_id}}/loans/{{loan_id}}/installments"
+method: GET
+headers:
+  Authorization: Bearer {{token}}
+  Accept: application/json
+order: 5000

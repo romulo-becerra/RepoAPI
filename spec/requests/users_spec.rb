@@ -48,6 +48,7 @@ RSpec.describe 'Users API', type: :request do
         user = User.find(body.dig('user', 'id'))
         expect(user.date_of_birth).to eq(Date.new(1990, 4, 12))
         expect(user.phone).to eq('+59170000000')
+        expect(body.dig('user', 'date_of_birth')).to eq('1990-04-12')
         expect(user.user_address).to have_attributes(country: 'Bolivia', city: 'La Paz', street: 'Avenida Central')
         expect(body.dig('address', 'postal_code')).to eq('0001')
         expect(body.to_s).not_to include('1234')
@@ -72,9 +73,11 @@ RSpec.describe 'Users API', type: :request do
 
     context 'with valid credentials' do
       it 'logs in successfully' do
+        user.update!(date_of_birth: Date.new(1990, 4, 12))
         post endpoint, params: { account_number: account.account_number, pin: '1234' }, headers: { 'Content-Type': 'application/json' }, as: :json
         expect(response).to have_http_status(:ok)
         expect(JSON.parse(response.body)['message']).to eq('Inicio de sesión exitoso')
+        expect(JSON.parse(response.body).dig('user', 'date_of_birth')).to eq('1990-04-12')
         expect(LoginEvent.order(:id).last).to have_attributes(
           user_id: user.id,
           account_number: account.account_number,
@@ -145,6 +148,15 @@ RSpec.describe 'Users API', type: :request do
         expect(response).to have_http_status(:ok)
         expect(JSON.parse(response.body)['user']['first_name']).to eq('Cody')
         expect(JSON.parse(response.body)['user']['last_name']).to eq('Facilito')
+
+        put "/api/v1/users/#{user_id}",
+            params: { date_of_birth: '1992-06-15' },
+            headers: { 'Authorization' => "******", 'Content-Type': 'application/json' },
+            as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(JSON.parse(response.body)['user']['date_of_birth']).to eq('1992-06-15')
+        expect(user.reload.date_of_birth).to eq(Date.new(1992, 6, 15))
       end
     end
   end

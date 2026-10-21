@@ -3,6 +3,10 @@
 Este documento describe los endpoints disponibles en la API del proyecto, incluyendo método HTTP, ruta, headers, body/params, y si requieren Authorization.
 
 ## Notas generales
+- El explorador web de APIs, con filtros y ejemplos cURL, está disponible en [`/angelfire/endpoints.html`](public/angelfire/endpoints.html) cuando la aplicación está en ejecución.
+- La misma página incluye la pestaña **Esquemas request/response** con el contrato de cada endpoint (parámetros, body y respuestas), los componentes reutilizables y la descarga del documento OpenAPI 3.1 en JSON (`angelfire-openapi.json`). Los esquemas se mantienen en [public/angelfire/schemas.js](public/angelfire/schemas.js).
+- El catálogo funcional ampliado está en [FINANCIAL_APIS.md](FINANCIAL_APIS.md).
+- La fecha de nacimiento se envía como `date_of_birth` con formato `YYYY-MM-DD`.
 - La API base es: http://localhost:3001
 - Los endpoints están bajo el prefijo /api/v1
 - La autenticación se realiza mediante JWT en el header Authorization: Bearer <token>
@@ -55,6 +59,8 @@ curl http://localhost:3001/
   "first_name": "Juan",
   "last_name": "Perez",
   "email": "juan.perez@example.com",
+  "phone": "+59170000000",
+  "date_of_birth": "1990-04-12",
   "pin": "1234"
 }
 ```
@@ -64,7 +70,7 @@ Ejemplo:
 ```bash
 curl -X POST http://localhost:3001/api/v1/register \
   -H "Content-Type: application/json" \
-  -d '{"first_name":"Juan","last_name":"Perez","email":"juan.perez@example.com","pin":"1234"}'
+  -d '{"first_name":"Juan","last_name":"Perez","email":"juan.perez@example.com","phone":"+59170000000","date_of_birth":"1990-04-12","pin":"1234"}'
 ```
 
 ---
@@ -107,7 +113,9 @@ curl -X POST http://localhost:3001/api/v1/login \
 {
   "first_name": "Cody",
   "last_name": "Facilito",
-  "email": "ayuda@codigofacilito.com"
+  "email": "ayuda@codigofacilito.com",
+  "phone": "+59170000000",
+  "date_of_birth": "1992-06-15"
 }
 ```
 - Params:
@@ -118,8 +126,28 @@ Ejemplo:
 curl -X PUT http://localhost:3001/api/v1/users/1 \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <token>" \
-  -d '{"first_name":"Cody","last_name":"Facilito","email":"ayuda@codigofacilito.com"}'
+  -d '{"first_name":"Cody","last_name":"Facilito","email":"ayuda@codigofacilito.com","phone":"+59170000000","date_of_birth":"1992-06-15"}'
 ```
+
+---
+
+### Fecha de nacimiento en los endpoints de usuario
+
+El campo se llama `date_of_birth`, usa formato `YYYY-MM-DD` y es opcional. Se admite
+al registrar o actualizar el perfil propio y al crear/actualizar usuarios desde la
+API de administración. Las respuestas de registro, login, perfil y administración
+incluyen el campo dentro del objeto `user`.
+
+Ejemplo cURL para un administrador (reemplaza `TOKEN` por el JWT obtenido al iniciar sesión):
+```bash
+curl -X PATCH http://localhost:3001/api/v1/manager/users/5 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"date_of_birth":"1992-06-15"}'
+```
+
+El perfil propio se puede consultar en `GET /api/v1/users/:id/profile`; esa respuesta
+también contiene `date_of_birth`.
 
 ---
 
@@ -347,6 +375,7 @@ curl http://localhost:3001/api/v1/services \
 
   - Para el catálogo financiero completo (incluye manager, préstamos, ATM, archivos y novedades recientes), ver [FINANCIAL_APIS.md](FINANCIAL_APIS.md).
   - Para catálogo interactivo con ejemplos completos request/response, ver [public/angelfire/endpoints.html](public/angelfire/endpoints.html).
+  - Para los esquemas tipados de request/response y el contrato OpenAPI 3.1 descargable, abrir la pestaña **Esquemas request/response** de esa misma página o revisar [public/angelfire/schemas.js](public/angelfire/schemas.js).
 
 ---
 

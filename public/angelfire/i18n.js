@@ -584,7 +584,22 @@
     ['Las transferencias estan disponibles para el rol customer.', 'Transfers are available for the customer role.', 'As transferências estão disponíveis para o perfil customer.'],
     ['Tu rol no tiene permitida esa operacion.', 'Your role is not allowed to perform that operation.', 'Seu perfil não tem permissão para essa operação.'],
     ['Operacion restringida a personal autorizado.', 'Operation restricted to authorized staff.', 'Operação restrita à equipe autorizada.'],
-    ['Este usuario no tiene rol Admin o Manager.', 'This user does not have the Admin or Manager role.', 'Este usuário não tem o perfil Admin ou Manager.']
+    ['Este usuario no tiene rol Admin o Manager.', 'This user does not have the Admin or Manager role.', 'Este usuário não tem o perfil Admin ou Manager.'],
+    ['Catalogo de endpoints', 'Endpoints catalog', 'Catálogo de endpoints'],
+    ['Esquemas request/response', 'Request/response schemas', 'Esquemas de requisição/resposta'],
+    ['Esquemas por endpoint', 'Schemas by endpoint', 'Esquemas por endpoint'],
+    ['Componentes reutilizables', 'Reusable components', 'Componentes reutilizáveis'],
+    ['Descargar OpenAPI (JSON)', 'Download OpenAPI (JSON)', 'Baixar OpenAPI (JSON)'],
+    ['Buscar esquema por ruta, campo o descripcion...', 'Search schemas by path, field, or description...', 'Buscar esquema por caminho, campo ou descrição...'],
+    ['Campo', 'Field', 'Campo'],
+    ['Parametro', 'Parameter', 'Parâmetro'],
+    ['Ubicacion', 'Location', 'Localização'],
+    ['Obligatorio', 'Required', 'Obrigatório'],
+    ['Definicion', 'Definition', 'Definição'],
+    ['Arreglo de', 'Array of', 'Arranjo de'],
+    ['Sin body: los datos viajan en la ruta o en el query string.', 'No body: data is sent in the path or query string.', 'Sem corpo: os dados vão na rota ou na query string.'],
+    ['Todos los modulos', 'All modules', 'Todos os módulos'],
+    ['Sin resultados para el filtro actual.', 'No results for the current filter.', 'Nenhum resultado para o filtro atual.']
   ];
 
   const phraseMaps = Object.fromEntries(languages.map((language) => [language, new Map()]));

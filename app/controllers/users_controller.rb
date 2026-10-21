@@ -76,7 +76,17 @@ class UsersController < ApplicationController
     @user = User.find_by(id: params[:id])
     return render json: { errors: "Usuario no encontrado" }, status: :not_found unless @user && @user.id == @current_user.id
 
-    render json: { user: { id: @user.id, first_name: @user.first_name, last_name: @user.last_name, email: @user.email, phone: @user.phone, role: @user.role } }, status: :ok
+    render json: {
+      user: {
+        id: @user.id,
+        first_name: @user.first_name,
+        last_name: @user.last_name,
+        email: @user.email,
+        phone: @user.phone,
+        date_of_birth: @user.date_of_birth,
+        role: @user.role
+      }
+    }, status: :ok
   end
 
   def logout
@@ -121,6 +131,6 @@ class UsersController < ApplicationController
   end
 
   def user_params
-    params.permit(:first_name, :last_name, :email, :phone, :pin)
+    params.permit(:first_name, :last_name, :email, :phone, :date_of_birth, :pin)
   end
 end

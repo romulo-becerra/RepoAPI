@@ -63,7 +63,7 @@ module Manager
       user = User.find_by(id: params[:id])
       return render json: { errors: "Usuario no encontrado" }, status: :not_found unless user
 
-      permitted = params.permit(:first_name, :last_name, :email, :phone, :pin)
+      permitted = params.permit(:first_name, :last_name, :email, :phone, :date_of_birth, :pin)
       if permitted[:email].present?
         existing = User.where.not(id: user.id).find_by(email: permitted[:email].strip)
         return render json: { errors: "Correo electronico ya existe" }, status: :unprocessable_entity if existing
@@ -137,7 +137,7 @@ module Manager
     private
 
     def manager_user_params
-      params.permit(:first_name, :last_name, :email, :phone, :pin, :role, :account_number)
+      params.permit(:first_name, :last_name, :email, :phone, :date_of_birth, :pin, :role, :account_number)
     end
 
     def serialize_user(user)
@@ -149,6 +149,7 @@ module Manager
         last_name: user.last_name,
         email: user.email,
         phone: user.phone,
+        date_of_birth: user.date_of_birth,
         role: user.role,
         active: user.active,
         blocked: user.blocked,
@@ -175,6 +176,7 @@ module Manager
         last_name: user.last_name,
         email: user.email,
         phone: user.phone,
+        date_of_birth: user.date_of_birth,
         role: user.role,
         active: user.active,
         blocked: user.blocked,
