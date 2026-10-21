@@ -4,6 +4,7 @@ Este documento describe los endpoints disponibles en la API del proyecto, incluy
 
 ## Notas generales
 - El explorador web de APIs, con filtros y ejemplos cURL, está disponible en [`/angelfire/endpoints.html`](public/angelfire/endpoints.html) cuando la aplicación está en ejecución.
+- La misma página incluye la pestaña **Esquemas request/response** con el contrato de cada endpoint (parámetros, body y respuestas), los componentes reutilizables y la descarga del documento OpenAPI 3.1 en JSON (`angelfire-openapi.json`). Los esquemas se mantienen en [public/angelfire/schemas.js](public/angelfire/schemas.js).
 - El catálogo funcional ampliado está en [FINANCIAL_APIS.md](FINANCIAL_APIS.md).
 - La fecha de nacimiento se envía como `date_of_birth` con formato `YYYY-MM-DD`.
 - La API base es: http://localhost:3001
@@ -374,6 +375,7 @@ curl http://localhost:3001/api/v1/services \
 
   - Para el catálogo financiero completo (incluye manager, préstamos, ATM, archivos y novedades recientes), ver [FINANCIAL_APIS.md](FINANCIAL_APIS.md).
   - Para catálogo interactivo con ejemplos completos request/response, ver [public/angelfire/endpoints.html](public/angelfire/endpoints.html).
+  - Para los esquemas tipados de request/response y el contrato OpenAPI 3.1 descargable, abrir la pestaña **Esquemas request/response** de esa misma página o revisar [public/angelfire/schemas.js](public/angelfire/schemas.js).
 
 ---
 

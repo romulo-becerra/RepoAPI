@@ -211,6 +211,217 @@
         white-space: pre-wrap;
       }
 
+      .view-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+        margin-top: 0.8rem;
+      }
+
+      .tab {
+        border: 1px solid rgba(255, 255, 255, 0.35);
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #d9e8ef;
+        padding: 0.4rem 0.85rem;
+        font-family: inherit;
+        font-weight: 700;
+        font-size: 0.82rem;
+        cursor: pointer;
+      }
+
+      .tab.tab-selected {
+        border-color: #a3f3e2;
+        background: #a3f3e2;
+        color: #0a352f;
+      }
+
+      .btn {
+        border: 1px solid var(--accent-600);
+        border-radius: 10px;
+        background: var(--accent-600);
+        color: #fff;
+        padding: 0.55rem 0.8rem;
+        font-family: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .btn:hover {
+        background: var(--accent-700);
+      }
+
+      .controls-schemas {
+        grid-template-columns: 1.4fr 1fr auto;
+      }
+
+      .schema-link {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: #fff;
+        color: var(--accent-700);
+        padding: 0.12rem 0.5rem;
+        font: inherit;
+        font-size: 0.75rem;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+
+      .schema-link:hover {
+        background: #e8f5f1;
+      }
+
+      .schema-group {
+        margin-bottom: 1rem;
+      }
+
+      .schema-group > h3 {
+        margin: 0 0 0.5rem;
+        font-size: 0.8rem;
+        color: var(--ink-700);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .schema-card {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 0.75rem;
+        margin-bottom: 0.7rem;
+      }
+
+      .schema-card.is-highlighted,
+      .schema-card:target {
+        outline: 2px solid var(--accent-600);
+        outline-offset: 2px;
+      }
+
+      .schema-head {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .schema-head h3 {
+        margin: 0;
+        font-size: 0.95rem;
+      }
+
+      .schema-desc {
+        margin: 0.4rem 0 0;
+        font-size: 0.85rem;
+        color: var(--ink-700);
+      }
+
+      .schema-block {
+        margin-top: 0.6rem;
+      }
+
+      .schema-block h4 {
+        margin: 0 0 0.3rem;
+        font-size: 0.75rem;
+        color: var(--ink-700);
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+      }
+
+      .schema-table {
+        font-size: 0.78rem;
+      }
+
+      .schema-table th {
+        background: #f4f7f8;
+      }
+
+      .schema-table code,
+      .schema-note code,
+      .ref-link code,
+      .component-card h3 code {
+        background: #eef3f5;
+        color: var(--ink-900);
+      }
+
+      .schema-note {
+        margin: 0.2rem 0;
+        font-size: 0.8rem;
+        color: var(--ink-700);
+      }
+
+      .ref-link {
+        color: var(--accent-700);
+        font-weight: 700;
+      }
+
+      .status {
+        display: inline-block;
+        min-width: 44px;
+        border-radius: 999px;
+        background: #e9effa;
+        color: #1c4fa4;
+        padding: 0.1rem 0.45rem;
+        font-size: 0.75rem;
+        font-weight: 800;
+        text-align: center;
+      }
+
+      .status.s2xx {
+        background: #e8f5f1;
+        color: #0b6c56;
+      }
+
+      .status.s4xx {
+        background: #fff3e3;
+        color: #8a4c10;
+      }
+
+      .status.s5xx {
+        background: #ffe9e9;
+        color: #a12727;
+      }
+
+      .response {
+        margin-bottom: 0.5rem;
+      }
+
+      .response-head {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin-bottom: 0.2rem;
+        font-size: 0.82rem;
+      }
+
+      .component-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 0.6rem;
+      }
+
+      .component-card {
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 0.7rem;
+      }
+
+      .component-card:target {
+        outline: 2px solid var(--accent-600);
+        outline-offset: 2px;
+      }
+
+      .component-card h3 {
+        margin: 0 0 0.3rem;
+        font-family: 'IBM Plex Mono', monospace;
+        font-size: 0.85rem;
+        color: var(--accent-700);
+      }
+
+      .empty-state {
+        font-size: 0.85rem;
+        color: var(--ink-700);
+      }
+
       @media (max-width: 980px) {
         .controls {
           grid-template-columns: 1fr;
@@ -226,9 +437,17 @@
           Ruta publica: <code>/angelfire/endpoints.html</code>.
           Base URL recomendada para pruebas locales: <code>http://localhost:3001</code>.
         </p>
+        <nav class="view-tabs" role="tablist" aria-label="Vistas de documentacion">
+          <button id="tabEndpoints" class="tab tab-selected" type="button" role="tab" aria-selected="true">
+            Catalogo de endpoints
+          </button>
+          <button id="tabSchemas" class="tab" type="button" role="tab" aria-selected="false">
+            Esquemas request/response
+          </button>
+        </nav>
       </section>
 
-      <section class="panel">
+      <section class="panel" data-view="endpoints">
         <div class="controls">
           <input id="searchInput" placeholder="Buscar por ruta, descripcion o payload..." />
           <select id="methodFilter">
@@ -258,7 +477,7 @@
         </div>
       </section>
 
-      <section class="panel">
+      <section class="panel" data-view="endpoints">
         <h2>Matriz de permisos del sistema</h2>
         <table>
           <thead>
@@ -288,7 +507,7 @@
         </table>
       </section>
 
-      <section class="panel table-wrap">
+      <section class="panel table-wrap" data-view="endpoints">
         <table>
           <thead>
             <tr>
@@ -298,20 +517,21 @@
               <th>Descripcion</th>
               <th>Query / Body minimo</th>
               <th>Ejemplo rapido</th>
+              <th>Esquema</th>
             </tr>
           </thead>
           <tbody id="endpointsBody"></tbody>
         </table>
       </section>
 
-      <section class="panel">
+      <section class="panel" data-view="endpoints">
         <h2>Headers base sugeridos</h2>
         <p class="mono">Accept: application/json
 Content-Type: application/json
 Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
       </section>
 
-      <section class="panel">
+      <section class="panel" data-view="endpoints">
         <h2>Notas para Postman/Insomnia</h2>
         <ul>
           <li>Crea variable <code>{{baseUrl}}</code> con valor <code>http://localhost:3001</code>.</li>
@@ -321,9 +541,38 @@ Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
         </ul>
         <p class="footer-note">Documento generado desde rutas activas del proyecto para pruebas funcionales.</p>
       </section>
+
+      <section class="panel" data-view="schemas" hidden>
+        <div class="controls controls-schemas">
+          <input id="schemaSearch" placeholder="Buscar esquema por ruta, campo o descripcion..." />
+          <select id="schemaGroupFilter">
+            <option value="all">Todos los modulos</option>
+          </select>
+          <button id="downloadOpenApi" class="btn" type="button">Descargar OpenAPI (JSON)</button>
+        </div>
+        <p class="footer-note" id="schemaCount"></p>
+      </section>
+
+      <section class="panel" data-view="schemas" hidden>
+        <h2>Esquemas por endpoint</h2>
+        <p class="footer-note">
+          Cada endpoint muestra sus parametros, el body esperado y la estructura de cada respuesta con
+          tipos, campos obligatorios y referencias a los componentes reutilizables.
+        </p>
+        <div id="schemaEndpoints"></div>
+      </section>
+
+      <section class="panel" data-view="schemas" hidden>
+        <h2>Componentes reutilizables</h2>
+        <p class="footer-note">
+          Estructuras compartidas por varios endpoints. La descarga OpenAPI usa exactamente estas definiciones.
+        </p>
+        <div id="schemaComponents"></div>
+      </section>
     </div>
 
     <script src="i18n.js?v=20261002-1"></script>
+    <script src="schemas.js?v=20261020-1"></script>
     <script>
       const endpoints = [
         { method: 'GET', path: '/up', auth: 'public', desc: 'Health check de Rails', payload: '-', sample: 'GET {{baseUrl}}/up' },
@@ -560,7 +809,7 @@ Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
         });
 
         if (filtered.length === 0) {
-          body.innerHTML = '<tr><td colspan="6">Sin resultados para el filtro actual.</td></tr>';
+          body.innerHTML = '<tr><td colspan="7">Sin resultados para el filtro actual.</td></tr>';
           return;
         }
 
@@ -581,6 +830,7 @@ Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
                   <pre class="example-pre">${complete}</pre>
                 </details>
               </td>
+              <td><button type="button" class="schema-link" data-schema-key="${escapeHtml(e.method + ' ' + e.path)}">Ver</button></td>
             </tr>`;
           })
           .join('');
@@ -590,6 +840,49 @@ Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
       methodFilter.addEventListener('change', renderRows);
       authFilter.addEventListener('change', renderRows);
       renderRows();
+
+      const tabEndpoints = document.getElementById('tabEndpoints');
+      const tabSchemas = document.getElementById('tabSchemas');
+
+      function activateView(view) {
+        document.querySelectorAll('section.panel[data-view]').forEach((panel) => {
+          panel.hidden = panel.dataset.view !== view;
+        });
+
+        [ [ tabEndpoints, 'endpoints' ], [ tabSchemas, 'schemas' ] ].forEach(([ tab, name ]) => {
+          const isActive = name === view;
+          tab.classList.toggle('tab-selected', isActive);
+          tab.setAttribute('aria-selected', String(isActive));
+        });
+      }
+
+      tabEndpoints.addEventListener('click', () => activateView('endpoints'));
+      tabSchemas.addEventListener('click', () => activateView('schemas'));
+
+      const schemaView = AngelFireSchemas.mount({
+        endpoints,
+        endpointsContainer: document.getElementById('schemaEndpoints'),
+        componentsContainer: document.getElementById('schemaComponents'),
+        searchInput: document.getElementById('schemaSearch'),
+        groupSelect: document.getElementById('schemaGroupFilter'),
+        countLabel: document.getElementById('schemaCount'),
+        downloadButton: document.getElementById('downloadOpenApi'),
+        exampleFor: completeExample
+      });
+
+      body.addEventListener('click', (event) => {
+        const link = event.target.closest('.schema-link');
+        if (!link) return;
+
+        activateView('schemas');
+        schemaView.showEndpoint(link.dataset.schemaKey);
+      });
+
+      if (window.location.hash.startsWith('#schema-')) {
+        activateView('schemas');
+        const target = document.getElementById(window.location.hash.slice(1));
+        if (target) target.scrollIntoView({ block: 'start' });
+      }
     </script>
   </body>
 </html>
