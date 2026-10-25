@@ -72,6 +72,23 @@ class UsersController < ApplicationController
     end
   end
 
+  def basic_auth_password
+    return render json: { errors: "Solicitud inválida" }, status: :bad_request unless params[:id].to_s == @current_user.id.to_s
+
+    password = params[:basic_auth_password]
+    unless User.valid_basic_auth_password?(password)
+      return render json: { errors: "La contraseña Basic debe tener al menos 12 caracteres y no más de 72 bytes" },
+                    status: :unprocessable_entity
+    end
+
+    @current_user.basic_auth_password = password
+    if @current_user.save
+      render json: { message: "Contraseña Basic configurada correctamente" }, status: :ok
+    else
+      render json: { errors: @current_user.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   def profile
     @user = User.find_by(id: params[:id])
     return render json: { errors: "Usuario no encontrado" }, status: :not_found unless @user && @user.id == @current_user.id

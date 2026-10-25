@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_10_01_130000) do
+ActiveRecord::Schema[8.0].define(version: 2026_10_24_193000) do
   create_table "accounts", force: :cascade do |t|
     t.integer "user_id"
     t.string "account_number"
@@ -21,6 +21,19 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_130000) do
     t.boolean "default", default: false
     t.integer "account_type", default: 0, null: false
     t.index ["user_id"], name: "index_accounts_on_user_id"
+  end
+
+  create_table "api_keys", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "name", null: false
+    t.string "token_digest", null: false
+    t.string "token_prefix", null: false
+    t.datetime "last_used_at"
+    t.datetime "revoked_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["token_digest"], name: "index_api_keys_on_token_digest", unique: true
+    t.index ["user_id"], name: "index_api_keys_on_user_id"
   end
 
   create_table "contacts", force: :cascade do |t|
@@ -150,6 +163,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_130000) do
     t.boolean "active", default: true, null: false
     t.boolean "blocked", default: false, null: false
     t.date "date_of_birth"
+    t.string "basic_auth_password_digest"
     t.index ["active"], name: "index_users_on_active"
     t.index ["blocked"], name: "index_users_on_blocked"
     t.index ["phone"], name: "index_users_on_phone", unique: true
@@ -157,6 +171,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_130000) do
   end
 
   add_foreign_key "accounts", "users"
+  add_foreign_key "api_keys", "users", on_delete: :cascade
   add_foreign_key "contacts", "users"
   add_foreign_key "loan_installments", "loans"
   add_foreign_key "loans", "accounts"

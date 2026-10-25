@@ -16,9 +16,10 @@ const defaultState = {
 
 const state = loadState();
 const queryParams = new URLSearchParams(window.location.search);
-const previewRatesMode = queryParams.get('showRates') === '1';
+const previewRatesMode = queryParams.get('showRates') === '1' || queryParams.get('mockRates') === '1';
 let ratesLoaded = false;
 let registrationStep = 0;
+let ratesSource = queryParams.get('mockRates') === '1' ? 'mock' : 'real';
 
 const el = {
   responseStatus: document.getElementById('responseStatus'),
@@ -38,6 +39,8 @@ const el = {
   toggleRegisterPinBtn: document.getElementById('toggleRegisterPinBtn'),
   toggleRatesLink: document.getElementById('toggleRatesLink'),
   ratesPanel: document.getElementById('ratesPanel'),
+  ratesApiMode: document.getElementById('ratesApiMode'),
+  refreshRatesBtn: document.getElementById('refreshRatesBtn'),
   closeRatesBtn: document.getElementById('closeRatesBtn'),
   ratesTitle: document.getElementById('ratesTitle'),
   ratesUpdatedAt: document.getElementById('ratesUpdatedAt'),
@@ -142,7 +145,11 @@ function renderRatesPayload(payload) {
   }
 
   if (el.ratesUpdatedAt) {
-    const status = payload.status === 'ok' ? 'fuente BCB' : 'datos de respaldo';
+    const status = payload.status === 'mock'
+      ? 'respuesta simulada'
+      : payload.status === 'ok'
+        ? 'fuente BCB'
+        : 'datos de respaldo';
     const updatedAt = payload.updated_at ? new Date(payload.updated_at).toLocaleString(window.AngelFireI18n?.localeTag() || 'es-BO') : 'sin fecha';
     el.ratesUpdatedAt.textContent = `Actualizacion: ${updatedAt} (${status})`;
   }
@@ -172,13 +179,16 @@ function renderRatesPayload(payload) {
   }
 }
 
-async function loadCurrencyRates() {
-  if (ratesLoaded) {
+async function loadCurrencyRates(force = false) {
+  if (ratesLoaded && !force) {
     return;
   }
 
   try {
-    const response = await fetch('/api/v1/currency_rates', {
+    const endpoint = ratesSource === 'mock'
+      ? '/angelfire/mock-data/currency_rates.json'
+      : '/api/v1/currency_rates';
+    const response = await fetch(endpoint, {
       headers: {
         Accept: 'application/json'
       }
@@ -191,9 +201,12 @@ async function loadCurrencyRates() {
     const payload = await response.json();
     renderRatesPayload(payload);
     ratesLoaded = true;
-  } catch (_error) {
+  } catch (error) {
+    console.error('No se pudieron consultar las cotizaciones.', error);
     if (el.ratesUpdatedAt) {
-      el.ratesUpdatedAt.textContent = 'Actualizacion: no se pudo consultar API, usando tabla local.';
+      el.ratesUpdatedAt.textContent = ratesSource === 'mock'
+        ? 'Error: no se pudo consultar la respuesta simulada.'
+        : 'Error: no se pudo consultar la API real; se conservan los datos visibles.';
     }
   }
 }
@@ -512,6 +525,21 @@ function bindEvents() {
   if (el.closeRatesBtn) {
     el.closeRatesBtn.addEventListener('click', () => {
       setRatesPanelOpen(false);
+    });
+  }
+
+  if (el.ratesApiMode) {
+    el.ratesApiMode.value = ratesSource;
+    el.ratesApiMode.addEventListener('change', () => {
+      ratesSource = el.ratesApiMode.value;
+      ratesLoaded = false;
+      loadCurrencyRates();
+    });
+  }
+
+  if (el.refreshRatesBtn) {
+    el.refreshRatesBtn.addEventListener('click', () => {
+      loadCurrencyRates(true);
     });
   }
 
