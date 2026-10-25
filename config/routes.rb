@@ -50,6 +50,7 @@ Rails.application.routes.draw do
             patch :block
             patch :unblock
             patch :deactivate
+            put :basic_auth_password
           end
         end
 
@@ -75,6 +76,7 @@ Rails.application.routes.draw do
       resources :users, only: [ :update ] do
         member do
           put :pin
+          put :basic_auth_password
           get :profile
           get :address, to: "user_addresses#show"
           put :address, to: "user_addresses#upsert"
@@ -82,6 +84,8 @@ Rails.application.routes.draw do
           get :files, to: "user_files#index"
           delete "files/:file_id", to: "user_files#destroy"
         end
+
+        resources :api_keys, only: %i[index create destroy]
       end
     end
   end

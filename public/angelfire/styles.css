@@ -130,6 +130,15 @@ h1 {
   font-size: 1.55rem;
 }
 
+.session-identity {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  margin-top: 0.35rem;
+  color: var(--ink-700);
+  font-size: 0.82rem;
+}
+
 .header-links {
   margin-top: 0.55rem;
   display: flex;

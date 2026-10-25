@@ -532,6 +532,34 @@ Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
       </section>
 
       <section class="panel" data-view="endpoints">
+        <h2>Autenticacion con API key o Basic Auth</h2>
+        <p>Todos los endpoints del catalogo que no sean publicos aceptan cualquiera de estos metodos. La columna Auth indica el rol/permisos requeridos, no el metodo de autenticacion. La autenticacion no amplifica permisos: siguen aplicando el rol del usuario y las reglas de acceso a sus propios recursos. Para endpoints de manager/admin necesitas un usuario con el rol correspondiente.</p>
+
+        <h3>API key</h3>
+        <p>Crea una clave desde tu cuenta autenticada; el secreto completo solo se muestra al crearla. En las solicitudes protegidas, envia el secreto en <code>X-API-Key</code>.</p>
+        <pre class="mono">curl -X POST "http://localhost:3001/api/v1/users/USER_ID/api_keys" \
+  -H "Authorization: Bearer JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Integracion"}'</pre>
+        <p>Ejemplo de una API protegida:</p>
+        <pre class="mono">curl "http://localhost:3001/api/v1/users/USER_ID/profile" \
+  -H "X-API-Key: API_KEY_SECRET"</pre>
+
+        <h3>Basic Auth</h3>
+        <p>Configura primero una contraseña Basic independiente del PIN. Despues usa el correo de la cuenta y esa contraseña. Basic Auth debe usarse sobre HTTPS fuera de pruebas locales.</p>
+        <pre class="mono">curl -X PUT "http://localhost:3001/api/v1/users/USER_ID/basic_auth_password" \
+  -H "Authorization: Bearer JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"basic_auth_password":"CONTRASENA_BASIC"}'</pre>
+        <p>Ejemplo de la misma API protegida usando Basic Auth:</p>
+        <pre class="mono">curl -u "EMAIL:CONTRASENA_BASIC" \
+  "http://localhost:3001/api/v1/users/USER_ID/profile"</pre>
+
+        <h3>Endpoints publicos</h3>
+        <p>No requieren API key, Basic Auth ni JWT: <code>GET /</code>, <code>GET /up</code>, <code>POST /api/v1/register</code>, <code>POST /api/v1/login</code>, <code>GET /api/v1/currency_rates</code> y <code>GET /api/v1/services</code>. El detalle <code>GET /api/v1/services/:id</code> si requiere autenticacion.</p>
+      </section>
+
+      <section class="panel" data-view="endpoints">
         <h2>Notas para Postman/Insomnia</h2>
         <ul>
           <li>Crea variable <code>{{baseUrl}}</code> con valor <code>http://localhost:3001</code>.</li>
@@ -611,7 +639,7 @@ Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
         { method: 'POST', path: '/api/v1/contacts', auth: 'management', desc: 'Crear contacto', payload: '{"name","phone"}', sample: 'POST {{baseUrl}}/api/v1/contacts' },
         { method: 'DELETE', path: '/api/v1/contacts/:id', auth: 'management', desc: 'Eliminar contacto', payload: 'path :id', sample: 'DELETE {{baseUrl}}/api/v1/contacts/8' },
 
-        { method: 'GET', path: '/api/v1/services', auth: 'customer', desc: 'Listar servicios', payload: '-', sample: 'GET {{baseUrl}}/api/v1/services' },
+        { method: 'GET', path: '/api/v1/services', auth: 'public', desc: 'Listar servicios', payload: '-', sample: 'GET {{baseUrl}}/api/v1/services' },
         { method: 'GET', path: '/api/v1/services/:id', auth: 'customer', desc: 'Detalle de servicio', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/services/1' },
 
         { method: 'POST', path: '/api/v1/atm/accounts/:id/deposit', auth: 'customer', desc: 'Deposito ATM (requiere PIN)', payload: '{"pin","amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/atm/accounts/12/deposit' },
@@ -622,9 +650,13 @@ Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
         { method: 'PUT', path: '/api/v1/users/:id', auth: 'customer', desc: 'Actualizar perfil (incluye date_of_birth)', payload: '{"first_name?","last_name?","email?","phone?","date_of_birth?","pin?"}', sample: 'PUT {{baseUrl}}/api/v1/users/3' },
         { method: 'PATCH', path: '/api/v1/users/:id', auth: 'customer', desc: 'Actualizar parcialmente el perfil (incluye date_of_birth)', payload: '{"first_name?","last_name?","email?","phone?","date_of_birth?","pin?"}', sample: 'PATCH {{baseUrl}}/api/v1/users/3' },
         { method: 'PUT', path: '/api/v1/users/:id/pin', auth: 'customer', desc: 'Cambiar PIN', payload: '{"current_pin","new_pin"}', sample: 'PUT {{baseUrl}}/api/v1/users/3/pin' },
+        { method: 'PUT', path: '/api/v1/users/:id/basic_auth_password', auth: 'customer', desc: 'Configurar contrasena Basic Auth propia', payload: '{"basic_auth_password"}', sample: 'PUT {{baseUrl}}/api/v1/users/3/basic_auth_password' },
         { method: 'GET', path: '/api/v1/users/:id/profile', auth: 'customer', desc: 'Perfil del usuario, incluye date_of_birth', payload: '-', sample: 'GET {{baseUrl}}/api/v1/users/3/profile' },
         { method: 'GET', path: '/api/v1/users/:id/address', auth: 'customer', desc: 'Obtener direccion', payload: '-', sample: 'GET {{baseUrl}}/api/v1/users/3/address' },
         { method: 'PUT', path: '/api/v1/users/:id/address', auth: 'customer', desc: 'Crear/actualizar direccion', payload: '{"country","city","province","street", ...}', sample: 'PUT {{baseUrl}}/api/v1/users/3/address' },
+        { method: 'GET', path: '/api/v1/users/:user_id/api_keys', auth: 'customer', desc: 'Listar API keys propias (sin mostrar secretos)', payload: 'path :user_id', sample: 'GET {{baseUrl}}/api/v1/users/3/api_keys' },
+        { method: 'POST', path: '/api/v1/users/:user_id/api_keys', auth: 'customer', desc: 'Crear API key propia (secreto visible una sola vez)', payload: '{"name"}', sample: 'POST {{baseUrl}}/api/v1/users/3/api_keys' },
+        { method: 'DELETE', path: '/api/v1/users/:user_id/api_keys/:id', auth: 'customer', desc: 'Revocar API key propia', payload: 'path :user_id, :id', sample: 'DELETE {{baseUrl}}/api/v1/users/3/api_keys/7' },
         { method: 'GET', path: '/api/v1/users/:id/files', auth: 'customer', desc: 'Listar archivos usuario', payload: '-', sample: 'GET {{baseUrl}}/api/v1/users/3/files' },
         { method: 'POST', path: '/api/v1/users/:id/files', auth: 'customer', desc: 'Subir archivo (texto o imagen)', payload: 'multipart/form-data: file', sample: 'POST {{baseUrl}}/api/v1/users/3/files' },
         { method: 'DELETE', path: '/api/v1/users/:id/files/:file_id', auth: 'customer', desc: 'Eliminar archivo', payload: 'path :file_id', sample: 'DELETE {{baseUrl}}/api/v1/users/3/files/10' },

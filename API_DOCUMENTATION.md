@@ -9,8 +9,81 @@ Este documento describe los endpoints disponibles en la API del proyecto, incluy
 - La fecha de nacimiento se envía como `date_of_birth` con formato `YYYY-MM-DD`.
 - La API base es: http://localhost:3001
 - Los endpoints están bajo el prefijo /api/v1
+- JWT continúa siendo compatible. Como alternativa, los endpoints protegidos aceptan Basic Auth con el correo y una contraseña Basic independiente del PIN.
+- Para habilitar Basic Auth, configura la contraseña con `PUT /api/v1/users/:id/basic_auth_password` usando el JWT actual y el body `{"basic_auth_password":"una-contraseña-de-al-menos-12-caracteres"}`. Solo el usuario autenticado puede configurar su propia contraseña.
+- Luego envía `Authorization: Basic <base64(correo:contraseña)>`. Usa Basic Auth solo sobre HTTPS, salvo en pruebas locales con datos de prueba.
+- Ejemplo PowerShell local: `curl.exe -u "usuario@correo.com:contraseña" "http://localhost:3001/api/v1/users/ID/profile"`.
+- Para usuarios existentes, un admin también puede establecer o cambiar la contraseña Basic con `PUT /api/v1/manager/users/:id/basic_auth_password` y body `{"basic_auth_password":"una-contraseña-de-al-menos-12-caracteres"}`. Requiere JWT de admin. Los managers sin rol admin no pueden usar esta operación.
+- Para crear usuarios desde la API administrativa, usa `POST /api/v1/manager/users` con los datos habituales y, opcionalmente, `basic_auth_password`. Sin ese campo, el usuario podrá iniciar sesión con cuenta y PIN y luego configurar su propia contraseña Basic mediante su JWT.
+- El registro público existente (`POST /api/v1/register`) no cambia: crea la cuenta y devuelve un JWT; el usuario puede usar ese token para configurar su contraseña Basic. La contraseña Basic nunca se devuelve en respuestas.
+- Los usuarios autenticados pueden administrar varias API keys propias: `GET` y `POST /api/v1/users/:user_id/api_keys`, y `DELETE /api/v1/users/:user_id/api_keys/:id`. La creación requiere `{"name":"nombre descriptivo"}` y muestra el secreto completo una sola vez. La lista muestra únicamente nombre, prefijo y fechas; el secreto no puede recuperarse.
+- Para autenticar solicitudes con API key, envíala en `X-API-Key: <secreto>`. Las claves revocadas se rechazan. JWT (`Authorization: Bearer ...`) y Basic Auth (`Authorization: Basic ...`) continúan disponibles.
 - La autenticación se realiza mediante JWT en el header Authorization: Bearer <token>
 - El sistema usa la siguiente matriz de roles verificada: customer, cashier, manager y admin.
+
+## Uso de API keys
+
+La API key se puede usar en cualquier endpoint que indique **Authorization: Sí requerida**. La autenticación global aplica a cuentas, transacciones, destinatarios, contactos, servicios protegidos, préstamos, operaciones ATM, perfil y archivos de usuario, y endpoints de administración. Los permisos del rol y las reglas de acceso a los recursos siguen aplicándose; una API key no concede permisos adicionales y actúa con la identidad del usuario propietario.
+
+No requieren API key los endpoints públicos: `GET /`, `GET /up`, `POST /api/v1/register`, `POST /api/v1/login`, `GET /api/v1/currency_rates` y `GET /api/v1/services`.
+
+### Crear una API key
+
+Primero autentícate con el JWT obtenido al iniciar sesión (o con Basic Auth) y crea una clave para tu propio usuario:
+
+```bash
+curl -X POST http://localhost:3001/api/v1/users/USER_ID/api_keys \
+  -H "Authorization: Bearer JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Integracion local"}'
+```
+
+La respuesta incluye `api_key.secret`. Guárdalo en un lugar seguro: el secreto completo solo se muestra al crear la clave.
+
+### Usar la API key en endpoints protegidos
+
+Envía el secreto en el header `X-API-Key`; no es necesario enviar también el header `Authorization`.
+
+Consultar el perfil del usuario asociado a la clave:
+
+```bash
+curl http://localhost:3001/api/v1/users/USER_ID/profile \
+  -H "X-API-Key: API_KEY_SECRET"
+```
+
+Consultar cuentas:
+
+```bash
+curl http://localhost:3001/api/v1/accounts \
+  -H "X-API-Key: API_KEY_SECRET"
+```
+
+Crear una transacción, si el rol y las reglas de acceso del usuario permiten la operación:
+
+```bash
+curl -X POST http://localhost:3001/api/v1/accounts/ACCOUNT_ID/transactions \
+  -H "X-API-Key: API_KEY_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"amount":100,"transaction_type":"deposit"}'
+```
+
+Una API key inválida o revocada devuelve `401 Unauthorized`; una clave de un usuario bloqueado o desactivado devuelve `403 Forbidden`.
+
+### Listar y revocar claves
+
+Estas operaciones requieren autenticación y solo permiten administrar las claves del usuario autenticado. Puedes usar una API key activa o JWT/Basic Auth:
+
+```bash
+curl http://localhost:3001/api/v1/users/USER_ID/api_keys \
+  -H "X-API-Key: API_KEY_SECRET"
+```
+
+```bash
+curl -X DELETE http://localhost:3001/api/v1/users/USER_ID/api_keys/API_KEY_ID \
+  -H "X-API-Key: API_KEY_SECRET"
+```
+
+Al revocar la clave usada en la solicitud, esta deja de servir para las solicitudes posteriores. Para automatizaciones, guarda la clave en un gestor de secretos o variable de entorno y usa HTTPS fuera del entorno local.
 
 ## Matriz de permisos por rol
 
