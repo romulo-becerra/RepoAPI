@@ -610,6 +610,7 @@ Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
         { method: 'POST', path: '/api/v1/login', auth: 'public', desc: 'Login por account_number + pin; devuelve date_of_birth', payload: '{"account_number","pin"}', sample: 'POST {{baseUrl}}/api/v1/login' },
         { method: 'POST', path: '/api/v1/logout', auth: 'customer', desc: 'Cerrar sesion', payload: '-', sample: 'POST {{baseUrl}}/api/v1/logout' },
         { method: 'GET', path: '/api/v1/currency_rates', auth: 'public', desc: 'Consultar tipos de cambio', payload: '-', sample: 'GET {{baseUrl}}/api/v1/currency_rates' },
+        { method: 'GET', path: '/api/v1/practice/params', auth: 'customer', desc: 'Practicar query params usando API key en el header', payload: 'query: name, topic', sample: 'GET {{baseUrl}}/api/v1/practice/params?name=Ana&topic=api-keys' },
 
         { method: 'GET', path: '/api/v1/accounts', auth: 'customer', desc: 'Listar cuentas del usuario autenticado', payload: '-', sample: 'GET {{baseUrl}}/api/v1/accounts' },
         { method: 'POST', path: '/api/v1/accounts', auth: 'customer', desc: 'Crear nueva cuenta del usuario', payload: '{}', sample: 'POST {{baseUrl}}/api/v1/accounts' },

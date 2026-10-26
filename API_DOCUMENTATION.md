@@ -27,6 +27,29 @@ La API key se puede usar en cualquier endpoint que indique **Authorization: Sí 
 
 No requieren API key los endpoints públicos: `GET /`, `GET /up`, `POST /api/v1/register`, `POST /api/v1/login`, `GET /api/v1/currency_rates` y `GET /api/v1/services`.
 
+### Endpoint de práctica: parámetros de consulta y API key
+
+`GET /api/v1/practice/params` es un endpoint protegido para practicar parámetros de consulta (`name` y `topic`) junto con autenticación por API key:
+
+```bash
+curl "http://localhost:3001/api/v1/practice/params?name=Ana&topic=api-keys" \
+  -H "X-API-Key: API_KEY_SECRET"
+```
+
+Respuesta de ejemplo:
+
+```json
+{
+  "message": "Solicitud autenticada correctamente",
+  "params": {
+    "name": "Ana",
+    "topic": "api-keys"
+  }
+}
+```
+
+La API key se envía únicamente en el header `X-API-Key`; no se acepta como parámetro de URL. Evita poner secretos en query params porque pueden quedar registrados en logs, historial del navegador o herramientas intermedias. Este endpoint acepta también los métodos habituales de autenticación de las rutas protegidas (JWT y Basic Auth).
+
 ### Crear una API key
 
 Primero autentícate con el JWT obtenido al iniciar sesión (o con Basic Auth) y crea una clave para tu propio usuario:
