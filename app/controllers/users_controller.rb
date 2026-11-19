@@ -1,5 +1,5 @@
 class UsersController < ApplicationController
-  skip_before_action :authenticate_request, only: [ :index, :register, :login ]
+  skip_before_action :authenticate_request, only: [ :index, :register, :login, :password_reset_request, :password_reset ]
 
   def index
     render json: { status: "ok", service: "bankfacilito", message: "API funcionando" }, status: :ok
@@ -81,6 +81,31 @@ class UsersController < ApplicationController
 
   def logout
     render json: { message: "Sesión cerrada correctamente" }, status: :ok
+  end
+
+  def password_reset_request
+    user = User.find_by(email: params[:email].to_s.strip.downcase)
+    token = user&.generate_password_reset_token
+
+    response = { message: "Si el correo existe, recibirá instrucciones para recuperar el PIN" }
+    response[:reset_token] = token if Rails.env.development? && token.present?
+    render json: response, status: :ok
+  end
+
+  def password_reset
+    user = User.find_by(email: params[:email].to_s.strip.downcase)
+    if user.nil? || !user.password_reset_token_valid?(params[:reset_token])
+      return render json: { errors: "Token inválido o expirado" }, status: :unprocessable_entity
+    end
+
+    user.pin = params[:new_pin]
+    if user.save
+      user.update_columns(password_reset_digest: nil, password_reset_sent_at: nil)
+      AuditLog.record!(action: "password_reset", auditable: user)
+      render json: { message: "PIN restablecido correctamente" }, status: :ok
+    else
+      render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+    end
   end
 
   private

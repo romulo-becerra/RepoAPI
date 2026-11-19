@@ -11,8 +11,12 @@
 #  updated_at        :datetime         not null
 #  email             :string
 #
+require "digest"
+require "securerandom"
+
 class User < ApplicationRecord
-  has_many :accounts, dependent: :destroy
+  include AuditTrail
+  has_many :accounts, dependent: :restrict_with_error
   has_many :recipients, dependent: :destroy
   has_many :user_files, dependent: :destroy
   has_one :user_address, dependent: :destroy
@@ -58,6 +62,25 @@ class User < ApplicationRecord
     return "blocked" if blocked?
 
     "active"
+  end
+
+  def generate_password_reset_token
+    token = SecureRandom.urlsafe_base64(32)
+    update_columns(
+      password_reset_digest: Digest::SHA256.hexdigest(token),
+      password_reset_sent_at: Time.current
+    )
+    token
+  end
+
+  def password_reset_token_valid?(token)
+    return false if password_reset_sent_at.blank?
+    return false if password_reset_sent_at < 30.minutes.ago
+
+    ActiveSupport::SecurityUtils.secure_compare(
+      password_reset_digest.to_s,
+      Digest::SHA256.hexdigest(token.to_s)
+    )
   end
 
   private

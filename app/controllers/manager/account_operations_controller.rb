@@ -137,6 +137,38 @@ module Manager
       render json: { errors: e.message }, status: :unprocessable_entity
     end
 
+    def update_limits
+      withdraw_limit = params[:daily_withdraw_limit].presence
+      transfer_limit = params[:daily_transfer_limit].presence
+
+      @account.update!(
+        daily_withdraw_limit: withdraw_limit,
+        daily_transfer_limit: transfer_limit
+      )
+      AuditLog.record!(
+        action: "update_account_limits",
+        auditable: @account,
+        new_values: @account.attributes.slice("daily_withdraw_limit", "daily_transfer_limit")
+      )
+
+      render json: {
+        account_id: @account.id,
+        daily_withdraw_limit: @account.daily_withdraw_limit&.to_f,
+        daily_transfer_limit: @account.daily_transfer_limit&.to_f
+      }, status: :ok
+    end
+
+    def update_status
+      status = params[:status].to_s
+      return render json: { errors: "Estado no válido" }, status: :unprocessable_entity unless %w[active frozen closed].include?(status)
+
+      @account.status = status
+      @account.save!
+      AuditLog.record!(action: "update_account_status", auditable: @account, reason: params[:reason])
+
+      render json: { account_id: @account.id, status: @account.status }, status: :ok
+    end
+
     private
 
     def set_account

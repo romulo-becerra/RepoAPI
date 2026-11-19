@@ -29,6 +29,7 @@ class TransactionService
   def withdraw!(account, amount, description = nil, transaction_type: :withdraw, performed_by_role: nil, performed_by_user_id: nil, performed_by_name: nil)
     normalized_amount = normalize_amount(amount)
     validate_account_and_amount(account, normalized_amount)
+    validate_daily_withdraw_limit!(account, normalized_amount)
     raise InsufficientFundsError, "Saldo insuficiente para completar la operacion" if account.balance < normalized_amount
 
     make_transaction(normalized_amount, account, transaction_type, description, performed_by_role: performed_by_role, performed_by_user_id: performed_by_user_id, performed_by_name: performed_by_name)
@@ -36,6 +37,31 @@ class TransactionService
 
   def loan_payment!(account, amount, description = nil, performed_by_role: nil, performed_by_user_id: nil, performed_by_name: nil)
     withdraw!(account, amount, description, transaction_type: :loan_payment, performed_by_role: performed_by_role, performed_by_user_id: performed_by_user_id, performed_by_name: performed_by_name)
+  end
+
+  def reverse!(transaction, reason:, performed_by_user_id:)
+    raise InvalidTransactionError, "La transacción no puede ser revertida" unless transaction.reversible?
+    raise InvalidTransactionError, "El motivo de reversión es obligatorio" if reason.to_s.strip.blank?
+
+    ActiveRecord::Base.transaction do
+      transaction.account.lock!
+      reversal_type = transaction.deposit? ? :withdraw : :deposit
+      make_transaction(
+        transaction.amount,
+        transaction.account,
+        reversal_type,
+        "Reversión de transacción ##{transaction.id}: #{reason}",
+        performed_by_role: "admin",
+        performed_by_user_id: performed_by_user_id
+      )
+      transaction.update!(
+        reversed_at: Time.current,
+        reversed_by_user_id: performed_by_user_id,
+        reversal_reason: reason.to_s.strip
+      )
+    end
+
+    transaction
   end
 
   def self.parse_actor_from_description(description)
@@ -80,15 +106,40 @@ class TransactionService
 
   def validate_account_and_amount(account, amount)
     raise AccountNotFoundError, "Account not found" if account.nil?
+    raise InvalidTransactionError, "La cuenta no está activa" unless account.active?
     raise InvalidAmountError, "Amount must be greater than 0" if amount <= 0
   end
 
   def validate_transfer(origin_account, recipient_account, amount)
     raise AccountNotFoundError, "Origin account not found" if origin_account.nil?
     raise AccountNotFoundError, "Recipient account not found" if recipient_account.nil?
+    raise InvalidTransactionError, "La cuenta no está activa" unless origin_account.active? && recipient_account.active?
     raise InvalidAmountError, "Amount must be greater than 0" if amount <= 0
     raise InsufficientFundsError, "Saldo insuficiente para completar la operacion" if origin_account.balance < amount
     raise InvalidTransactionError, "Cannot transfer to the same account" if origin_account == recipient_account
+    validate_daily_transfer_limit!(origin_account, amount)
+  end
+
+  def validate_daily_transfer_limit!(account, amount)
+    limit = account.daily_transfer_limit
+    return if limit.blank?
+
+    used = account.transactions.where(status: :completed)
+                   .where(created_at: Time.current.beginning_of_day..Time.current.end_of_day)
+                   .where(transaction_type: %i[transfer service_payment])
+                   .sum(:amount)
+    raise InvalidTransactionError, "Límite diario de transferencias excedido" if BigDecimal(used.to_s) + amount > BigDecimal(limit.to_s)
+  end
+
+  def validate_daily_withdraw_limit!(account, amount)
+    limit = account.daily_withdraw_limit
+    return if limit.blank?
+
+    used = account.transactions.where(status: :completed)
+                   .where(created_at: Time.current.beginning_of_day..Time.current.end_of_day)
+                   .where(transaction_type: %i[withdraw atm_withdrawal loan_payment])
+                   .sum(:amount)
+    raise InvalidTransactionError, "Límite diario de retiros excedido" if BigDecimal(used.to_s) + amount > BigDecimal(limit.to_s)
   end
 
   def make_transaction(amount, account, transaction_type, description = nil, performed_by_role: nil, performed_by_user_id: nil, performed_by_name: nil)

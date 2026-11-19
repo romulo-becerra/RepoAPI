@@ -10,7 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_10_01_110000) do
+ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
+  create_table "account_reconciliations", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.integer "created_by_id", null: false
+    t.decimal "reported_balance", precision: 15, scale: 2, null: false
+    t.decimal "calculated_balance", precision: 15, scale: 2, null: false
+    t.decimal "difference", precision: 15, scale: 2, null: false
+    t.integer "status", default: 0, null: false
+    t.text "notes"
+    t.datetime "reconciled_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_account_reconciliations_on_account_id"
+    t.index ["created_by_id"], name: "index_account_reconciliations_on_created_by_id"
+  end
+
   create_table "accounts", force: :cascade do |t|
     t.integer "user_id"
     t.string "account_number"
@@ -20,7 +35,49 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_110000) do
     t.datetime "updated_at", null: false
     t.boolean "default", default: false
     t.integer "account_type", default: 0, null: false
+    t.integer "status", default: 0, null: false
+    t.decimal "daily_withdraw_limit", precision: 15, scale: 2
+    t.decimal "daily_transfer_limit", precision: 15, scale: 2
+    t.index ["status"], name: "index_accounts_on_status"
     t.index ["user_id"], name: "index_accounts_on_user_id"
+  end
+
+  create_table "api_keys", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "name", null: false
+    t.string "token_digest", null: false
+    t.string "token_prefix", null: false
+    t.datetime "last_used_at"
+    t.datetime "revoked_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["token_digest"], name: "index_api_keys_on_token_digest", unique: true
+    t.index ["user_id"], name: "index_api_keys_on_user_id"
+  end
+
+  create_table "audit_logs", force: :cascade do |t|
+    t.integer "user_id"
+    t.string "auditable_type"
+    t.integer "auditable_id"
+    t.string "action", null: false
+    t.text "previous_values"
+    t.text "new_values"
+    t.string "ip_address"
+    t.text "reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["auditable_type", "auditable_id"], name: "index_audit_logs_on_auditable_type_and_auditable_id"
+    t.index ["user_id"], name: "index_audit_logs_on_user_id"
+  end
+
+  create_table "contacts", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "name", null: false
+    t.string "phone", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id", "phone"], name: "index_contacts_on_user_id_and_phone", unique: true
+    t.index ["user_id"], name: "index_contacts_on_user_id"
   end
 
   create_table "loan_installments", force: :cascade do |t|
@@ -96,7 +153,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_110000) do
     t.integer "status", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.decimal "balance_before", precision: 15, scale: 2
+    t.decimal "balance_after", precision: 15, scale: 2
+    t.datetime "reversed_at"
+    t.integer "reversed_by_user_id"
+    t.text "reversal_reason"
     t.index ["account_id"], name: "index_transactions_on_account_id"
+    t.index ["reversed_at"], name: "index_transactions_on_reversed_at"
   end
 
   create_table "user_addresses", force: :cascade do |t|
@@ -140,13 +203,21 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_01_110000) do
     t.boolean "active", default: true, null: false
     t.boolean "blocked", default: false, null: false
     t.date "date_of_birth"
+    t.string "basic_auth_password_digest"
+    t.string "password_reset_digest"
+    t.datetime "password_reset_sent_at"
     t.index ["active"], name: "index_users_on_active"
     t.index ["blocked"], name: "index_users_on_blocked"
     t.index ["phone"], name: "index_users_on_phone", unique: true
     t.index ["role"], name: "index_users_on_role"
   end
 
+  add_foreign_key "account_reconciliations", "accounts"
+  add_foreign_key "account_reconciliations", "users", column: "created_by_id"
   add_foreign_key "accounts", "users"
+  add_foreign_key "api_keys", "users", on_delete: :cascade
+  add_foreign_key "audit_logs", "users"
+  add_foreign_key "contacts", "users"
   add_foreign_key "loan_installments", "loans"
   add_foreign_key "loans", "accounts"
   add_foreign_key "login_events", "users", on_delete: :nullify

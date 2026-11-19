@@ -14,6 +14,22 @@
 require 'rails_helper'
 
 RSpec.describe Transaction, type: :model do
+  it "does not allow deleting completed ledger entries" do
+    user = create(:user, pin: "1234")
+    account = create(:account, user: user, balance: 100)
+    transaction = account.transactions.create!(transaction_type: :deposit, amount: 25)
+
+    expect { transaction.destroy! }.to raise_error(ActiveRecord::RecordNotDestroyed)
+  end
+
+  it "stores balances before and after a completed movement" do
+    user = create(:user, pin: "1234")
+    account = create(:account, user: user, balance: 100)
+    transaction = account.transactions.create!(transaction_type: :deposit, amount: 25)
+
+    expect(transaction.balance_before.to_f).to eq(100)
+    expect(transaction.balance_after.to_f).to eq(125)
+  end
   # let(:user) { create(:user) }
   # let(:first_account) { create(:account, user: user) }
   # let(:second_account) { create(:account, user: user) }

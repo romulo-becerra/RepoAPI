@@ -1,9 +1,20 @@
 class ApplicationController < ActionController::API
   before_action :authenticate_request
+  before_action :set_audit_context
+  after_action :reset_audit_context
 
   attr_reader :current_user
 
   private
+
+  def set_audit_context
+    Current.user = current_user
+    Current.ip_address = request.remote_ip
+  end
+
+  def reset_audit_context
+    Current.reset
+  end
 
   def require_manager!
     return if current_user&.management?
