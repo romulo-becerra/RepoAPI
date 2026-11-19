@@ -15,13 +15,14 @@ require "digest"
 require "securerandom"
 
 class User < ApplicationRecord
-  include AuditTrail
-  has_many :accounts, dependent: :restrict_with_error
+
   has_many :recipients, dependent: :destroy
+  has_many :contacts, dependent: :destroy
   has_many :user_files, dependent: :destroy
   has_one :user_address, dependent: :destroy
   has_one :account, -> { where(default: true) }, class_name: "Account"
   has_secure_password :pin, validations: false
+  has_secure_password :basic_auth_password, validations: false
 
   attr_accessor :default_account_number
 
@@ -57,6 +58,12 @@ class User < ApplicationRecord
 
   def can_authenticate?
     active? && !blocked?
+  end
+
+  def self.valid_basic_auth_password?(password)
+    password.is_a?(String) &&
+      password.length >= BASIC_AUTH_PASSWORD_MIN_LENGTH &&
+      password.bytesize <= BASIC_AUTH_PASSWORD_MAX_BYTES
   end
 
   def staff?

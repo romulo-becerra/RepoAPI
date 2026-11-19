@@ -143,8 +143,29 @@ h1 {
 
 .rates-panel-actions {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
   justify-content: flex-end;
   margin-bottom: 0.4rem;
+}
+
+.rates-mode-control {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #d8edf5;
+  font-size: 0.73rem;
+}
+
+.rates-mode-control select {
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.4rem;
+  color: var(--ink-900);
+  background: #fff;
+  font: inherit;
 }
 
 .rates-close-btn {

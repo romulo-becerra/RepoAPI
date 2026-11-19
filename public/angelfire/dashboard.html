@@ -51,9 +51,16 @@
           <div>
             <p class="eyebrow">Plataforma financiera</p>
             <h1>Panel Operativo</h1>
+            <div class="session-identity" aria-label="Información de la sesión">
+              <span><strong>Usuario:</strong> <span id="headerUserName" data-testid="header-user-name">-</span></span>
+              <span><strong>ID:</strong> <span id="headerUserId" data-testid="header-user-id">-</span></span>
+              <span><strong>Cuenta:</strong> <span id="headerAccountNumber" data-testid="header-account-number">-</span></span>
+            </div>
             <div class="header-links">
               <button class="btn ghost mini" id="showProfileSectionBtn" type="button" data-testid="show-profile-section">Actualizar datos</button>
               <button class="btn ghost mini" id="showSecuritySectionBtn" type="button" data-testid="show-security-section">Cambiar PIN</button>
+              <button class="btn ghost mini" id="showBasicAuthSectionBtn" type="button" data-testid="show-basic-auth-section">Credenciales Basic</button>
+              <button class="btn ghost mini" id="showApiKeysSectionBtn" type="button" data-testid="show-api-keys-section">API keys</button>
               <button class="btn ghost mini" id="hideAccountSectionBtn" type="button" data-testid="hide-account-section">Ocultar seccion</button>
             </div>
           </div>
@@ -73,6 +80,31 @@
             <button id="viewCashierBtn" class="btn ghost hidden" type="button" data-roles="cashier" data-testid="view-cashier-btn">Vista cajero</button>
             <button id="viewAdminBtn" class="btn ghost hidden" type="button" data-roles="admin,manager,cashier" data-testid="view-admin-btn">Vista admin</button>
           </div>
+        </section>
+
+        <section class="panel table-panel" data-roles="customer,manager,cashier,admin">
+          <div class="table-header">
+            <h2>Archivos del usuario</h2>
+            <button id="refreshFilesBtn" class="btn ghost" type="button" data-testid="refresh-files">Actualizar archivos</button>
+          </div>
+          <form id="uploadFileForm" class="row-actions" enctype="multipart/form-data">
+            <input id="userFileInput" type="file" accept=".txt,.csv,.json,image/png,image/jpeg,image/jpg,image/gif,image/webp,text/plain,text/csv,application/json" required data-testid="user-file-input" />
+            <button class="btn" type="submit" data-testid="upload-file-submit">Subir archivo</button>
+          </form>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Archivo</th>
+                <th>Tipo</th>
+                <th>Tamaño</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="userFilesRows" data-testid="user-files-rows">
+              <tr><td colspan="5">Sin archivos</td></tr>
+            </tbody>
+          </table>
         </section>
 
         <section id="clientView">
@@ -224,6 +256,7 @@
               <input id="profileLastName" placeholder="Last name" data-testid="profile-last-name" />
               <input id="profileEmail" type="email" placeholder="email@example.com" data-testid="profile-email" />
               <input id="profilePhone" placeholder="+51999111222" data-testid="profile-phone" />
+              <input id="profileDateOfBirth" type="date" aria-label="Fecha de nacimiento" data-testid="profile-date-of-birth" />
               <button class="btn" type="submit" data-testid="profile-update-submit">Guardar datos</button>
             </form>
 
@@ -233,31 +266,42 @@
               <input id="newPin" type="password" placeholder="Nuevo PIN" required data-testid="new-pin" />
               <button class="btn" type="submit" data-testid="change-pin-submit">Cambiar PIN</button>
             </form>
-          </section>
 
-          <section class="panel table-panel">
-            <div class="table-header">
-              <h2>Archivos del usuario</h2>
-              <button id="refreshFilesBtn" class="btn ghost" type="button" data-testid="refresh-files">Actualizar archivos</button>
-            </div>
-            <form id="uploadFileForm" class="row-actions" enctype="multipart/form-data">
-              <input id="userFileInput" type="file" accept=".txt,.csv,.json,image/png,image/jpeg,image/jpg,image/gif,image/webp,text/plain,text/csv,application/json" required data-testid="user-file-input" />
-              <button class="btn" type="submit" data-testid="upload-file-submit">Subir archivo</button>
+            <form id="basicAuthPasswordForm" class="panel">
+              <h2>Usuario y contraseña de autenticación Basic</h2>
+              <p class="field-help">Tu correo actual es el usuario para Basic Auth. Para cambiarlo, usa Actualizar datos. Esta contraseña es independiente de tu PIN.</p>
+              <input id="basicAuthEmail" type="email" readonly aria-label="Usuario Basic Auth" data-testid="basic-auth-email" />
+              <label for="basicAuthPassword">Nueva contraseña Basic</label>
+              <input id="basicAuthPassword" type="password" autocomplete="new-password" minlength="12" maxlength="72" required data-testid="basic-auth-password" />
+              <label for="basicAuthPasswordConfirmation">Confirmar contraseña Basic</label>
+              <input id="basicAuthPasswordConfirmation" type="password" autocomplete="new-password" minlength="12" maxlength="72" required data-testid="basic-auth-password-confirmation" />
+              <p class="field-help">Debe tener al menos 12 caracteres y no más de 72 bytes. Se puede crear o reemplazar; la contraseña actual no se muestra.</p>
+              <button class="btn" type="submit" data-testid="basic-auth-password-submit">Guardar contraseña Basic</button>
             </form>
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Archivo</th>
-                  <th>Tipo</th>
-                  <th>Tamaño</th>
-                  <th>Fecha</th>
-                </tr>
-              </thead>
-              <tbody id="userFilesRows" data-testid="user-files-rows">
-                <tr><td colspan="5">Sin archivos</td></tr>
-              </tbody>
-            </table>
+
+            <section id="apiKeysPanel" class="panel" aria-labelledby="apiKeysHeading">
+              <h2 id="apiKeysHeading">Mis API keys</h2>
+              <p class="field-help">Puedes crear varias claves. El secreto completo se muestra una sola vez al crearlo; guárdalo en un lugar seguro.</p>
+              <form id="apiKeyCreateForm">
+                <label for="apiKeyName">Nombre para identificar la clave</label>
+                <input id="apiKeyName" maxlength="100" required placeholder="Ej.: integración local" data-testid="api-key-name" />
+                <button class="btn" type="submit" data-testid="api-key-create-submit">Crear API key</button>
+              </form>
+              <div id="apiKeySecretResult" class="api-key-secret hidden" role="status" aria-live="polite" data-testid="api-key-secret-result">
+                <p class="field-help">Copia este secreto ahora. No volverá a mostrarse.</p>
+                <code id="apiKeySecretValue" data-testid="api-key-secret-value"></code>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>Nombre</th><th>Prefijo</th><th>Creada</th><th>Último uso</th><th>Estado / acción</th></tr>
+                  </thead>
+                  <tbody id="apiKeysRows" data-testid="api-keys-rows">
+                    <tr><td colspan="5">Sin API keys</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
           </section>
 
           <section class="panel table-panel">
@@ -399,6 +443,23 @@
             </table>
           </section>
 
+          <section class="panel contacts-panel" data-roles="admin,manager" aria-labelledby="contactsTitle">
+            <h2 id="contactsTitle">Mis contactos (<span id="contactsCount">0</span>)</h2>
+            <form id="contactForm" class="contacts-add-form">
+              <label for="contactName">Nombre
+                <input id="contactName" name="name" placeholder="Nombre del contacto" maxlength="100" required data-testid="contact-name" />
+              </label>
+              <label for="contactPhone">Telefono
+                <input id="contactPhone" name="phone" type="tel" inputmode="tel" placeholder="Numero de telefono" pattern="[+]?[0-9]{4,15}" required data-testid="contact-phone" />
+              </label>
+              <button class="btn" type="submit" data-testid="contact-add">Agregar contacto</button>
+            </form>
+            <p id="contactsStatus" class="field-help" role="status" aria-live="polite"></p>
+            <div id="contactsList" class="contacts-list" data-testid="contacts-list">
+              <p class="contacts-empty">Todavia no tienes contactos.</p>
+            </div>
+          </section>
+
           <section class="panel admin-ops-panel">
             <h2>Operaciones de personal autorizado</h2>
             <p class="field-help">Selecciona una operacion y recien se mostrara su formulario.</p>
@@ -416,6 +477,7 @@
                 <input id="adminLastName" placeholder="Apellido *" required data-testid="admin-last-name" />
                 <input id="adminEmail" type="email" placeholder="correo@dominio.com *" required data-testid="admin-email" />
                 <input id="adminPhone" placeholder="Telefono (opcional)" data-testid="admin-phone" />
+                <input id="adminDateOfBirth" type="date" aria-label="Fecha de nacimiento" data-testid="admin-date-of-birth" />
                 <input id="adminPin" placeholder="PIN *" required data-testid="admin-pin" />
                 <select id="adminRole" data-testid="admin-role">
                   <option value="customer">customer</option>

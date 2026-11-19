@@ -28,6 +28,7 @@ RSpec.describe 'Manager::Users API', type: :request do
       body = JSON.parse(response.body)['user']
       default_account = customer.accounts.find_by(default: true)
       expect(body['id']).to eq(customer.id)
+      expect(body).to have_key('date_of_birth')
       expect(body['active']).to eq(true)
       expect(body['blocked']).to eq(false)
       expect(body['deleted']).to eq(false)
@@ -144,6 +145,34 @@ RSpec.describe 'Manager::Users API', type: :request do
       expect(created.role).to eq('cashier')
       expect(created.staff?).to eq(true)
       expect(created.management?).to eq(false)
+    end
+
+    it 'creates and updates date of birth through the admin API' do
+      post '/api/v1/manager/users',
+           params: {
+             first_name: 'Fecha',
+             last_name: 'Nacimiento',
+             email: 'fecha.nacimiento@example.com',
+             pin: '1234',
+             role: 'customer',
+             date_of_birth: '1990-04-12'
+           },
+           headers: headers,
+           as: :json
+
+      expect(response).to have_http_status(:created), response.body
+      created_user = User.find_by!(email: 'fecha.nacimiento@example.com')
+      expect(created_user.date_of_birth).to eq(Date.new(1990, 4, 12))
+      expect(JSON.parse(response.body).dig('user', 'date_of_birth')).to eq('1990-04-12')
+
+      patch "/api/v1/manager/users/#{created_user.id}",
+            params: { date_of_birth: '1992-06-15' },
+            headers: headers,
+            as: :json
+
+      expect(response).to have_http_status(:ok), response.body
+      expect(created_user.reload.date_of_birth).to eq(Date.new(1992, 6, 15))
+      expect(JSON.parse(response.body).dig('user', 'date_of_birth')).to eq('1992-06-15')
     end
 
     it 'creates a cashier user with the requested account number when an admin specifies it' do

@@ -1,0 +1,41 @@
+{
+  "status": "mock",
+  "title": "RESPUESTA SIMULADA DE COTIZACIONES",
+  "source_url": "https://www.bcb.gob.bo/?q=cotizaciones_tc",
+  "official_rate": {
+    "country": "ESTADOS UNIDOS (SIMULADO)",
+    "currency": "DOLAR",
+    "code": "USD",
+    "tco_bs_usd": "10.00"
+  },
+  "currencies": [
+    {
+      "country_region": "ARGENTINA (SIMULADO)",
+      "currency": "PESO",
+      "code": "ARS",
+      "bs_per_unit": "0.01000",
+      "fx_rate": "1000.00"
+    },
+    {
+      "country_region": "BRASIL (SIMULADO)",
+      "currency": "REAL",
+      "code": "BRL",
+      "bs_per_unit": "2.00000",
+      "fx_rate": "5.00"
+    },
+    {
+      "country_region": "UNION EUROPEA (SIMULADO)",
+      "currency": "EURO",
+      "code": "EUR",
+      "bs_per_unit": "11.00",
+      "fx_rate": "0.91"
+    }
+  ],
+  "ufv": {
+    "country": "BOLIVIA (UFV SIMULADA)",
+    "description": "UNIDAD DE FOMENTO DE VIVIENDA",
+    "code": "Bs/UFV",
+    "value": "3.50"
+  },
+  "updated_at": "2026-01-01T12:00:00Z"
+}

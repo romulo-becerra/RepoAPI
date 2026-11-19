@@ -19,6 +19,7 @@ Rails.application.routes.draw do
         end
       end
       resources :recipients, only: %i[index create destroy]
+      resources :contacts, only: %i[index create destroy]
       resources :services, only: [ :index, :show ]
       post "accounts/:id/pay_service", to: "accounts#pay_service"
       post "accounts/:id/transfer", to: "accounts#transfer"
@@ -75,6 +76,7 @@ Rails.application.routes.draw do
             patch :block
             patch :unblock
             patch :deactivate
+            put :basic_auth_password
           end
         end
 
@@ -98,13 +100,14 @@ Rails.application.routes.draw do
       post "password/reset/request", to: "users#password_reset_request"
       post "password/reset", to: "users#password_reset"
       get "currency_rates", to: "currency_rates#index"
+      get "practice/params", to: "practice#params_demo"
 
       get "/accounts/:account_id/transactions", to: "transactions#index"
 
       resources :users, only: [ :update ] do
         member do
           put :pin
-          patch :force_password_change
+
           get :profile
           get :address, to: "user_addresses#show"
           put :address, to: "user_addresses#upsert"
@@ -112,6 +115,8 @@ Rails.application.routes.draw do
           get :files, to: "user_files#index"
           delete "files/:file_id", to: "user_files#destroy"
         end
+
+        resources :api_keys, only: %i[index create destroy]
       end
     end
   end

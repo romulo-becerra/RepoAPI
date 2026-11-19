@@ -10,31 +10,6 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
-  create_table "account_reconciliations", force: :cascade do |t|
-    t.integer "account_id", null: false
-    t.integer "created_by_id", null: false
-    t.decimal "reported_balance", precision: 15, scale: 2, null: false
-    t.decimal "calculated_balance", precision: 15, scale: 2, null: false
-    t.decimal "difference", precision: 15, scale: 2, null: false
-    t.integer "status", default: 0, null: false
-    t.text "notes"
-    t.datetime "reconciled_at"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_account_reconciliations_on_account_id"
-    t.index ["created_by_id"], name: "index_account_reconciliations_on_created_by_id"
-  end
-
-  create_table "accounting_accounts", force: :cascade do |t|
-    t.string "code", null: false
-    t.string "name", null: false
-    t.string "account_type", null: false
-    t.boolean "active", default: true, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["code"], name: "index_accounting_accounts_on_code", unique: true
-  end
 
   create_table "accounts", force: :cascade do |t|
     t.integer "user_id"
@@ -67,35 +42,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
     t.index ["user_id"], name: "index_api_keys_on_user_id"
   end
 
-  create_table "audit_logs", force: :cascade do |t|
-    t.integer "user_id"
-    t.string "auditable_type"
-    t.integer "auditable_id"
-    t.string "action", null: false
-    t.text "previous_values"
-    t.text "new_values"
-    t.string "ip_address"
-    t.text "reason"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["auditable_type", "auditable_id"], name: "index_audit_logs_on_auditable_type_and_auditable_id"
-    t.index ["user_id"], name: "index_audit_logs_on_user_id"
-  end
-
-  create_table "cash_register_sessions", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.decimal "opening_balance", precision: 15, scale: 2, null: false
-    t.decimal "closing_balance", precision: 15, scale: 2
-    t.decimal "physical_balance", precision: 15, scale: 2
-    t.decimal "difference", precision: 15, scale: 2
-    t.integer "status", default: 0, null: false
-    t.datetime "opened_at", null: false
-    t.datetime "closed_at"
-    t.text "notes"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["user_id"], name: "index_cash_register_sessions_on_user_id"
-  end
 
   create_table "contacts", force: :cascade do |t|
     t.integer "user_id", null: false
@@ -105,44 +51,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
     t.datetime "updated_at", null: false
     t.index ["user_id", "phone"], name: "index_contacts_on_user_id_and_phone", unique: true
     t.index ["user_id"], name: "index_contacts_on_user_id"
-  end
-
-  create_table "invoices", force: :cascade do |t|
-    t.integer "account_id", null: false
-    t.integer "created_by_id"
-    t.string "invoice_number", null: false
-    t.decimal "amount", precision: 15, scale: 2, null: false
-    t.string "status", default: "pending", null: false
-    t.text "description"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["account_id"], name: "index_invoices_on_account_id"
-    t.index ["created_by_id"], name: "index_invoices_on_created_by_id"
-    t.index ["invoice_number"], name: "index_invoices_on_invoice_number", unique: true
-  end
-
-  create_table "journal_entries", force: :cascade do |t|
-    t.integer "created_by_id", null: false
-    t.string "reference", null: false
-    t.text "description"
-    t.string "status", default: "pending", null: false
-    t.datetime "approved_at"
-    t.integer "approved_by_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["approved_by_id"], name: "index_journal_entries_on_approved_by_id"
-    t.index ["created_by_id"], name: "index_journal_entries_on_created_by_id"
-  end
-
-  create_table "journal_lines", force: :cascade do |t|
-    t.integer "journal_entry_id", null: false
-    t.integer "accounting_account_id", null: false
-    t.decimal "debit", precision: 15, scale: 2, default: "0.0", null: false
-    t.decimal "credit", precision: 15, scale: 2, default: "0.0", null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["accounting_account_id"], name: "index_journal_lines_on_accounting_account_id"
-    t.index ["journal_entry_id"], name: "index_journal_lines_on_journal_entry_id"
   end
 
   create_table "loan_installments", force: :cascade do |t|
@@ -287,13 +195,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
     t.boolean "blocked", default: false, null: false
     t.date "date_of_birth"
     t.string "basic_auth_password_digest"
-    t.string "password_reset_digest"
-    t.datetime "password_reset_sent_at"
-    t.integer "failed_login_attempts", default: 0, null: false
-    t.datetime "locked_until"
-    t.boolean "force_pin_change", default: false, null: false
-    t.string "document_number"
-    t.string "address"
+
     t.index ["active"], name: "index_users_on_active"
     t.index ["blocked"], name: "index_users_on_blocked"
     t.index ["document_number"], name: "index_users_on_document_number", unique: true
@@ -305,15 +207,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
   add_foreign_key "account_reconciliations", "users", column: "created_by_id"
   add_foreign_key "accounts", "users"
   add_foreign_key "api_keys", "users", on_delete: :cascade
-  add_foreign_key "audit_logs", "users"
-  add_foreign_key "cash_register_sessions", "users"
-  add_foreign_key "contacts", "users"
-  add_foreign_key "invoices", "accounts"
-  add_foreign_key "invoices", "users", column: "created_by_id"
-  add_foreign_key "journal_entries", "users", column: "approved_by_id"
-  add_foreign_key "journal_entries", "users", column: "created_by_id"
-  add_foreign_key "journal_lines", "accounting_accounts"
-  add_foreign_key "journal_lines", "journal_entries"
+
   add_foreign_key "loan_installments", "loans"
   add_foreign_key "loans", "accounts"
   add_foreign_key "login_events", "users", on_delete: :nullify

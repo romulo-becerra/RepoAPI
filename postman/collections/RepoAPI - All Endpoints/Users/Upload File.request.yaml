@@ -1,0 +1,19 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/users/{{user_id}}/files"
+method: POST
+headers:
+  Authorization: Bearer {{token}}
+  Accept: application/json
+body:
+  type: formdata
+  content:
+    - type: file
+      key: file
+      src: ""
+scripts:
+  - type: afterResponse
+    code: |-
+      var j = pm.response.json();
+      if (j.file && j.file.id) pm.environment.set('file_id', j.file.id);
+    language: text/javascript
+order: 6000

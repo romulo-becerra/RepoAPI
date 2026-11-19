@@ -1,0 +1,24 @@
+name: RepoAPI Local
+values:
+  - key: baseUrl
+    value: 'http://localhost:3001'
+  - key: token
+    value: ''
+  - key: manager_token
+    value: ''
+  - key: user_role
+    value: ''
+  - key: user_id
+    value: ''
+  - key: account_number
+    value: ''
+  - key: account_id
+    value: ''
+  - key: loan_id
+    value: ''
+  - key: managed_user_id
+    value: ''
+  - key: pin
+    value: '1234'
+  - key: phone
+    value: '+51999123456'

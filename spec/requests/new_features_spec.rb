@@ -61,6 +61,8 @@ RSpec.describe 'New account and user APIs', type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(JSON.parse(response.body)['user']['id']).to eq(user.id)
+      expect(JSON.parse(response.body)['user']).to have_key('date_of_birth')
     end
   end
+
 end

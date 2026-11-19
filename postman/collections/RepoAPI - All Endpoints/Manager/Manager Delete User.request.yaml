@@ -1,0 +1,7 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/manager/users/{{managed_user_id}}"
+method: DELETE
+headers:
+  Authorization: Bearer {{manager_token}}
+  Accept: application/json
+order: 6000

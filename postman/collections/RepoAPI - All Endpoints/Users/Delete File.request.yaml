@@ -1,0 +1,7 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/users/{{user_id}}/files/{{file_id}}"
+method: DELETE
+headers:
+  Authorization: Bearer {{token}}
+  Accept: application/json
+order: 8000
