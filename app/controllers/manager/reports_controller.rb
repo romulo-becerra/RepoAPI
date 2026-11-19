@@ -39,6 +39,33 @@ module Manager
       }, status: :ok
     end
 
+    def dashboard
+      today = Time.current.beginning_of_day..Time.current.end_of_day
+      completed = Transaction.where(status: :completed)
+      users_today = LoginEvent.where(created_at: today).distinct.count(:user_id)
+
+      render json: {
+        total_customers: User.customer.count,
+        total_accounts: Account.count,
+        total_transactions: completed.count,
+        transactions_today: completed.where(created_at: today).count,
+        income_today: completed.where(created_at: today).where(transaction_type: %i[deposit atm_deposit]).sum(:amount).to_f,
+        expenses_today: completed.where(created_at: today).where(transaction_type: %i[withdraw transfer service_payment loan_payment atm_withdrawal]).sum(:amount).to_f,
+        active_loans: Loan.active.count,
+        overdue_loans: LoanInstallment.where(status: %i[pending partial]).where("due_date < ?", Date.current).distinct.count(:loan_id),
+        users_connected: users_today,
+        security_alerts: LoginEvent.where(created_at: today, status: :failure).count + User.where.not(locked_until: nil).where("locked_until > ?", Time.current).count,
+        hourly_transactions: (0..23).index_with { |hour|
+          completed.where(created_at: today).where("CAST(strftime('%H', created_at) AS INTEGER) = ?", hour).count
+        },
+        monthly_growth: (0..5).reverse_each.index_with { |months_ago|
+          month = months_ago.months.ago
+          start_range = month.beginning_of_month..month.end_of_month
+          { users: User.where(created_at: start_range).count, accounts: Account.where(created_at: start_range).count }
+        }
+      }, status: :ok
+    end
+
     def loans
       status_filter = params[:status].presence
       relation = Loan.includes(account: :user).order(created_at: :desc)

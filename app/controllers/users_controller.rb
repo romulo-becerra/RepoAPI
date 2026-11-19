@@ -1,5 +1,6 @@
 class UsersController < ApplicationController
   skip_before_action :authenticate_request, only: [ :index, :register, :login, :password_reset_request, :password_reset ]
+  before_action :require_admin!, only: [ :force_password_change ]
 
   def index
     render json: { status: "ok", service: "bankfacilito", message: "API funcionando" }, status: :ok
@@ -27,6 +28,11 @@ class UsersController < ApplicationController
     account = Account.find_by(account_number: params[:account_number])
     user = account&.user
 
+    if user&.locked_until.present? && user.locked_until > Time.current
+      record_login_event(user, account.account_number, :blocked)
+      return render json: { errors: "Usuario bloqueado temporalmente" }, status: :forbidden
+    end
+
     if user && user.authenticate_pin(params[:pin])
       unless user.can_authenticate?
         record_login_event(user, account.account_number, :blocked)
@@ -34,11 +40,17 @@ class UsersController < ApplicationController
       end
 
       @user = user
+      user.update!(failed_login_attempts: 0, locked_until: nil)
       record_login_event(user, account.account_number, :success)
       @account = account
       @token = JsonWebToken.encode(user_id: @user.id)
       render :login, status: :ok
     else
+      if user
+        attempts = user.failed_login_attempts.to_i + 1
+        locked_until = attempts >= 5 ? 15.minutes.from_now : nil
+        user.update!(failed_login_attempts: attempts, locked_until: locked_until)
+      end
       record_login_event(user, params[:account_number], :failure)
       render json: { errors: "Número de cuenta o PIN incorrecto" }, status: :unauthorized
     end
@@ -92,6 +104,13 @@ class UsersController < ApplicationController
     render json: response, status: :ok
   end
 
+  def force_password_change
+    @user = User.find_by(id: params[:id])
+    return render json: { errors: "Usuario no encontrado" }, status: :not_found unless @user
+    @user.update!(force_pin_change: params[:enabled].to_s != "false")
+    render json: { message: "Cambio obligatorio actualizado", force_pin_change: @user.force_pin_change }, status: :ok
+  end
+
   def password_reset
     user = User.find_by(email: params[:email].to_s.strip.downcase)
     if user.nil? || !user.password_reset_token_valid?(params[:reset_token])
@@ -115,7 +134,9 @@ class UsersController < ApplicationController
       user: user,
       account_number: account_number.to_s.strip.truncate(50).presence || "-",
       user_name: user&.to_s,
-      status: status
+      status: status,
+      ip_address: request.remote_ip,
+      device: request.user_agent.to_s.truncate(255)
     )
   end
 

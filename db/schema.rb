@@ -26,6 +26,16 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
     t.index ["created_by_id"], name: "index_account_reconciliations_on_created_by_id"
   end
 
+  create_table "accounting_accounts", force: :cascade do |t|
+    t.string "code", null: false
+    t.string "name", null: false
+    t.string "account_type", null: false
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_accounting_accounts_on_code", unique: true
+  end
+
   create_table "accounts", force: :cascade do |t|
     t.integer "user_id"
     t.string "account_number"
@@ -38,6 +48,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
     t.integer "status", default: 0, null: false
     t.decimal "daily_withdraw_limit", precision: 15, scale: 2
     t.decimal "daily_transfer_limit", precision: 15, scale: 2
+    t.string "account_category", default: "savings", null: false
+    t.decimal "retained_balance", precision: 15, scale: 2, default: "0.0", null: false
     t.index ["status"], name: "index_accounts_on_status"
     t.index ["user_id"], name: "index_accounts_on_user_id"
   end
@@ -70,6 +82,21 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
     t.index ["user_id"], name: "index_audit_logs_on_user_id"
   end
 
+  create_table "cash_register_sessions", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.decimal "opening_balance", precision: 15, scale: 2, null: false
+    t.decimal "closing_balance", precision: 15, scale: 2
+    t.decimal "physical_balance", precision: 15, scale: 2
+    t.decimal "difference", precision: 15, scale: 2
+    t.integer "status", default: 0, null: false
+    t.datetime "opened_at", null: false
+    t.datetime "closed_at"
+    t.text "notes"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_cash_register_sessions_on_user_id"
+  end
+
   create_table "contacts", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "name", null: false
@@ -78,6 +105,44 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
     t.datetime "updated_at", null: false
     t.index ["user_id", "phone"], name: "index_contacts_on_user_id_and_phone", unique: true
     t.index ["user_id"], name: "index_contacts_on_user_id"
+  end
+
+  create_table "invoices", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.integer "created_by_id"
+    t.string "invoice_number", null: false
+    t.decimal "amount", precision: 15, scale: 2, null: false
+    t.string "status", default: "pending", null: false
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_invoices_on_account_id"
+    t.index ["created_by_id"], name: "index_invoices_on_created_by_id"
+    t.index ["invoice_number"], name: "index_invoices_on_invoice_number", unique: true
+  end
+
+  create_table "journal_entries", force: :cascade do |t|
+    t.integer "created_by_id", null: false
+    t.string "reference", null: false
+    t.text "description"
+    t.string "status", default: "pending", null: false
+    t.datetime "approved_at"
+    t.integer "approved_by_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["approved_by_id"], name: "index_journal_entries_on_approved_by_id"
+    t.index ["created_by_id"], name: "index_journal_entries_on_created_by_id"
+  end
+
+  create_table "journal_lines", force: :cascade do |t|
+    t.integer "journal_entry_id", null: false
+    t.integer "accounting_account_id", null: false
+    t.decimal "debit", precision: 15, scale: 2, default: "0.0", null: false
+    t.decimal "credit", precision: 15, scale: 2, default: "0.0", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["accounting_account_id"], name: "index_journal_lines_on_accounting_account_id"
+    t.index ["journal_entry_id"], name: "index_journal_lines_on_journal_entry_id"
   end
 
   create_table "loan_installments", force: :cascade do |t|
@@ -120,10 +185,28 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
     t.integer "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "ip_address"
+    t.string "device"
     t.index ["account_number"], name: "index_login_events_on_account_number"
     t.index ["created_at"], name: "index_login_events_on_created_at"
     t.index ["status"], name: "index_login_events_on_status"
     t.index ["user_id"], name: "index_login_events_on_user_id"
+  end
+
+  create_table "receipts", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.integer "transaction_id"
+    t.integer "created_by_id", null: false
+    t.string "receipt_number", null: false
+    t.string "operation", null: false
+    t.decimal "amount", precision: 15, scale: 2, null: false
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_receipts_on_account_id"
+    t.index ["created_by_id"], name: "index_receipts_on_created_by_id"
+    t.index ["receipt_number"], name: "index_receipts_on_receipt_number", unique: true
+    t.index ["transaction_id"], name: "index_receipts_on_transaction_id"
   end
 
   create_table "recipients", force: :cascade do |t|
@@ -206,8 +289,14 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
     t.string "basic_auth_password_digest"
     t.string "password_reset_digest"
     t.datetime "password_reset_sent_at"
+    t.integer "failed_login_attempts", default: 0, null: false
+    t.datetime "locked_until"
+    t.boolean "force_pin_change", default: false, null: false
+    t.string "document_number"
+    t.string "address"
     t.index ["active"], name: "index_users_on_active"
     t.index ["blocked"], name: "index_users_on_blocked"
+    t.index ["document_number"], name: "index_users_on_document_number", unique: true
     t.index ["phone"], name: "index_users_on_phone", unique: true
     t.index ["role"], name: "index_users_on_role"
   end
@@ -217,10 +306,20 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
   add_foreign_key "accounts", "users"
   add_foreign_key "api_keys", "users", on_delete: :cascade
   add_foreign_key "audit_logs", "users"
+  add_foreign_key "cash_register_sessions", "users"
   add_foreign_key "contacts", "users"
+  add_foreign_key "invoices", "accounts"
+  add_foreign_key "invoices", "users", column: "created_by_id"
+  add_foreign_key "journal_entries", "users", column: "approved_by_id"
+  add_foreign_key "journal_entries", "users", column: "created_by_id"
+  add_foreign_key "journal_lines", "accounting_accounts"
+  add_foreign_key "journal_lines", "journal_entries"
   add_foreign_key "loan_installments", "loans"
   add_foreign_key "loans", "accounts"
   add_foreign_key "login_events", "users", on_delete: :nullify
+  add_foreign_key "receipts", "accounts"
+  add_foreign_key "receipts", "transactions"
+  add_foreign_key "receipts", "users", column: "created_by_id"
   add_foreign_key "recipients", "accounts"
   add_foreign_key "recipients", "users"
   add_foreign_key "services", "accounts"

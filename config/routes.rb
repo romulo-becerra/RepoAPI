@@ -37,9 +37,33 @@ Rails.application.routes.draw do
         get "accounts/:id/statement", to: "atm_operations#statement"
       end
 
+      scope :cashier do
+        post "cash/open", to: "cashier#open_cash"
+        get "cash/status", to: "cashier#cash_status"
+        get "cash/movements", to: "cashier#cash_movements"
+        post "cash/reconciliation", to: "cashier#reconciliation"
+        post "cash/close", to: "cashier#close_cash"
+        get "reports/daily", to: "cashier#daily_report"
+        get "receipts", to: "cashier#receipts"
+        get "clients/search", to: "cashier#search_clients"
+        post "clients", to: "cashier#register_client"
+        patch "clients/:id", to: "cashier#update_client"
+        post "accounts/open", to: "cashier#open_account"
+      end
+
       namespace :manager do
         resources :account_reconciliations, path: "reconciliations", only: %i[index create]
+        get "users/search", to: "users#search"
+        get "roles", to: "roles#index"
+        resources :invoices, only: %i[index create]
+        get "accounting/accounts", to: "accounting#accounts"
+        post "accounting/accounts", to: "accounting#create_account"
+        get "accounting/journal_entries", to: "accounting#journal_entries"
+        post "accounting/journal_entries", to: "accounting#create_journal_entry"
+        post "accounting/journal_entries/:id/approve", to: "accounting#approve_journal_entry"
+        get "accounting/reports", to: "accounting#reports"
         get "reports/overview", to: "reports#overview"
+        get "reports/dashboard", to: "reports#dashboard"
         get "reports/loans", to: "reports#loans"
         get "reports/accounts_activity", to: "reports#accounts_activity"
         get "logins/download", to: "logins#download"
@@ -80,6 +104,7 @@ Rails.application.routes.draw do
       resources :users, only: [ :update ] do
         member do
           put :pin
+          patch :force_password_change
           get :profile
           get :address, to: "user_addresses#show"
           put :address, to: "user_addresses#upsert"

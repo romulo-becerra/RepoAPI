@@ -38,6 +38,7 @@ module Manager
         performed_by_user_id: current_user.id,
         performed_by_name: current_user.to_s
       )
+      create_receipt(transaction, "deposit", "Depósito en efectivo")
 
       render json: {
         message: "Deposito aplicado por #{current_user.role}",
@@ -61,6 +62,7 @@ module Manager
         performed_by_user_id: current_user.id,
         performed_by_name: current_user.to_s
       )
+      create_receipt(transaction, "withdraw", "Retiro en efectivo")
 
       render json: {
         message: "Retiro aplicado por #{current_user.role}",
@@ -90,6 +92,7 @@ module Manager
         performed_by_user_id: current_user.id,
         performed_by_name: current_user.to_s
       )
+      create_receipt(transaction, "service_payment", "Pago de servicio")
 
       render json: {
         message: "Pago de servicio aplicado",
@@ -118,6 +121,7 @@ module Manager
         performed_by_user_id: current_user.id,
         performed_by_name: current_user.to_s
       )
+      create_receipt(transaction, "loan_payment", "Pago de préstamo")
 
       render json: {
         message: "Pago de préstamo aplicado por #{current_user.role}",
@@ -170,6 +174,19 @@ module Manager
     end
 
     private
+
+    def create_receipt(transaction, operation, description)
+      receipt_number = "RC-#{Time.current.strftime('%Y%m%d')}-#{SecureRandom.hex(5).upcase}"
+      Receipt.create!(
+        account: transaction.account,
+        financial_transaction: transaction,
+        created_by: current_user,
+        receipt_number: receipt_number,
+        operation: operation,
+        amount: transaction.amount,
+        description: params[:description].presence || description
+      )
+    end
 
     def set_account
       lookup = params[:account_id].to_s.strip

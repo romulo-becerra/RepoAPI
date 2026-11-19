@@ -30,10 +30,30 @@ module Manager
     end
 
     def show
-      user = User.includes(:user_address, :accounts).find_by(id: params[:id])
+      lookup = params[:id].to_s.strip
+      user = User.includes(:user_address, :accounts).find_by(id: lookup)
+      user ||= Account.includes(:user).find_by(account_number: lookup)&.user
       return render json: { errors: "Usuario no encontrado" }, status: :not_found unless user
+      user = User.includes(:user_address, :accounts).find_by(id: user.id)
 
       render json: { user: serialize_user_detail(user) }, status: :ok
+    end
+
+    def search
+      query = params[:q].to_s.strip
+      return render json: { users: [] }, status: :ok if query.blank?
+
+      users = User.includes(:user_address, :accounts)
+                  .joins("LEFT JOIN accounts ON accounts.user_id = users.id")
+                  .where(
+                    "CAST(users.id AS TEXT) LIKE :query OR users.first_name LIKE :query OR users.last_name LIKE :query OR users.email LIKE :query OR users.phone LIKE :query OR accounts.account_number LIKE :query",
+                    query: "%#{query}%"
+                  )
+                  .distinct
+                  .order(created_at: :desc)
+                  .limit(20)
+
+      render json: { users: users.map { |user| serialize_user_detail(user) } }, status: :ok
     end
 
     def create

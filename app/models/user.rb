@@ -26,7 +26,17 @@ class User < ApplicationRecord
   attr_accessor :default_account_number
 
   attribute :role, :integer, default: 0
-  enum :role, { customer: 0, manager: 1, cashier: 2, admin: 3 }, default: :customer
+  enum :role, {
+    customer: 0,
+    manager: 1,
+    cashier: 2,
+    admin: 3,
+    super_admin: 4,
+    supervisor: 5,
+    accountant: 6,
+    auditor: 7,
+    financial_manager: 8
+  }, default: :customer
 
   validates :first_name, presence: true
   validates :last_name, presence: true

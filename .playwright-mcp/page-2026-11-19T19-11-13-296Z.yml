@@ -1,0 +1,441 @@
+- generic [ref=f4e2]:
+  - complementary [ref=f4e3]:
+    - generic [ref=f4e4]: AngelFire
+    - paragraph [ref=f4e5]: Core Banking Console
+    - generic [ref=f4e6]:
+      - heading "Sesion actual" [level=2] [ref=f4e7]
+      - paragraph [ref=f4e8]: Autenticado
+      - paragraph [ref=f4e9]: "Rol: admin"
+    - generic [ref=f4e10]:
+      - heading "Permisos por seccion" [level=2] [ref=f4e11]
+      - list [ref=f4e12]:
+        - listitem [ref=f4e13]:
+          - text: Cliente
+          - generic [ref=f4e14]: Habilitado
+        - listitem [ref=f4e15]:
+          - text: Admin Dashboard
+          - generic [ref=f4e16]: Habilitado
+        - listitem [ref=f4e17]:
+          - text: Manager Users
+          - generic [ref=f4e18]: Habilitado
+  - main [ref=f4e19]:
+    - generic [ref=f4e20]:
+      - generic [ref=f4e21]:
+        - paragraph [ref=f4e22]: Plataforma financiera
+        - heading "Panel Operativo" [level=1] [ref=f4e23]
+        - generic [ref=f4e24]:
+          - button "Actualizar datos" [ref=f4e25] [cursor=pointer]
+          - button "Cambiar PIN" [ref=f4e26] [cursor=pointer]
+          - button "Ocultar seccion" [ref=f4e27] [cursor=pointer]
+      - generic [ref=f4e28]:
+        - generic [ref=f4e29]:
+          - text: Base URL
+          - textbox "Base URL" [ref=f4e30]: http://localhost:3001
+        - button "Guardar" [ref=f4e31] [cursor=pointer]
+        - button "Cerrar sesion" [ref=f4e32] [cursor=pointer]
+      - generic [ref=f4e33]:
+        - generic [ref=f4e34]: Idioma
+        - combobox "Idioma" [ref=f4e35]:
+          - option "Español" [selected]
+          - option "English"
+          - option "Português"
+    - generic [ref=f4e36]:
+      - heading "Vistas del sistema" [level=2] [ref=f4e37]
+      - generic [ref=f4e38]:
+        - button "Vista cliente" [ref=f4e39] [cursor=pointer]
+        - button "Vista admin" [ref=f4e40] [cursor=pointer]
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - article [ref=f4e43]:
+          - paragraph [ref=f4e44]: Total usuarios
+          - heading "175" [level=3] [ref=f4e200]
+        - article [ref=f4e46]:
+          - paragraph [ref=f4e47]: Prestamos activos
+          - heading "43" [level=3] [ref=f4e201]
+        - article [ref=f4e49]:
+          - paragraph [ref=f4e50]: Monto en prestamos
+          - heading "S/ 710115.12" [level=3] [ref=f4e202]
+        - article [ref=f4e52]:
+          - paragraph [ref=f4e53]: Actividad 30 dias
+          - heading "0 cuentas" [level=3] [ref=f4e203]
+      - generic [ref=f4e55]:
+        - heading "Operaciones de personal autorizado" [level=2] [ref=f4e56]
+        - paragraph [ref=f4e57]: Selecciona una operacion y recien se mostrara su formulario.
+        - generic [ref=f4e58]:
+          - button "Crear usuario (admin)" [ref=f4e59] [cursor=pointer]
+          - button "Originar prestamo (admin)" [ref=f4e60] [cursor=pointer]
+          - button "Operar cuenta de usuario" [ref=f4e61] [cursor=pointer]
+        - generic [ref=f4e422]:
+          - heading "Operar cuenta de usuario" [level=2] [ref=f4e423]
+          - paragraph [ref=f4e424]: "Requeridos: account ID o numero de cuenta y monto. Para pagar prestamo tambien se requiere loan ID."
+          - generic [ref=f4e425]:
+            - textbox "Account ID o numero de cuenta objetivo *" [active] [ref=f4e426]
+            - button "Buscar cuenta" [ref=f4e427] [cursor=pointer]
+          - paragraph [ref=f4e428]: Sin cuenta validada.
+          - textbox "Loan ID (solo para pagar prestamo)" [disabled] [ref=f4e429]
+          - spinbutton "Monto *" [disabled] [ref=f4e430]
+          - textbox "Descripcion (opcional)" [disabled] [ref=f4e431]
+          - generic [ref=f4e432]: Servicio (solo para pagar servicio)
+          - combobox "Servicio (solo para pagar servicio)" [disabled] [ref=f4e433]:
+            - option "1 - Agua" [selected]
+            - option "2 - Luz"
+            - option "3 - Internet"
+          - generic [ref=f4e434]:
+            - button "Depositar" [disabled] [ref=f4e435] [cursor=pointer]
+            - button "Retirar" [disabled] [ref=f4e436] [cursor=pointer]
+            - button "Pagar prestamo" [disabled] [ref=f4e437] [cursor=pointer]
+            - button "Pagar servicio" [disabled] [ref=f4e438] [cursor=pointer]
+            - button "Cancelar operacion" [ref=f4e439] [cursor=pointer]
+      - generic [ref=f4e62]:
+        - generic [ref=f4e63]:
+          - heading "Eliminar usuario" [level=2] [ref=f4e64]
+          - paragraph [ref=f4e65]: "Requerido: User ID."
+          - textbox "ID usuario *" [ref=f4e66]
+          - button "Eliminar usuario" [ref=f4e67] [cursor=pointer]
+        - generic [ref=f4e68]:
+          - heading "Estado de usuario" [level=2] [ref=f4e69]
+          - paragraph [ref=f4e70]: "Requerido: User ID para bloquear o desbloquear."
+          - textbox "ID usuario *" [ref=f4e71]
+          - generic [ref=f4e72]:
+            - button "Bloquear" [ref=f4e73] [cursor=pointer]
+            - button "Desbloquear" [ref=f4e74] [cursor=pointer]
+        - generic [ref=f4e75]:
+          - heading "Acciones admin" [level=2] [ref=f4e76]
+          - paragraph [ref=f4e77]: Refresca reportes y lista de usuarios del sistema.
+          - button "Actualizar panel admin" [ref=f4e78] [cursor=pointer]
+      - generic [ref=f4e79]:
+        - heading "Consulta de cuenta y prestamo" [level=2] [ref=f4e81]
+        - generic [ref=f4e82]:
+          - textbox "Account ID o numero de cuenta *" [ref=f4e83]: "9000000001"
+          - button "Consultar cuenta" [ref=f4e84] [cursor=pointer]
+        - paragraph [ref=f4e388]: La cuenta no tiene prestamo asignado.
+        - paragraph [ref=f4e85]: "Cuenta #9000000001 | Saldo: S/ 1000.00 | Usuario: Rolo update22 LAst upate | Prestamos: 0"
+      - generic [ref=f4e86]:
+        - generic [ref=f4e87]:
+          - heading "Archivos del usuario (admin)" [level=2] [ref=f4e88]
+          - button "Actualizar archivos" [ref=f4e89] [cursor=pointer]
+        - table [ref=f4e90]:
+          - rowgroup [ref=f4e91]:
+            - row [ref=f4e92]:
+              - columnheader "ID" [ref=f4e93]
+              - columnheader "Archivo" [ref=f4e94]
+              - columnheader "Tipo" [ref=f4e95]
+              - columnheader "Tamaño" [ref=f4e96]
+              - columnheader "Fecha" [ref=f4e97]
+          - rowgroup [ref=f4e98]:
+            - row [ref=f4e389]:
+              - cell "9" [ref=f4e390]
+              - cell "data.csv" [ref=f4e391]
+              - cell "text/csv" [ref=f4e392]
+              - cell "268 B" [ref=f4e393]
+              - cell "2026-10-21T01:43:12.359Z" [ref=f4e394]
+            - row [ref=f4e395]:
+              - cell "8" [ref=f4e396]
+              - cell "data.csv" [ref=f4e397]
+              - cell "text/csv" [ref=f4e398]
+              - cell "268 B" [ref=f4e399]
+              - cell "2026-10-20T20:24:47.851Z" [ref=f4e400]
+      - generic [ref=f4e101]:
+        - generic [ref=f4e102]:
+          - heading "Usuarios del sistema" [level=2] [ref=f4e103]
+          - generic [ref=f4e104]:
+            - generic [ref=f4e105]:
+              - text: Ver
+              - combobox "Ver" [ref=f4e106]:
+                - option "10" [selected]
+                - option "20"
+                - option "50"
+            - button "Anterior" [disabled] [ref=f4e107] [cursor=pointer]
+            - generic [ref=f4e108]: 1 / 18
+            - button "Siguiente" [ref=f4e109] [cursor=pointer]
+        - table [ref=f4e110]:
+          - rowgroup [ref=f4e111]:
+            - row [ref=f4e112]:
+              - columnheader "ID" [ref=f4e113]
+              - columnheader "Nombre" [ref=f4e114]
+              - columnheader "Correo electronico" [ref=f4e115]
+              - columnheader "Cuenta" [ref=f4e116]
+              - columnheader "Rol" [ref=f4e117]
+              - columnheader "Estado" [ref=f4e118]
+              - columnheader "Acciones" [ref=f4e119]
+          - rowgroup [ref=f4e120]:
+            - row [ref=f4e204]:
+              - cell "190" [ref=f4e205]
+              - cell "UpdatedName UpdatedLastName" [ref=f4e206]
+              - cell "updatedemail1792622441710@test1.com" [ref=f4e207]
+              - cell "4537363055" [ref=f4e208]
+              - cell "customer" [ref=f4e209]
+              - cell "bloqueado" [ref=f4e210]
+              - cell [ref=f4e211]:
+                - generic [ref=f4e212]:
+                  - button "Desbloquear" [ref=f4e213] [cursor=pointer]
+                  - button "Eliminar" [ref=f4e214] [cursor=pointer]
+            - row [ref=f4e215]:
+              - cell "189" [ref=f4e216]
+              - cell "testuser1792622420001 Cocca" [ref=f4e217]
+              - cell "user1792622420001@test1.com" [ref=f4e218]
+              - cell "3275582284" [ref=f4e219]
+              - cell "customer" [ref=f4e220]
+              - cell "activo" [ref=f4e221]
+              - cell [ref=f4e222]:
+                - generic [ref=f4e223]:
+                  - button "Bloquear" [ref=f4e224] [cursor=pointer]
+                  - button "Eliminar" [ref=f4e225] [cursor=pointer]
+            - row [ref=f4e226]:
+              - cell "188" [ref=f4e227]
+              - cell "Rolo update22 Cocca" [ref=f4e228]
+              - cell "Dwight_Emmerich@yahoo.com" [ref=f4e229]
+              - cell "3518113556" [ref=f4e230]
+              - cell "customer" [ref=f4e231]
+              - cell "activo" [ref=f4e232]
+              - cell [ref=f4e233]:
+                - generic [ref=f4e234]:
+                  - button "Bloquear" [ref=f4e235] [cursor=pointer]
+                  - button "Eliminar" [ref=f4e236] [cursor=pointer]
+            - row [ref=f4e237]:
+              - cell "186" [ref=f4e238]
+              - cell "testUpdated_user last_name_updated" [ref=f4e239]
+              - cell "updated-ea2f4d22-ad6a-4936-b7aa-1c0940d9aac4@example.com" [ref=f4e240]
+              - cell "7555076169" [ref=f4e241]
+              - cell "customer" [ref=f4e242]
+              - cell "activo" [ref=f4e243]
+              - cell [ref=f4e244]:
+                - generic [ref=f4e245]:
+                  - button "Bloquear" [ref=f4e246] [cursor=pointer]
+                  - button "Eliminar" [ref=f4e247] [cursor=pointer]
+            - row [ref=f4e248]:
+              - cell "185" [ref=f4e249]
+              - cell "testUpdated_user last_name_updated" [ref=f4e250]
+              - cell "updated-87fc28aa-c125-4f43-8b1e-6df9287fad59@example.com" [ref=f4e251]
+              - cell "3398563689" [ref=f4e252]
+              - cell "customer" [ref=f4e253]
+              - cell "activo" [ref=f4e254]
+              - cell [ref=f4e255]:
+                - generic [ref=f4e256]:
+                  - button "Bloquear" [ref=f4e257] [cursor=pointer]
+                  - button "Eliminar" [ref=f4e258] [cursor=pointer]
+            - row [ref=f4e259]:
+              - cell "184" [ref=f4e260]
+              - cell "testUpdated_user last_name_updated" [ref=f4e261]
+              - cell "updated-2a0364b8-d11d-4ee1-8ce9-a50ca37b5ef7@example.com" [ref=f4e262]
+              - cell "6558019812" [ref=f4e263]
+              - cell "customer" [ref=f4e264]
+              - cell "activo" [ref=f4e265]
+              - cell [ref=f4e266]:
+                - generic [ref=f4e267]:
+                  - button "Bloquear" [ref=f4e268] [cursor=pointer]
+                  - button "Eliminar" [ref=f4e269] [cursor=pointer]
+            - row [ref=f4e270]:
+              - cell "183" [ref=f4e271]
+              - cell "updated-6e5d84fd-de10-43d7-bb59-99bcabf671ca updated-c482fc23-dacc-47cf-9852-3d0784f54b29" [ref=f4e272]
+              - cell "updated-ac845cf6-0860-44d9-befe-dfa625035048@example.com" [ref=f4e273]
+              - cell "4309163951" [ref=f4e274]
+              - cell "customer" [ref=f4e275]
+              - cell "activo" [ref=f4e276]
+              - cell [ref=f4e277]:
+                - generic [ref=f4e278]:
+                  - button "Bloquear" [ref=f4e279] [cursor=pointer]
+                  - button "Eliminar" [ref=f4e280] [cursor=pointer]
+            - row [ref=f4e281]:
+              - cell "182" [ref=f4e282]
+              - cell "userT_3_update lastnameT_3_update" [ref=f4e283]
+              - cell "updated-8abeccb9-ae93-4be6-9ac7-c5e63ae3dbae@example.com" [ref=f4e284]
+              - cell "3255114368" [ref=f4e285]
+              - cell "customer" [ref=f4e286]
+              - cell "activo" [ref=f4e287]
+              - cell [ref=f4e288]:
+                - generic [ref=f4e289]:
+                  - button "Bloquear" [ref=f4e290] [cursor=pointer]
+                  - button "Eliminar" [ref=f4e291] [cursor=pointer]
+            - row [ref=f4e292]:
+              - cell "181" [ref=f4e293]
+              - cell "userT_3_update lastnameT_3_update" [ref=f4e294]
+              - cell "updated-feefbfce-2e8e-466d-a750-3f4717a23314@example.com" [ref=f4e295]
+              - cell "5524034689" [ref=f4e296]
+              - cell "customer" [ref=f4e297]
+              - cell "activo" [ref=f4e298]
+              - cell [ref=f4e299]:
+                - generic [ref=f4e300]:
+                  - button "Bloquear" [ref=f4e301] [cursor=pointer]
+                  - button "Eliminar" [ref=f4e302] [cursor=pointer]
+            - row [ref=f4e303]:
+              - cell "180" [ref=f4e304]
+              - cell "userT_3 lastnameT_4" [ref=f4e305]
+              - cell "test-5fb497c7-bdd0-403e-b28d-d876fc1c81ca@example.com" [ref=f4e306]
+              - cell "5458137453" [ref=f4e307]
+              - cell "customer" [ref=f4e308]
+              - cell "activo" [ref=f4e309]
+              - cell [ref=f4e310]:
+                - generic [ref=f4e311]:
+                  - button "Bloquear" [ref=f4e312] [cursor=pointer]
+                  - button "Eliminar" [ref=f4e313] [cursor=pointer]
+      - generic [ref=f4e123]:
+        - generic [ref=f4e124]:
+          - heading "Bitacora de operaciones" [level=2] [ref=f4e125]
+          - button "Actualizar" [ref=f4e126] [cursor=pointer]
+        - paragraph [ref=f4e127]: Consulta depositos, debitos y pagos por dia, semana o mes desde la fecha indicada.
+        - generic [ref=f4e128]:
+          - generic [ref=f4e129]:
+            - text: Periodo
+            - combobox "Periodo" [ref=f4e130]:
+              - option "Dia" [selected]
+              - option "Semana"
+              - option "Mes"
+          - generic [ref=f4e131]:
+            - text: Fecha de consulta
+            - textbox "Fecha de consulta" [ref=f4e132]: 2026-11-19
+          - generic [ref=f4e133]:
+            - text: Tipo de operacion
+            - combobox "Tipo de operacion" [ref=f4e134]:
+              - option "Todas" [selected]
+              - option "Depositos"
+              - option "Retiros"
+              - option "Transferencias"
+              - option "Pago de prestamo"
+              - option "Pago de servicios"
+              - option "Deposito ATM"
+              - option "Retiro ATM"
+              - option "Debitos (todas las salidas)"
+          - generic [ref=f4e135]:
+            - text: Ejecutado por
+            - combobox "Ejecutado por" [ref=f4e136]:
+              - option "Todos" [selected]
+              - option "Admin"
+              - option "Usuario"
+        - generic [ref=f4e137]:
+          - generic [ref=f4e138]:
+            - text: Ver
+            - combobox "Ver" [ref=f4e139]:
+              - option "10" [selected]
+              - option "20"
+              - option "50"
+          - button "Anterior" [disabled] [ref=f4e140] [cursor=pointer]
+          - generic [ref=f4e141]: 1 / 1
+          - button "Siguiente" [disabled] [ref=f4e142] [cursor=pointer]
+          - button "Descargar archivo" [ref=f4e143] [cursor=pointer]
+        - paragraph [ref=f4e144]: "Operaciones: 0 | Monto total: S/ 0.00 | Rango: 18/11/2026, 8:00:00 p. m. - 19/11/2026, 7:59:59 p. m."
+        - table [ref=f4e145]:
+          - rowgroup [ref=f4e146]:
+            - row [ref=f4e147]:
+              - columnheader "Fecha" [ref=f4e148]
+              - columnheader "Tipo" [ref=f4e149]
+              - columnheader "Monto" [ref=f4e150]
+              - columnheader "Descripcion" [ref=f4e151]
+              - columnheader "Usuario" [ref=f4e152]
+              - columnheader "Cuenta" [ref=f4e153]
+              - columnheader "Ejecutado por" [ref=f4e154]
+              - columnheader "Estado" [ref=f4e155]
+          - rowgroup [ref=f4e156]:
+            - row [ref=f4e314]:
+              - cell "Sin operaciones" [ref=f4e315]
+      - generic [ref=f4e159]:
+        - generic [ref=f4e160]:
+          - heading "Reporte de inicios de sesion" [level=2] [ref=f4e161]
+          - button "Actualizar" [ref=f4e162] [cursor=pointer]
+        - paragraph [ref=f4e163]: Consulta los accesos exitosos, fallidos o bloqueados por dia, semana o mes.
+        - generic [ref=f4e164]:
+          - generic [ref=f4e165]:
+            - text: Periodo
+            - combobox "Periodo" [ref=f4e166]:
+              - option "Dia" [selected]
+              - option "Semana"
+              - option "Mes"
+          - generic [ref=f4e167]:
+            - text: Fecha de consulta
+            - textbox "Fecha de consulta" [ref=f4e168]: 2026-11-19
+          - generic [ref=f4e169]:
+            - text: Resultado
+            - combobox "Resultado" [ref=f4e170]:
+              - option "Todos" [selected]
+              - option "Exitoso"
+              - option "Fallido"
+              - option "blocked"
+        - generic [ref=f4e171]:
+          - generic [ref=f4e172]:
+            - text: Ver
+            - combobox "Ver" [ref=f4e173]:
+              - option "10" [selected]
+              - option "20"
+              - option "50"
+          - button "Anterior" [disabled] [ref=f4e174] [cursor=pointer]
+          - generic [ref=f4e175]: 1 / 1
+          - button "Siguiente" [disabled] [ref=f4e176] [cursor=pointer]
+          - button "Descargar archivo" [ref=f4e177] [cursor=pointer]
+        - paragraph [ref=f4e178]: "Inicios: 9 | Exitosos: 9 | Fallidos: 0 | Bloqueados: 0 | Rango: 18/11/2026, 8:00:00 p. m. - 19/11/2026, 7:59:59 p. m."
+        - table [ref=f4e179]:
+          - rowgroup [ref=f4e180]:
+            - row [ref=f4e181]:
+              - columnheader "Fecha" [ref=f4e182]
+              - columnheader "Resultado" [ref=f4e183]
+              - columnheader "ID usuario" [ref=f4e184]
+              - columnheader "Nombre" [ref=f4e185]
+              - columnheader "Numero de cuenta" [ref=f4e186]
+          - rowgroup [ref=f4e187]:
+            - row [ref=f4e316]:
+              - cell "19/11/2026, 3:07:51 p. m." [ref=f4e317]
+              - cell "success" [ref=f4e318]
+              - cell "116" [ref=f4e319]
+              - cell "Rolo update22 LAst upate" [ref=f4e320]
+              - cell "9000000001" [ref=f4e321]
+            - row [ref=f4e322]:
+              - cell "19/11/2026, 2:37:45 p. m." [ref=f4e323]
+              - cell "success" [ref=f4e324]
+              - cell "116" [ref=f4e325]
+              - cell "Rolo update22 LAst upate" [ref=f4e326]
+              - cell "9000000001" [ref=f4e327]
+            - row [ref=f4e328]:
+              - cell "19/11/2026, 2:37:44 p. m." [ref=f4e329]
+              - cell "success" [ref=f4e330]
+              - cell "116" [ref=f4e331]
+              - cell "Rolo update22 LAst upate" [ref=f4e332]
+              - cell "9000000001" [ref=f4e333]
+            - row [ref=f4e334]:
+              - cell "19/11/2026, 2:30:37 p. m." [ref=f4e335]
+              - cell "success" [ref=f4e336]
+              - cell "90" [ref=f4e337]
+              - cell "Rolo update Cocca" [ref=f4e338]
+              - cell "5660550485" [ref=f4e339]
+            - row [ref=f4e340]:
+              - cell "19/11/2026, 2:16:36 p. m." [ref=f4e341]
+              - cell "success" [ref=f4e342]
+              - cell "90" [ref=f4e343]
+              - cell "Rolo update Cocca" [ref=f4e344]
+              - cell "5660550485" [ref=f4e345]
+            - row [ref=f4e346]:
+              - cell "19/11/2026, 2:15:17 p. m." [ref=f4e347]
+              - cell "success" [ref=f4e348]
+              - cell "116" [ref=f4e349]
+              - cell "Rolo update22 LAst upate" [ref=f4e350]
+              - cell "9000000001" [ref=f4e351]
+            - row [ref=f4e352]:
+              - cell "19/11/2026, 12:37:11 p. m." [ref=f4e353]
+              - cell "success" [ref=f4e354]
+              - cell "116" [ref=f4e355]
+              - cell "Rolo update22 LAst upate" [ref=f4e356]
+              - cell "9000000001" [ref=f4e357]
+            - row [ref=f4e358]:
+              - cell "19/11/2026, 12:03:09 p. m." [ref=f4e359]
+              - cell "success" [ref=f4e360]
+              - cell "116" [ref=f4e361]
+              - cell "Rolo update22 LAst upate" [ref=f4e362]
+              - cell "9000000001" [ref=f4e363]
+            - row [ref=f4e364]:
+              - cell "19/11/2026, 12:03:09 p. m." [ref=f4e365]
+              - cell "success" [ref=f4e366]
+              - cell "116" [ref=f4e367]
+              - cell "Rolo update22 LAst upate" [ref=f4e368]
+              - cell "9000000001" [ref=f4e369]
+      - generic [ref=f4e190]:
+        - heading "Bitacora de operaciones admin" [level=2] [ref=f4e192]
+        - list [ref=f4e193]:
+          - listitem [ref=f4e401]: 2026-11-19T19:10:09.162Z | Consulta de cuenta admin lookup=9000000001
+          - listitem [ref=f4e402]: 2026-11-19T19:07:57.149Z | Consulta de accesos periodo=day fecha=2026-11-19 total=9
+          - listitem [ref=f4e403]: 2026-11-19T19:07:56.794Z | Consulta bitacora de operaciones periodo=day fecha=2026-11-19 total=0
+          - listitem [ref=f4e404]: 2026-11-19T19:07:56.400Z | Consulta reporte de actividad de cuentas (30 dias)
+          - listitem [ref=f4e405]: 2026-11-19T19:07:56.002Z | Consulta reporte prestamos activos=43 monto=710115.12
+          - listitem [ref=f4e406]: 2026-11-19T19:07:55.458Z | Consulta de usuarios manager total=175
+    - generic [ref=f4e195]:
+      - generic [ref=f4e196]:
+        - heading "Respuesta API" [level=2] [ref=f4e197]
+        - generic [ref=f4e198]: "Status: 200"
+      - generic [ref=f4e199]: "{ \"user_id\": 116, \"files\": [ { \"id\": 9, \"user_id\": 116, \"uploaded_by_user_id\": 116, \"original_filename\": \"data.csv\", \"content_type\": \"text/csv\", \"file_size\": 268, \"created_at\": \"2026-10-21T01:43:12.359Z\" }, { \"id\": 8, \"user_id\": 116, \"uploaded_by_user_id\": 116, \"original_filename\": \"data.csv\", \"content_type\": \"text/csv\", \"file_size\": 268, \"created_at\": \"2026-10-20T20:24:47.851Z\" } ] }"
