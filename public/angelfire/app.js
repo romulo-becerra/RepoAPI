@@ -37,7 +37,8 @@ const defaultState = {
   loginsStatus: 'all',
   loginsPage: 1,
   loginsPerPage: 10,
-  auditLog: []
+  auditLog: [],
+  selectedAdminUserId: ''
 };
 
 const state = loadState();
@@ -93,18 +94,54 @@ const el = {
   txRows: document.getElementById('txRows'),
   serviceId: document.getElementById('serviceId'),
   viewClientBtn: document.getElementById('viewClientBtn'),
+  viewCashierBtn: document.getElementById('viewCashierBtn'),
   viewAdminBtn: document.getElementById('viewAdminBtn'),
   clientView: document.getElementById('clientView'),
   adminView: document.getElementById('adminView'),
+  cashierView: document.getElementById('cashierView'),
   adminUsersCount: document.getElementById('adminUsersCount'),
   adminActiveLoans: document.getElementById('adminActiveLoans'),
   adminLoansAmount: document.getElementById('adminLoansAmount'),
   adminActivity: document.getElementById('adminActivity'),
+  adminDashboardCustomers: document.getElementById('adminDashboardCustomers'),
+  adminDashboardAccounts: document.getElementById('adminDashboardAccounts'),
+  adminDashboardTransactions: document.getElementById('adminDashboardTransactions'),
+  adminDashboardIncome: document.getElementById('adminDashboardIncome'),
+  adminDashboardExpenses: document.getElementById('adminDashboardExpenses'),
+  adminDashboardOverdue: document.getElementById('adminDashboardOverdue'),
+  adminDashboardSecurity: document.getElementById('adminDashboardSecurity'),
+  adminRolesRows: document.getElementById('adminRolesRows'),
+  refreshRolesBtn: document.getElementById('refreshRolesBtn'),
+  accountingBalanceGeneral: document.getElementById('accountingBalanceGeneral'),
+  accountingIncome: document.getElementById('accountingIncome'),
+  accountingExpenses: document.getElementById('accountingExpenses'),
+  accountingCashIn: document.getElementById('accountingCashIn'),
+  accountingDailyRows: document.getElementById('accountingDailyRows'),
+  refreshAccountingBtn: document.getElementById('refreshAccountingBtn'),
   adminUsersPerPage: document.getElementById('adminUsersPerPage'),
   adminUsersPrevPageBtn: document.getElementById('adminUsersPrevPageBtn'),
   adminUsersNextPageBtn: document.getElementById('adminUsersNextPageBtn'),
   adminUsersPageInfo: document.getElementById('adminUsersPageInfo'),
   adminUsersRows: document.getElementById('adminUsersRows'),
+  adminClientLookupForm: document.getElementById('adminClientLookupForm'),
+  adminClientLookupQuery: document.getElementById('adminClientLookupQuery'),
+  adminClientLookupValidation: document.getElementById('adminClientLookupValidation'),
+  adminClientLookupResults: document.getElementById('adminClientLookupResults'),
+  adminClientProfile: document.getElementById('adminClientProfile'),
+  adminClientName: document.getElementById('adminClientName'),
+  adminClientMeta: document.getElementById('adminClientMeta'),
+  adminClientStatus: document.getElementById('adminClientStatus'),
+  adminClientAccounts: document.getElementById('adminClientAccounts'),
+  adminClientEditForm: document.getElementById('adminClientEditForm'),
+  adminClientFirstName: document.getElementById('adminClientFirstName'),
+  adminClientLastName: document.getElementById('adminClientLastName'),
+  adminClientEmail: document.getElementById('adminClientEmail'),
+  adminClientPhone: document.getElementById('adminClientPhone'),
+  adminClientBlockBtn: document.getElementById('adminClientBlockBtn'),
+  adminClientUnblockBtn: document.getElementById('adminClientUnblockBtn'),
+  adminClientDeactivateBtn: document.getElementById('adminClientDeactivateBtn'),
+  adminClientForcePasswordBtn: document.getElementById('adminClientForcePasswordBtn'),
+  adminClientDeleteBtn: document.getElementById('adminClientDeleteBtn'),
   adminLookupAccountId: document.getElementById('adminLookupAccountId'),
   adminAccountLookupValidation: document.getElementById('adminAccountLookupValidation'),
   adminAccountSummary: document.getElementById('adminAccountSummary'),
@@ -745,14 +782,21 @@ function toggleAccountMaintenance(mode) {
 
 function resolvePreferredView() {
   const stored = state.activeView;
-  const fallback = hasStaffAccess() ? 'admin' : 'client';
+  const fallback = state.role === 'cashier' ? 'cashier' : (hasStaffAccess() ? 'admin' : 'client');
   if (stored === 'admin' && !hasStaffAccess()) {
+    return 'client';
+  }
+  if (stored === 'cashier' && state.role !== 'cashier') {
     return 'client';
   }
   return stored || fallback;
 }
 
 function setView(view) {
+  if (view === 'cashier' && state.role !== 'cashier') {
+    renderResponse(403, { errors: 'La vista cajero requiere rol Cashier.' });
+    return;
+  }
   if (view === 'admin' && !hasStaffAccess()) {
     renderResponse(403, { errors: 'La vista de operaciones requiere un rol Admin, Manager o Cashier.' });
     return;
@@ -765,8 +809,10 @@ function setView(view) {
   state.activeView = view;
   el.clientView.classList.toggle('hidden', view !== 'client');
   el.adminView.classList.toggle('hidden', view !== 'admin');
+  el.cashierView.classList.toggle('hidden', view !== 'cashier');
   el.viewClientBtn.classList.toggle('active-view', view === 'client');
   el.viewAdminBtn.classList.toggle('active-view', view === 'admin');
+  el.viewCashierBtn.classList.toggle('active-view', view === 'cashier');
   syncBalanceAutoRefreshState();
   persistState();
 }
@@ -1430,6 +1476,116 @@ function formatUserStatus(user) {
   }
 
   return 'activo';
+}
+
+function setAdminClientLookupValidation(message) {
+  if (!el.adminClientLookupValidation) return;
+  el.adminClientLookupValidation.textContent = message || '';
+  el.adminClientLookupValidation.classList.toggle('hidden', !message);
+}
+
+function escapeAdminText(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  })[character]);
+}
+
+async function refreshSelectedAdminClient() {
+  if (!state.selectedAdminUserId) return;
+  try {
+    const payload = await apiCall(
+      `/api/v1/manager/users/${state.selectedAdminUserId}`,
+      'GET',
+      null,
+      'manager'
+    );
+    renderAdminClientProfile(payload.user);
+  } catch (error) {
+    setAdminClientLookupValidation(normalizeAdminLookupErrorMessage(error.message));
+  }
+}
+
+function renderAdminClientProfile(user) {
+  if (!user) {
+    el.adminClientProfile.classList.add('hidden');
+    state.selectedAdminUserId = '';
+    persistState();
+    return;
+  }
+
+  state.selectedAdminUserId = String(user.id);
+  persistState();
+  el.adminClientProfile.classList.remove('hidden');
+  el.adminClientName.textContent = `${user.first_name || ''} ${user.last_name || ''}`.trim() || `Usuario #${user.id}`;
+  el.adminClientMeta.textContent = `ID ${user.id} | ${user.email || '-'} | ${user.phone || '-'} | Rol: ${user.role || '-'}`;
+
+  const status = formatUserStatus(user);
+  el.adminClientStatus.textContent = status;
+  el.adminClientStatus.className = `perm-badge ${status === 'activo' ? 'ok' : ''}`;
+
+  el.adminClientFirstName.value = user.first_name || '';
+  el.adminClientLastName.value = user.last_name || '';
+  el.adminClientEmail.value = user.email || '';
+  el.adminClientPhone.value = user.phone || '';
+
+  const accounts = user.accounts || [];
+  el.adminClientAccounts.innerHTML = accounts.length
+    ? accounts.map((account) => `
+      <article class="admin-client-account">
+        <strong>${escapeAdminText(account.account_number || '-')}</strong>
+        <span>${escapeAdminText(account.account_type || '-')}</span>
+        <span>Saldo: ${Number(account.balance || 0).toFixed(2)}</span>
+      </article>
+    `).join('')
+    : '<p class="field-help">Sin cuentas asociadas.</p>';
+
+  const isActive = user.active !== false;
+  const isBlocked = user.blocked === true;
+  el.adminClientBlockBtn.disabled = !isActive || isBlocked;
+  el.adminClientUnblockBtn.disabled = !isActive || !isBlocked;
+  el.adminClientDeactivateBtn.disabled = !isActive;
+  el.adminClientDeleteBtn.disabled = String(user.id) === String(state.userId);
+}
+
+async function searchAdminClients() {
+  const query = el.adminClientLookupQuery.value.trim();
+  if (!query) {
+    setAdminClientLookupValidation('Debes indicar ID, cuenta, nombre, correo o teléfono.');
+    return;
+  }
+
+  setAdminClientLookupValidation('');
+  try {
+    const payload = await apiCall(
+      `/api/v1/manager/users/search?q=${encodeURIComponent(query)}`,
+      'GET',
+      null,
+      'manager'
+    );
+    const users = payload.users || [];
+    el.adminClientLookupResults.classList.toggle('hidden', users.length === 0);
+
+    if (users.length === 0) {
+      el.adminClientLookupResults.innerHTML = '';
+      el.adminClientProfile.classList.add('hidden');
+      setAdminClientLookupValidation('No se encontró ningún usuario.');
+      return;
+    }
+
+    el.adminClientLookupResults.innerHTML = users.map((user) => `
+      <button class="admin-client-result" type="button" data-admin-client-id="${user.id}">
+        <strong>${escapeAdminText(`${user.first_name || ''} ${user.last_name || ''}`.trim() || `Usuario #${user.id}`)}</strong>
+        <span>ID ${user.id} | ${escapeAdminText(user.account_number || '-')} | ${escapeAdminText(user.email || '-')}</span>
+        <span>${escapeAdminText(formatUserStatus(user))} | ${escapeAdminText(user.role || '-')}</span>
+      </button>
+    `).join('');
+  } catch (error) {
+    setAdminClientLookupValidation(normalizeAdminLookupErrorMessage(error.message));
+  }
 }
 
 function renderAdminUserActions(user) {
@@ -2168,21 +2324,90 @@ async function refreshAdminDashboard() {
     el.adminActivity.textContent = 'Disponible';
   }
   pushAudit('Consulta reporte de actividad de cuentas (30 dias)');
+
+  await refreshAdminDashboardMetrics();
+  await refreshAdminRoles();
+  await refreshAccountingReports();
+}
+
+async function refreshAdminDashboardMetrics() {
+  const payload = await apiCall('/api/v1/manager/reports/dashboard', 'GET', null, 'manager');
+  el.adminDashboardCustomers.textContent = String(payload.total_customers || 0);
+  el.adminDashboardAccounts.textContent = String(payload.total_accounts || 0);
+  el.adminDashboardTransactions.textContent = String(payload.transactions_today || 0);
+  el.adminDashboardIncome.textContent = `S/ ${Number(payload.income_today || 0).toFixed(2)}`;
+  el.adminDashboardExpenses.textContent = `S/ ${Number(payload.expenses_today || 0).toFixed(2)}`;
+  el.adminDashboardOverdue.textContent = String(payload.overdue_loans || 0);
+  el.adminDashboardSecurity.textContent = String(payload.security_alerts || 0);
+}
+
+async function refreshAdminRoles() {
+  const roles = await apiCall('/api/v1/manager/roles', 'GET', null, 'manager');
+  el.adminRolesRows.innerHTML = roles.map((role) =>
+    `<tr><td>${escapeAdminText(role.name)}</td><td>${role.permissions.map(escapeAdminText).join(', ')}</td></tr>`
+  ).join('');
+}
+
+async function refreshAccountingReports() {
+  const payload = await apiCall('/api/v1/manager/accounting/reports', 'GET', null, 'manager');
+  el.accountingBalanceGeneral.textContent = `S/ ${Number(payload.balance_general || 0).toFixed(2)}`;
+  el.accountingIncome.textContent = `S/ ${Number(payload.estado_resultados?.ingresos || 0).toFixed(2)}`;
+  el.accountingExpenses.textContent = `S/ ${Number(payload.estado_resultados?.egresos || 0).toFixed(2)}`;
+  el.accountingCashIn.textContent = `S/ ${Number(payload.flujo_caja?.entradas || 0).toFixed(2)}`;
+
+  const rows = payload.libro_diario || [];
+  el.accountingDailyRows.innerHTML = rows.length
+    ? rows.slice(0, 20).map((row) =>
+      `<tr><td>${row.id}</td><td>${escapeAdminText(row.fecha)}</td><td>${escapeAdminText(row.tipo)}</td><td>S/ ${Number(row.monto || 0).toFixed(2)}</td></tr>`
+    ).join('')
+    : '<tr><td colspan="4">Sin movimientos contables</td></tr>';
+}
+
+async function refreshCashierDashboard() {
+  if (state.role !== 'cashier') return;
+
+  const status = await apiCall('/api/v1/cashier/cash/status', 'GET', null, 'token');
+  const session = status.session;
+  document.getElementById('cashierOpeningBalance').textContent = `S/ ${Number(session?.opening_balance || 0).toFixed(2)}`;
+  document.getElementById('cashierSystemBalance').textContent = `S/ ${Number((session?.opening_balance || 0) + 0).toFixed(2)}`;
+  document.getElementById('cashierOpenedAt').textContent = session?.opened_at ? new Date(session.opened_at).toLocaleString() : '-';
+
+  const report = await apiCall('/api/v1/cashier/reports/daily', 'GET', null, 'token');
+  document.getElementById('cashierOperationCount').textContent = String(report.transaction_count || 0);
+  document.getElementById('cashDailyReport').textContent = JSON.stringify(report, null, 2);
+
+  await refreshCashierMovements();
+  await refreshCashierReceipts();
+  await refreshCashierClients();
+}
+
+async function refreshCashierMovements() {
+  const payload = await apiCall('/api/v1/cashier/cash/movements', 'GET', null, 'token');
+  const rows = payload.movements || [];
+  document.getElementById('cashMovementRows').innerHTML = rows.length
+    ? rows.map((row) => `<tr><td>${escapeAdminText(row.created_at)}</td><td>${escapeAdminText(row.type)}</td><td>S/ ${Number(row.amount || 0).toFixed(2)}</td><td>${escapeAdminText(row.account_number || '-')}</td><td>${escapeAdminText(row.status)}</td></tr>`).join('')
+    : '<tr><td colspan="5">Sin movimientos</td></tr>';
+}
+
+async function refreshCashierReceipts() {
+  const payload = await apiCall('/api/v1/cashier/receipts', 'GET', null, 'token');
+  const rows = payload.receipts || [];
+  document.getElementById('cashReceiptRows').innerHTML = rows.length
+    ? rows.map((row) => `<tr><td>${escapeAdminText(row.receipt_number)}</td><td>${escapeAdminText(row.operation)}</td><td>S/ ${Number(row.amount || 0).toFixed(2)}</td><td>${escapeAdminText(row.account_number || '-')}</td><td><button class="btn ghost mini" type="button" onclick="window.print()">Imprimir</button></td></tr>`).join('')
+    : '<tr><td colspan="5">Sin comprobantes</td></tr>';
+}
+
+async function refreshCashierClients() {
+  const query = document.getElementById('cashClientSearch').value.trim();
+  const payload = await apiCall(`/api/v1/cashier/clients/search?q=${encodeURIComponent(query)}`, 'GET', null, 'token');
+  const rows = payload.clients || [];
+  document.getElementById('cashClientRows').innerHTML = rows.length
+    ? rows.map((client) => `<tr><td>${client.id}</td><td>${escapeAdminText(`${client.first_name || ''} ${client.last_name || ''}`)}</td><td>${escapeAdminText(client.email || '-')}</td><td>${escapeAdminText(client.phone || '-')}</td><td>${(client.accounts || []).map((account) => account.account_number).join(', ') || '-'}</td></tr>`).join('')
+    : '<tr><td colspan="5">Sin clientes</td></tr>';
 }
 
 function bindEvents() {
-  el.contactForm.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const name = el.contactName.value.trim();
-    const phone = el.contactPhone.value.trim();
 
-    try {
-      await apiCall('/api/v1/contacts', 'POST', { contact: { name, phone } });
-      el.contactForm.reset();
-      el.contactsStatus.textContent = 'Contacto agregado.';
-      await refreshContacts();
-    } catch (error) {
-      el.contactsStatus.textContent = error.message || 'No se pudo agregar el contacto.';
     }
   });
 
@@ -2785,20 +3010,95 @@ function bindEvents() {
     renderResponse(200, { message: 'Operacion cancelada. Formulario cerrado.' });
   });
 
-  document.getElementById('adminDeleteUserForm').addEventListener('submit', async (event) => {
+  el.adminClientLookupForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const userId = document.getElementById('adminDeleteUserId').value.trim();
-    await executeAdminUserAction('delete', userId, 'adminDeleteUserForm');
+    await searchAdminClients();
   });
 
-  document.getElementById('adminBlockUserBtn').addEventListener('click', async () => {
-    const userId = document.getElementById('adminUserStateId').value.trim();
-    await executeAdminUserAction('block', userId, 'adminUserStateForm');
+  el.adminClientLookupResults.addEventListener('click', async (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const button = target.closest('[data-admin-client-id]');
+    if (!button) return;
+
+    const userId = button.getAttribute('data-admin-client-id');
+    try {
+      const payload = await apiCall(`/api/v1/manager/users/${userId}`, 'GET', null, 'manager');
+      el.adminClientLookupResults.classList.add('hidden');
+      renderAdminClientProfile(payload.user);
+    } catch (error) {
+      setAdminClientLookupValidation(normalizeAdminLookupErrorMessage(error.message));
+    }
   });
 
-  document.getElementById('adminUnblockUserBtn').addEventListener('click', async () => {
-    const userId = document.getElementById('adminUserStateId').value.trim();
-    await executeAdminUserAction('unblock', userId, 'adminUserStateForm');
+  el.adminClientEditForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const userId = state.selectedAdminUserId;
+    if (!userId) return;
+
+    try {
+      await apiCall(
+        `/api/v1/manager/users/${userId}`,
+        'PATCH',
+        {
+          first_name: el.adminClientFirstName.value.trim(),
+          last_name: el.adminClientLastName.value.trim(),
+          email: el.adminClientEmail.value.trim(),
+          phone: el.adminClientPhone.value.trim()
+        },
+        'manager'
+      );
+      pushAudit(`Actualizacion de datos de cliente user_id=${userId}`);
+      await refreshSelectedAdminClient();
+    } catch (error) {
+      setAdminClientLookupValidation(normalizeAdminLookupErrorMessage(error.message));
+    }
+  });
+
+  el.adminClientBlockBtn.addEventListener('click', async () => {
+    if (state.selectedAdminUserId) {
+      await executeAdminUserAction('block', state.selectedAdminUserId, 'adminClientEditForm');
+      await refreshSelectedAdminClient();
+    }
+  });
+
+  el.adminClientUnblockBtn.addEventListener('click', async () => {
+    if (state.selectedAdminUserId) {
+      await executeAdminUserAction('unblock', state.selectedAdminUserId, 'adminClientEditForm');
+      await refreshSelectedAdminClient();
+    }
+  });
+
+  el.adminClientDeactivateBtn.addEventListener('click', async () => {
+    if (state.selectedAdminUserId) {
+      await executeAdminUserAction('deactivate', state.selectedAdminUserId, 'adminClientEditForm');
+      await refreshSelectedAdminClient();
+    }
+  });
+
+  el.adminClientForcePasswordBtn.addEventListener('click', async () => {
+    if (!state.selectedAdminUserId) return;
+    if (!await confirmMutationAction('Se exigirá cambiar el PIN en el próximo ingreso. ¿Deseas continuar?', 'adminClientEditForm', 'warn')) return;
+    try {
+      await apiCall(
+        `/api/v1/users/${state.selectedAdminUserId}/force_password_change`,
+        'PATCH',
+        { enabled: true },
+        'manager'
+      );
+      pushAudit(`Cambio obligatorio de PIN user_id=${state.selectedAdminUserId}`);
+      renderResponse(200, { message: 'Cambio obligatorio de PIN activado.' });
+    } catch (error) {
+      setAdminClientLookupValidation(normalizeAdminLookupErrorMessage(error.message));
+    }
+  });
+
+  el.adminClientDeleteBtn.addEventListener('click', async () => {
+    if (state.selectedAdminUserId) {
+      await executeAdminUserAction('delete', state.selectedAdminUserId, 'adminClientEditForm');
+      renderAdminClientProfile(null);
+      await refreshAdminDashboard();
+    }
   });
 
   document.querySelectorAll('[data-admin-op]').forEach((button) => {
@@ -2978,6 +3278,12 @@ function bindEvents() {
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
+  });
+  el.refreshRolesBtn.addEventListener('click', async () => {
+    await refreshAdminRoles();
+  });
+  el.refreshAccountingBtn.addEventListener('click', async () => {
+    await refreshAccountingReports();
   });
 
   document.getElementById('adminAccountLookupForm').addEventListener('submit', async (event) => {
@@ -3541,6 +3847,9 @@ async function init() {
       if (state.adminInspectAccountLookup) {
         await refreshAdminAccountSummary(state.adminInspectAccountLookup);
       }
+    }
+    if (state.role === 'cashier') {
+      await refreshCashierDashboard();
     }
     setView(preferredView);
     syncBalanceAutoRefreshState();

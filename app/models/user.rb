@@ -11,12 +11,11 @@
 #  updated_at        :datetime         not null
 #  email             :string
 #
-class User < ApplicationRecord
-  BASIC_AUTH_PASSWORD_MIN_LENGTH = 12
-  BASIC_AUTH_PASSWORD_MAX_BYTES = 72
+require "digest"
+require "securerandom"
 
-  has_many :accounts, dependent: :destroy
-  has_many :api_keys, dependent: :destroy
+class User < ApplicationRecord
+
   has_many :recipients, dependent: :destroy
   has_many :contacts, dependent: :destroy
   has_many :user_files, dependent: :destroy
@@ -28,7 +27,17 @@ class User < ApplicationRecord
   attr_accessor :default_account_number
 
   attribute :role, :integer, default: 0
-  enum :role, { customer: 0, manager: 1, cashier: 2, admin: 3 }, default: :customer
+  enum :role, {
+    customer: 0,
+    manager: 1,
+    cashier: 2,
+    admin: 3,
+    super_admin: 4,
+    supervisor: 5,
+    accountant: 6,
+    auditor: 7,
+    financial_manager: 8
+  }, default: :customer
 
   validates :first_name, presence: true
   validates :last_name, presence: true
@@ -70,6 +79,25 @@ class User < ApplicationRecord
     return "blocked" if blocked?
 
     "active"
+  end
+
+  def generate_password_reset_token
+    token = SecureRandom.urlsafe_base64(32)
+    update_columns(
+      password_reset_digest: Digest::SHA256.hexdigest(token),
+      password_reset_sent_at: Time.current
+    )
+    token
+  end
+
+  def password_reset_token_valid?(token)
+    return false if password_reset_sent_at.blank?
+    return false if password_reset_sent_at < 30.minutes.ago
+
+    ActiveSupport::SecurityUtils.secure_compare(
+      password_reset_digest.to_s,
+      Digest::SHA256.hexdigest(token.to_s)
+    )
   end
 
   private

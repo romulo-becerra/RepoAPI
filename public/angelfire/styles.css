@@ -665,6 +665,94 @@ pre {
   line-height: 1.4;
 }
 
+.admin-client-management {
+  gap: 0.85rem;
+}
+
+.admin-client-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.65rem;
+}
+
+.admin-client-result {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink-900);
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.35rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-client-result span {
+  color: var(--ink-700);
+  font-size: 0.82rem;
+}
+
+.admin-client-profile {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  padding: 1rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-client-profile.hidden {
+  display: none;
+}
+
+.admin-client-profile-header,
+.admin-client-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: start;
+}
+
+.admin-client-profile-header h3,
+.admin-client-profile-header p,
+.admin-client-profile h4 {
+  margin: 0.25rem 0;
+}
+
+.admin-client-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-client-edit-form {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.admin-client-accounts {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.admin-client-account {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.65rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.25rem;
+}
+
+.admin-client-account strong,
+.admin-client-account span:last-child {
+  grid-column: 1 / -1;
+}
+
+.admin-client-actions {
+  justify-content: flex-end;
+  border-top: 1px solid var(--line);
+  padding-top: 0.8rem;
+}
+
 @media (max-width: 760px) {
   .action-modal-card {
     padding: 0.9rem;

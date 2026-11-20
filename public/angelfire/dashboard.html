@@ -77,6 +77,7 @@
           <h2>Vistas del sistema</h2>
           <div class="row-actions">
             <button id="viewClientBtn" class="btn" type="button" data-testid="view-client-btn">Vista cliente</button>
+            <button id="viewCashierBtn" class="btn ghost hidden" type="button" data-roles="cashier" data-testid="view-cashier-btn">Vista cajero</button>
             <button id="viewAdminBtn" class="btn ghost hidden" type="button" data-roles="admin,manager,cashier" data-testid="view-admin-btn">Vista admin</button>
           </div>
         </section>
@@ -378,6 +379,68 @@
               <p>Actividad 30 dias</p>
               <h3 id="adminActivity" data-testid="admin-activity">-</h3>
             </article>
+            <article class="kpi">
+              <p>Total clientes</p>
+              <h3 id="adminDashboardCustomers" data-testid="admin-dashboard-customers">-</h3>
+            </article>
+            <article class="kpi">
+              <p>Total cuentas</p>
+              <h3 id="adminDashboardAccounts" data-testid="admin-dashboard-accounts">-</h3>
+            </article>
+            <article class="kpi">
+              <p>Transacciones hoy</p>
+              <h3 id="adminDashboardTransactions" data-testid="admin-dashboard-transactions">-</h3>
+            </article>
+            <article class="kpi">
+              <p>Ingresos del dia</p>
+              <h3 id="adminDashboardIncome" data-testid="admin-dashboard-income">-</h3>
+            </article>
+            <article class="kpi">
+              <p>Egresos del dia</p>
+              <h3 id="adminDashboardExpenses" data-testid="admin-dashboard-expenses">-</h3>
+            </article>
+            <article class="kpi">
+              <p>Prestamos vencidos</p>
+              <h3 id="adminDashboardOverdue" data-testid="admin-dashboard-overdue">-</h3>
+            </article>
+            <article class="kpi">
+              <p>Alertas de seguridad</p>
+              <h3 id="adminDashboardSecurity" data-testid="admin-dashboard-security">-</h3>
+            </article>
+          </section>
+
+          <section class="panel table-panel" data-roles="admin,manager">
+            <div class="table-header">
+              <h2>Roles y permisos</h2>
+              <button id="refreshRolesBtn" class="btn ghost" type="button" data-testid="refresh-roles">Actualizar roles</button>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Rol</th><th>Permisos</th></tr>
+              </thead>
+              <tbody id="adminRolesRows" data-testid="admin-roles-rows">
+                <tr><td colspan="2">Sin roles cargados</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel table-panel" data-roles="admin,manager,accountant">
+            <div class="table-header">
+              <h2>Contabilidad financiera</h2>
+              <button id="refreshAccountingBtn" class="btn ghost" type="button" data-testid="refresh-accounting">Actualizar contabilidad</button>
+            </div>
+            <div class="kpi-grid">
+              <article class="kpi"><p>Balance general</p><h3 id="accountingBalanceGeneral">-</h3></article>
+              <article class="kpi"><p>Ingresos</p><h3 id="accountingIncome">-</h3></article>
+              <article class="kpi"><p>Egresos</p><h3 id="accountingExpenses">-</h3></article>
+              <article class="kpi"><p>Entradas de caja</p><h3 id="accountingCashIn">-</h3></article>
+            </div>
+            <table>
+              <thead><tr><th>ID</th><th>Fecha</th><th>Tipo</th><th>Monto</th></tr></thead>
+              <tbody id="accountingDailyRows" data-testid="accounting-daily-rows">
+                <tr><td colspan="4">Sin movimientos contables</td></tr>
+              </tbody>
+            </table>
           </section>
 
           <section class="panel contacts-panel" data-roles="admin,manager" aria-labelledby="contactsTitle">
@@ -473,30 +536,55 @@
             </div>
           </section>
 
-          <section class="operations-grid admin-ops-grid">
-
-            <form id="adminDeleteUserForm" class="panel" data-roles="admin">
-              <h2>Eliminar usuario</h2>
-              <p class="field-help">Requerido: User ID.</p>
-              <input id="adminDeleteUserId" placeholder="User ID *" required data-testid="admin-delete-user-id" />
-              <button class="btn alt" type="submit" data-testid="admin-delete-user-submit">Eliminar usuario</button>
-            </form>
-
-            <form id="adminUserStateForm" class="panel" data-roles="admin">
-              <h2>Estado de usuario</h2>
-              <p class="field-help">Requerido: User ID para bloquear o desbloquear.</p>
-              <input id="adminUserStateId" placeholder="User ID *" required data-testid="admin-user-state-id" />
-              <div class="row-actions">
-                <button class="btn alt" id="adminBlockUserBtn" type="button" data-testid="admin-block-user-btn">Bloquear</button>
-                <button class="btn" id="adminUnblockUserBtn" type="button" data-testid="admin-unblock-user-btn">Desbloquear</button>
-              </div>
-            </form>
-
-            <section class="panel" data-roles="admin,manager">
-              <h2>Acciones admin</h2>
-              <p>Refresca reportes y lista de usuarios del sistema.</p>
+          <section class="panel admin-client-management" data-roles="admin,manager">
+            <div class="table-header">
+              <h2>Gestión de clientes y usuarios</h2>
               <button id="refreshAdminDashboard" class="btn ghost" type="button" data-testid="refresh-admin-dashboard">Actualizar panel admin</button>
-            </section>
+            </div>
+            <form id="adminClientLookupForm" class="row-actions">
+              <input id="adminClientLookupQuery" placeholder="ID, cuenta, nombre, correo o teléfono" required data-testid="admin-client-lookup-query" />
+              <button class="btn" type="submit" data-testid="admin-client-lookup-submit">Buscar usuario</button>
+            </form>
+            <p id="adminClientLookupValidation" class="field-help validation-error hidden" data-testid="admin-client-lookup-validation"></p>
+
+            <div id="adminClientLookupResults" class="admin-client-results hidden" data-testid="admin-client-lookup-results"></div>
+
+            <article id="adminClientProfile" class="admin-client-profile hidden" data-testid="admin-client-profile">
+              <div class="admin-client-profile-header">
+                <div>
+                  <p class="eyebrow">Cliente seleccionado</p>
+                  <h3 id="adminClientName">-</h3>
+                  <p id="adminClientMeta" class="field-help">-</p>
+                </div>
+                <span id="adminClientStatus" class="perm-badge">-</span>
+              </div>
+
+              <div class="admin-client-grid">
+                <section>
+                  <h4>Datos personales</h4>
+                  <form id="adminClientEditForm" class="admin-client-edit-form">
+                    <input id="adminClientFirstName" placeholder="Nombre" data-testid="admin-client-first-name" />
+                    <input id="adminClientLastName" placeholder="Apellido" data-testid="admin-client-last-name" />
+                    <input id="adminClientEmail" type="email" placeholder="Correo" data-testid="admin-client-email" />
+                    <input id="adminClientPhone" placeholder="Teléfono" data-testid="admin-client-phone" />
+                    <button class="btn" type="submit" data-testid="admin-client-save">Guardar datos</button>
+                  </form>
+                </section>
+
+                <section>
+                  <h4>Cuentas asociadas</h4>
+                  <div id="adminClientAccounts" class="admin-client-accounts"></div>
+                </section>
+              </div>
+
+              <div class="row-actions admin-client-actions" data-roles="admin">
+                <button id="adminClientBlockBtn" class="btn alt" type="button" data-testid="admin-client-block">Bloquear</button>
+                <button id="adminClientUnblockBtn" class="btn" type="button" data-testid="admin-client-unblock">Desbloquear</button>
+                <button id="adminClientDeactivateBtn" class="btn ghost" type="button" data-testid="admin-client-deactivate">Desactivar</button>
+                <button id="adminClientForcePasswordBtn" class="btn ghost" type="button" data-testid="admin-client-force-password">Forzar cambio de PIN</button>
+                <button id="adminClientDeleteBtn" class="btn alt" type="button" data-testid="admin-client-delete">Eliminar usuario</button>
+              </div>
+            </article>
           </section>
 
           <section class="panel table-panel" data-roles="admin,manager">
@@ -745,6 +833,100 @@
             </ul>
           </section>
 
+        </section>
+
+        <section id="cashierView" class="hidden" data-roles="cashier">
+          <section class="kpi-grid">
+            <article class="kpi"><p>Saldo inicial caja</p><h3 id="cashierOpeningBalance">S/ 0.00</h3></article>
+            <article class="kpi"><p>Saldo sistema</p><h3 id="cashierSystemBalance">S/ 0.00</h3></article>
+            <article class="kpi"><p>Operaciones hoy</p><h3 id="cashierOperationCount">0</h3></article>
+            <article class="kpi"><p>Hora apertura</p><h3 id="cashierOpenedAt">-</h3></article>
+          </section>
+
+          <section class="operations-grid">
+            <form id="cashOpenForm" class="panel">
+              <h2>Apertura de caja</h2>
+              <input id="cashOpeningBalance" type="number" min="0" step="0.01" placeholder="Monto inicial" required />
+              <button class="btn" type="submit">Abrir caja</button>
+            </form>
+            <form id="cashReconciliationForm" class="panel">
+              <h2>Arqueo de caja</h2>
+              <input id="cashPhysicalBalance" type="number" min="0" step="0.01" placeholder="Dinero físico" required />
+              <button class="btn" type="submit">Arquear</button>
+              <p id="cashReconciliationResult" class="field-help">Sin arqueo.</p>
+            </form>
+            <form id="cashCloseForm" class="panel">
+              <h2>Cierre de caja</h2>
+              <input id="cashClosePhysicalBalance" type="number" min="0" step="0.01" placeholder="Dinero físico" required />
+              <textarea id="cashCloseNotes" rows="2" placeholder="Observaciones"></textarea>
+              <button class="btn alt" type="submit">Cerrar caja</button>
+            </form>
+          </section>
+
+          <section class="panel table-panel">
+            <div class="table-header">
+              <h2>Clientes</h2>
+              <button id="cashRefreshClientsBtn" class="btn ghost" type="button">Actualizar</button>
+            </div>
+            <form id="cashClientSearchForm" class="row-actions">
+              <input id="cashClientSearch" placeholder="CI, nombre, teléfono o correo" />
+              <button class="btn" type="submit">Buscar</button>
+            </form>
+            <table>
+              <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Teléfono</th><th>Cuentas</th></tr></thead>
+              <tbody id="cashClientRows"><tr><td colspan="5">Sin clientes</td></tr></tbody>
+            </table>
+          </section>
+
+          <section class="operations-grid">
+            <form id="cashRegisterClientForm" class="panel">
+              <h2>Registrar cliente</h2>
+              <input name="first_name" placeholder="Nombre" required />
+              <input name="last_name" placeholder="Apellidos" required />
+              <input name="email" type="email" placeholder="Correo" required />
+              <input name="phone" placeholder="Teléfono" />
+              <input name="document_number" placeholder="CI / Pasaporte" />
+              <input name="address" placeholder="Dirección" />
+              <input name="date_of_birth" type="date" placeholder="Fecha de nacimiento" />
+              <input name="pin" type="password" inputmode="numeric" minlength="4" maxlength="4" placeholder="PIN 4 dígitos" required />
+              <button class="btn" type="submit">Registrar</button>
+            </form>
+            <form id="cashOpenAccountForm" class="panel">
+              <h2>Aperturar cuenta</h2>
+              <input id="cashOpenAccountUserId" type="number" min="1" placeholder="ID de cliente" required />
+              <select id="cashOpenAccountCategory">
+                <option value="savings">Ahorro</option>
+                <option value="checking">Corriente</option>
+                <option value="business">Empresarial</option>
+                <option value="investment">Inversión</option>
+                <option value="credit">Crédito</option>
+              </select>
+              <button class="btn" type="submit">Crear cuenta</button>
+            </form>
+          </section>
+
+          <section class="panel table-panel">
+            <div class="table-header">
+              <h2>Movimientos y comprobantes</h2>
+              <button id="cashRefreshMovementsBtn" class="btn ghost" type="button">Actualizar</button>
+            </div>
+            <table>
+              <thead><tr><th>Fecha</th><th>Tipo</th><th>Monto</th><th>Cuenta</th><th>Estado</th></tr></thead>
+              <tbody id="cashMovementRows"><tr><td colspan="5">Sin movimientos</td></tr></tbody>
+            </table>
+            <table>
+              <thead><tr><th>Comprobante</th><th>Operación</th><th>Monto</th><th>Cuenta</th><th>Acción</th></tr></thead>
+              <tbody id="cashReceiptRows"><tr><td colspan="5">Sin comprobantes</td></tr></tbody>
+            </table>
+          </section>
+
+          <section class="panel table-panel">
+            <div class="table-header">
+              <h2>Reporte diario de caja</h2>
+              <button id="cashRefreshReportBtn" class="btn ghost" type="button">Actualizar</button>
+            </div>
+            <pre id="cashDailyReport">Sin datos.</pre>
+          </section>
         </section>
 
         <section class="panel response-panel">

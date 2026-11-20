@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_10_24_193000) do
+
   create_table "accounts", force: :cascade do |t|
     t.integer "user_id"
     t.string "account_number"
@@ -20,6 +20,12 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_24_193000) do
     t.datetime "updated_at", null: false
     t.boolean "default", default: false
     t.integer "account_type", default: 0, null: false
+    t.integer "status", default: 0, null: false
+    t.decimal "daily_withdraw_limit", precision: 15, scale: 2
+    t.decimal "daily_transfer_limit", precision: 15, scale: 2
+    t.string "account_category", default: "savings", null: false
+    t.decimal "retained_balance", precision: 15, scale: 2, default: "0.0", null: false
+    t.index ["status"], name: "index_accounts_on_status"
     t.index ["user_id"], name: "index_accounts_on_user_id"
   end
 
@@ -35,6 +41,7 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_24_193000) do
     t.index ["token_digest"], name: "index_api_keys_on_token_digest", unique: true
     t.index ["user_id"], name: "index_api_keys_on_user_id"
   end
+
 
   create_table "contacts", force: :cascade do |t|
     t.integer "user_id", null: false
@@ -86,10 +93,28 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_24_193000) do
     t.integer "status", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "ip_address"
+    t.string "device"
     t.index ["account_number"], name: "index_login_events_on_account_number"
     t.index ["created_at"], name: "index_login_events_on_created_at"
     t.index ["status"], name: "index_login_events_on_status"
     t.index ["user_id"], name: "index_login_events_on_user_id"
+  end
+
+  create_table "receipts", force: :cascade do |t|
+    t.integer "account_id", null: false
+    t.integer "transaction_id"
+    t.integer "created_by_id", null: false
+    t.string "receipt_number", null: false
+    t.string "operation", null: false
+    t.decimal "amount", precision: 15, scale: 2, null: false
+    t.text "description"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_receipts_on_account_id"
+    t.index ["created_by_id"], name: "index_receipts_on_created_by_id"
+    t.index ["receipt_number"], name: "index_receipts_on_receipt_number", unique: true
+    t.index ["transaction_id"], name: "index_receipts_on_transaction_id"
   end
 
   create_table "recipients", force: :cascade do |t|
@@ -119,7 +144,13 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_24_193000) do
     t.integer "status", default: 0
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.decimal "balance_before", precision: 15, scale: 2
+    t.decimal "balance_after", precision: 15, scale: 2
+    t.datetime "reversed_at"
+    t.integer "reversed_by_user_id"
+    t.text "reversal_reason"
     t.index ["account_id"], name: "index_transactions_on_account_id"
+    t.index ["reversed_at"], name: "index_transactions_on_reversed_at"
   end
 
   create_table "user_addresses", force: :cascade do |t|
@@ -164,18 +195,25 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_24_193000) do
     t.boolean "blocked", default: false, null: false
     t.date "date_of_birth"
     t.string "basic_auth_password_digest"
+
     t.index ["active"], name: "index_users_on_active"
     t.index ["blocked"], name: "index_users_on_blocked"
+    t.index ["document_number"], name: "index_users_on_document_number", unique: true
     t.index ["phone"], name: "index_users_on_phone", unique: true
     t.index ["role"], name: "index_users_on_role"
   end
 
+  add_foreign_key "account_reconciliations", "accounts"
+  add_foreign_key "account_reconciliations", "users", column: "created_by_id"
   add_foreign_key "accounts", "users"
   add_foreign_key "api_keys", "users", on_delete: :cascade
-  add_foreign_key "contacts", "users"
+
   add_foreign_key "loan_installments", "loans"
   add_foreign_key "loans", "accounts"
   add_foreign_key "login_events", "users", on_delete: :nullify
+  add_foreign_key "receipts", "accounts"
+  add_foreign_key "receipts", "transactions"
+  add_foreign_key "receipts", "users", column: "created_by_id"
   add_foreign_key "recipients", "accounts"
   add_foreign_key "recipients", "users"
   add_foreign_key "services", "accounts"

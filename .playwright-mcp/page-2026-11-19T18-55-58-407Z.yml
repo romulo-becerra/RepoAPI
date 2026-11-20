@@ -1,0 +1,91 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - navigation [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]: AngelFire
+        - list [ref=e6]:
+          - listitem [ref=e7]:
+            - link "Inicio" [ref=e8] [cursor=pointer]:
+              - /url: /angelfire/
+          - listitem [ref=e9]:
+            - link "Sobre nosotros" [ref=e10] [cursor=pointer]:
+              - /url: "#about"
+          - listitem [ref=e11]:
+            - link "Contacto" [ref=e12] [cursor=pointer]:
+              - /url: "#contact"
+      - generic [ref=e13]:
+        - link "Acceder" [ref=e14] [cursor=pointer]:
+          - /url: /angelfire/login.html?show=1
+        - generic [ref=e15]:
+          - generic [ref=e16]: Idioma
+          - combobox "Idioma" [ref=e17]:
+            - option "Español" [selected]
+            - option "English"
+            - option "Português"
+  - main [ref=e18]:
+    - generic [ref=e19]:
+      - img "AngelFire" [ref=e20]
+      - paragraph [ref=e21]: Institucion Financiera
+      - heading "AngelFire" [level=1] [ref=e22]
+      - paragraph [ref=e23]: Inicia sesion con numero de cuenta y PIN. Si aun no tienes cuenta, registrate y el sistema mostrara tu account_number para ingresar al panel operativo.
+      - list [ref=e24]:
+        - listitem [ref=e25]: El login usa account_number + PIN.
+        - listitem [ref=e26]: Si no tienes cuenta, puedes abrir el formulario de registro.
+        - listitem [ref=e27]: Tras ingresar, veras tu nombre y account_number en el panel.
+      - paragraph [ref=e28]:
+        - link "AutoPlay" [ref=e29] [cursor=pointer]:
+          - /url: https://sdetqa.vercel.app/autoplay
+      - paragraph [ref=e30]:
+        - link "Formulario de encuestas" [ref=e31] [cursor=pointer]:
+          - /url: /angelfire/survey.html
+      - region "Tablas web para pruebas" [ref=e32]:
+        - heading "Static web table" [level=2] [ref=e33]
+        - paragraph [ref=e34]: Tabla estatica de tipos de cuenta y beneficios.
+        - table "Static web table" [ref=e36]:
+          - rowgroup [ref=e37]:
+            - row [ref=e38]:
+              - columnheader "Tipo de cuenta" [ref=e39]
+              - columnheader "Mantenimiento (Bs)" [ref=e40]
+              - columnheader "Transferencias" [ref=e41]
+              - columnheader "Atencion" [ref=e42]
+          - rowgroup [ref=e43]:
+            - row [ref=e44]:
+              - cell "Basica" [ref=e45]
+              - cell "10" [ref=e46]
+              - cell "Nacionales" [ref=e47]
+              - cell "Standard" [ref=e48]
+            - row [ref=e49]:
+              - cell "Digital" [ref=e50]
+              - cell "20" [ref=e51]
+              - cell "Nacionales + QR" [ref=e52]
+              - cell "Chat" [ref=e53]
+            - row [ref=e54]:
+              - cell "Premium" [ref=e55]
+              - cell "40" [ref=e56]
+              - cell "Internacionales" [ref=e57]
+              - cell "Prioritaria" [ref=e58]
+      - region "Sponsors" [ref=e59]:
+        - heading "Sponsors" [level=2] [ref=e60]
+        - paragraph [ref=e61]:
+          - link "Abrir Web Shop" [ref=e62] [cursor=pointer]:
+            - /url: https://demowebshop.tricentis.com/
+            - text: Demo Web Shop
+        - img "sponsor" [ref=e63]
+        - paragraph [ref=e65]:
+          - link "▸ Cotizacion de monedas" [ref=e66] [cursor=pointer]:
+            - /url: "#"
+    - generic [ref=e67]:
+      - generic [ref=e68]:
+        - heading "Login" [level=2] [ref=e69]
+        - textbox "Numero de cuenta" [ref=e70]: "2222086457"
+        - generic [ref=e71]:
+          - textbox "PIN" [ref=e72]: Seguridad1!
+          - button "Ver PIN" [ref=e73] [cursor=pointer]
+        - button "Ingresar" [ref=e75] [cursor=pointer]
+        - group [ref=e76]:
+          - generic "Acceso para administradores" [ref=e77] [cursor=pointer]
+        - button "No tengo cuenta, registrarme" [ref=e78] [cursor=pointer]
+      - generic [ref=e79]:
+        - heading "Respuesta API" [level=2] [ref=e80]
+        - paragraph [ref=e81]: "Status: -"
+        - generic [ref=e82]: Listo para autenticar.

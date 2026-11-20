@@ -1,4 +1,22 @@
 class AccountsController < ApplicationController
+  def reverse
+    return render json: { errors: "Acceso restringido a personal autorizado" }, status: :forbidden unless current_user.management?
+
+    account = current_user.accounts.find_by(id: params[:id])
+    return render json: { errors: "Cuenta no encontrada" }, status: :not_found unless account
+
+    transaction = account.transactions.find_by(id: params[:transaction_id])
+    return render json: { errors: "Transacción no encontrada" }, status: :not_found unless transaction
+
+    TransactionService.new.reverse!(
+      transaction,
+      reason: params[:reason],
+      performed_by_user_id: current_user.id
+    )
+    render json: { message: "Transacción revertida correctamente", transaction_id: transaction.id }, status: :ok
+  rescue InvalidTransactionError, InsufficientFundsError => e
+    render json: { errors: e.message }, status: :unprocessable_entity
+  end
   def index
     @accounts = current_user.accounts
   end
@@ -47,7 +65,7 @@ class AccountsController < ApplicationController
 
     recipient_lookup = (params[:recipient_account_id].presence || params[:recipient_account_number]).to_s.strip
     recipient_account = Account.find_by(id: recipient_lookup) || Account.find_by(account_number: recipient_lookup)
-    return render json: { errors: "Cuenta receptora no encontrada o no valida" }, status: :not_found unless recipient_account&.user?
+    return render json: { errors: "Cuenta receptora no encontrada o no valida" }, status: :not_found unless recipient_account&.account_type_user?
 
     @amount = params[:amount].to_d
     description = params[:description]

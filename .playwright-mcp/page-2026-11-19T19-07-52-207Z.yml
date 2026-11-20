@@ -1,0 +1,244 @@
+- generic [ref=f4e2]:
+  - complementary [ref=f4e3]:
+    - generic [ref=f4e4]: AngelFire
+    - paragraph [ref=f4e5]: Core Banking Console
+    - generic [ref=f4e6]:
+      - heading "Sesion actual" [level=2] [ref=f4e7]
+      - paragraph [ref=f4e8]: Autenticado
+      - paragraph [ref=f4e9]: "Rol: admin"
+    - generic [ref=f4e10]:
+      - heading "Permisos por seccion" [level=2] [ref=f4e11]
+      - list [ref=f4e12]:
+        - listitem [ref=f4e13]:
+          - text: Cliente
+          - generic [ref=f4e14]: Habilitado
+        - listitem [ref=f4e15]:
+          - text: Admin Dashboard
+          - generic [ref=f4e16]: Habilitado
+        - listitem [ref=f4e17]:
+          - text: Manager Users
+          - generic [ref=f4e18]: Habilitado
+  - main [ref=f4e19]:
+    - generic [ref=f4e20]:
+      - generic [ref=f4e21]:
+        - paragraph [ref=f4e22]: Plataforma financiera
+        - heading "Panel Operativo" [level=1] [ref=f4e23]
+        - generic [ref=f4e24]:
+          - button "Actualizar datos" [ref=f4e25] [cursor=pointer]
+          - button "Cambiar PIN" [ref=f4e26] [cursor=pointer]
+          - button "Ocultar seccion" [ref=f4e27] [cursor=pointer]
+      - generic [ref=f4e28]:
+        - generic [ref=f4e29]:
+          - text: Base URL
+          - textbox "Base URL" [ref=f4e30]: http://localhost:3001
+        - button "Guardar" [ref=f4e31] [cursor=pointer]
+        - button "Cerrar sesion" [ref=f4e32] [cursor=pointer]
+      - generic [ref=f4e33]:
+        - generic [ref=f4e34]: Idioma
+        - combobox "Idioma" [ref=f4e35]:
+          - option "Español" [selected]
+          - option "English"
+          - option "Português"
+    - generic [ref=f4e36]:
+      - heading "Vistas del sistema" [level=2] [ref=f4e37]
+      - generic [ref=f4e38]:
+        - button "Vista cliente" [ref=f4e39] [cursor=pointer]
+        - button "Vista admin" [ref=f4e40] [cursor=pointer]
+    - generic [ref=f4e41]:
+      - generic [ref=f4e42]:
+        - article [ref=f4e43]:
+          - paragraph [ref=f4e44]: Total usuarios
+          - heading "-" [level=3] [ref=f4e45]
+        - article [ref=f4e46]:
+          - paragraph [ref=f4e47]: Prestamos activos
+          - heading "-" [level=3] [ref=f4e48]
+        - article [ref=f4e49]:
+          - paragraph [ref=f4e50]: Monto en prestamos
+          - heading "-" [level=3] [ref=f4e51]
+        - article [ref=f4e52]:
+          - paragraph [ref=f4e53]: Actividad 30 dias
+          - heading "-" [level=3] [ref=f4e54]
+      - generic [ref=f4e55]:
+        - heading "Operaciones de personal autorizado" [level=2] [ref=f4e56]
+        - paragraph [ref=f4e57]: Selecciona una operacion y recien se mostrara su formulario.
+        - generic [ref=f4e58]:
+          - button "Crear usuario (admin)" [ref=f4e59] [cursor=pointer]
+          - button "Originar prestamo (admin)" [ref=f4e60] [cursor=pointer]
+          - button "Operar cuenta de usuario" [ref=f4e61] [cursor=pointer]
+      - generic [ref=f4e62]:
+        - generic [ref=f4e63]:
+          - heading "Eliminar usuario" [level=2] [ref=f4e64]
+          - paragraph [ref=f4e65]: "Requerido: User ID."
+          - textbox "ID usuario *" [ref=f4e66]
+          - button "Eliminar usuario" [ref=f4e67] [cursor=pointer]
+        - generic [ref=f4e68]:
+          - heading "Estado de usuario" [level=2] [ref=f4e69]
+          - paragraph [ref=f4e70]: "Requerido: User ID para bloquear o desbloquear."
+          - textbox "ID usuario *" [ref=f4e71]
+          - generic [ref=f4e72]:
+            - button "Bloquear" [ref=f4e73] [cursor=pointer]
+            - button "Desbloquear" [ref=f4e74] [cursor=pointer]
+        - generic [ref=f4e75]:
+          - heading "Acciones admin" [level=2] [ref=f4e76]
+          - paragraph [ref=f4e77]: Refresca reportes y lista de usuarios del sistema.
+          - button "Actualizar panel admin" [ref=f4e78] [cursor=pointer]
+      - generic [ref=f4e79]:
+        - heading "Consulta de cuenta y prestamo" [level=2] [ref=f4e81]
+        - generic [ref=f4e82]:
+          - textbox "Account ID o numero de cuenta *" [ref=f4e83]
+          - button "Consultar cuenta" [ref=f4e84] [cursor=pointer]
+        - paragraph [ref=f4e85]: Sin cuenta seleccionada.
+      - generic [ref=f4e86]:
+        - generic [ref=f4e87]:
+          - heading "Archivos del usuario (admin)" [level=2] [ref=f4e88]
+          - button "Actualizar archivos" [ref=f4e89] [cursor=pointer]
+        - table [ref=f4e90]:
+          - rowgroup [ref=f4e91]:
+            - row [ref=f4e92]:
+              - columnheader "ID" [ref=f4e93]
+              - columnheader "Archivo" [ref=f4e94]
+              - columnheader "Tipo" [ref=f4e95]
+              - columnheader "Tamaño" [ref=f4e96]
+              - columnheader "Fecha" [ref=f4e97]
+          - rowgroup [ref=f4e98]:
+            - row [ref=f4e99]:
+              - cell "Sin archivos" [ref=f4e100]
+      - generic [ref=f4e101]:
+        - generic [ref=f4e102]:
+          - heading "Usuarios del sistema" [level=2] [ref=f4e103]
+          - generic [ref=f4e104]:
+            - generic [ref=f4e105]:
+              - text: Ver
+              - combobox "Ver" [ref=f4e106]:
+                - option "10" [selected]
+                - option "20"
+                - option "50"
+            - button "Anterior" [disabled] [ref=f4e107] [cursor=pointer]
+            - generic [ref=f4e108]: 1 / 1
+            - button "Siguiente" [disabled] [ref=f4e109] [cursor=pointer]
+        - table [ref=f4e110]:
+          - rowgroup [ref=f4e111]:
+            - row [ref=f4e112]:
+              - columnheader "ID" [ref=f4e113]
+              - columnheader "Nombre" [ref=f4e114]
+              - columnheader "Correo electronico" [ref=f4e115]
+              - columnheader "Cuenta" [ref=f4e116]
+              - columnheader "Rol" [ref=f4e117]
+              - columnheader "Estado" [ref=f4e118]
+              - columnheader "Acciones" [ref=f4e119]
+          - rowgroup [ref=f4e120]:
+            - row [ref=f4e121]:
+              - cell "Sin datos" [ref=f4e122]
+      - generic [ref=f4e123]:
+        - generic [ref=f4e124]:
+          - heading "Bitacora de operaciones" [level=2] [ref=f4e125]
+          - button "Actualizar" [ref=f4e126] [cursor=pointer]
+        - paragraph [ref=f4e127]: Consulta depositos, debitos y pagos por dia, semana o mes desde la fecha indicada.
+        - generic [ref=f4e128]:
+          - generic [ref=f4e129]:
+            - text: Periodo
+            - combobox "Periodo" [ref=f4e130]:
+              - option "Dia" [selected]
+              - option "Semana"
+              - option "Mes"
+          - generic [ref=f4e131]:
+            - text: Fecha de consulta
+            - textbox "Fecha de consulta" [ref=f4e132]: 2026-11-19
+          - generic [ref=f4e133]:
+            - text: Tipo de operacion
+            - combobox "Tipo de operacion" [ref=f4e134]:
+              - option "Todas" [selected]
+              - option "Depositos"
+              - option "Retiros"
+              - option "Transferencias"
+              - option "Pago de prestamo"
+              - option "Pago de servicios"
+              - option "Deposito ATM"
+              - option "Retiro ATM"
+              - option "Debitos (todas las salidas)"
+          - generic [ref=f4e135]:
+            - text: Ejecutado por
+            - combobox "Ejecutado por" [ref=f4e136]:
+              - option "Todos" [selected]
+              - option "Admin"
+              - option "Usuario"
+        - generic [ref=f4e137]:
+          - generic [ref=f4e138]:
+            - text: Ver
+            - combobox "Ver" [ref=f4e139]:
+              - option "10" [selected]
+              - option "20"
+              - option "50"
+          - button "Anterior" [disabled] [ref=f4e140] [cursor=pointer]
+          - generic [ref=f4e141]: 1 / 1
+          - button "Siguiente" [disabled] [ref=f4e142] [cursor=pointer]
+          - button "Descargar archivo" [ref=f4e143] [cursor=pointer]
+        - paragraph [ref=f4e144]: Sin operaciones registradas.
+        - table [ref=f4e145]:
+          - rowgroup [ref=f4e146]:
+            - row [ref=f4e147]:
+              - columnheader "Fecha" [ref=f4e148]
+              - columnheader "Tipo" [ref=f4e149]
+              - columnheader "Monto" [ref=f4e150]
+              - columnheader "Descripcion" [ref=f4e151]
+              - columnheader "Usuario" [ref=f4e152]
+              - columnheader "Cuenta" [ref=f4e153]
+              - columnheader "Ejecutado por" [ref=f4e154]
+              - columnheader "Estado" [ref=f4e155]
+          - rowgroup [ref=f4e156]:
+            - row [ref=f4e157]:
+              - cell "Sin operaciones" [ref=f4e158]
+      - generic [ref=f4e159]:
+        - generic [ref=f4e160]:
+          - heading "Reporte de inicios de sesion" [level=2] [ref=f4e161]
+          - button "Actualizar" [ref=f4e162] [cursor=pointer]
+        - paragraph [ref=f4e163]: Consulta los accesos exitosos, fallidos o bloqueados por dia, semana o mes.
+        - generic [ref=f4e164]:
+          - generic [ref=f4e165]:
+            - text: Periodo
+            - combobox "Periodo" [ref=f4e166]:
+              - option "Dia" [selected]
+              - option "Semana"
+              - option "Mes"
+          - generic [ref=f4e167]:
+            - text: Fecha de consulta
+            - textbox "Fecha de consulta" [ref=f4e168]: 2026-11-19
+          - generic [ref=f4e169]:
+            - text: Resultado
+            - combobox "Resultado" [ref=f4e170]:
+              - option "Todos" [selected]
+              - option "Exitoso"
+              - option "Fallido"
+              - option "blocked"
+        - generic [ref=f4e171]:
+          - generic [ref=f4e172]:
+            - text: Ver
+            - combobox "Ver" [ref=f4e173]:
+              - option "10" [selected]
+              - option "20"
+              - option "50"
+          - button "Anterior" [disabled] [ref=f4e174] [cursor=pointer]
+          - generic [ref=f4e175]: 1 / 1
+          - button "Siguiente" [disabled] [ref=f4e176] [cursor=pointer]
+          - button "Descargar archivo" [ref=f4e177] [cursor=pointer]
+        - paragraph [ref=f4e178]: Sin inicios de sesion registrados.
+        - table [ref=f4e179]:
+          - rowgroup [ref=f4e180]:
+            - row [ref=f4e181]:
+              - columnheader "Fecha" [ref=f4e182]
+              - columnheader "Resultado" [ref=f4e183]
+              - columnheader "ID usuario" [ref=f4e184]
+              - columnheader "Nombre" [ref=f4e185]
+              - columnheader "Numero de cuenta" [ref=f4e186]
+          - rowgroup [ref=f4e187]:
+            - row [ref=f4e188]:
+              - cell "Sin accesos registrados" [ref=f4e189]
+      - generic [ref=f4e190]:
+        - heading "Bitacora de operaciones admin" [level=2] [ref=f4e192]
+        - list [ref=f4e193]:
+          - listitem [ref=f4e194]: Sin eventos de auditoria
+    - generic [ref=f4e195]:
+      - generic [ref=f4e196]:
+        - heading "Respuesta API" [level=2] [ref=f4e197]
+        - generic [ref=f4e198]: "Status: -"
+      - generic [ref=f4e199]: Listo para operar.

@@ -1,0 +1,313 @@
+- generic [ref=f9e2]:
+  - complementary [ref=f9e3]:
+    - generic [ref=f9e4]: AngelFire
+    - paragraph [ref=f9e5]: Core Banking Console
+    - generic [ref=f9e6]:
+      - heading "Sesion actual" [level=2] [ref=f9e7]
+      - paragraph [ref=f9e8]: Autenticado
+      - paragraph [ref=f9e9]: "Rol: admin"
+    - generic [ref=f9e10]:
+      - heading "Permisos por seccion" [level=2] [ref=f9e11]
+      - list [ref=f9e12]:
+        - listitem [ref=f9e13]:
+          - text: Cliente
+          - generic [ref=f9e14]: Habilitado
+        - listitem [ref=f9e15]:
+          - text: Admin Dashboard
+          - generic [ref=f9e16]: Habilitado
+        - listitem [ref=f9e17]:
+          - text: Manager Users
+          - generic [ref=f9e18]: Habilitado
+  - main [ref=f9e19]:
+    - generic [ref=f9e20]:
+      - generic [ref=f9e21]:
+        - paragraph [ref=f9e22]: Plataforma financiera
+        - heading "Panel Operativo" [level=1] [ref=f9e23]
+        - generic [ref=f9e24]:
+          - button "Actualizar datos" [ref=f9e25] [cursor=pointer]
+          - button "Cambiar PIN" [ref=f9e26] [cursor=pointer]
+          - button "Ocultar seccion" [ref=f9e27] [cursor=pointer]
+      - generic [ref=f9e28]:
+        - generic [ref=f9e29]:
+          - text: Base URL
+          - textbox "Base URL" [ref=f9e30]: http://localhost:3001
+        - button "Guardar" [ref=f9e31] [cursor=pointer]
+        - button "Cerrar sesion" [ref=f9e32] [cursor=pointer]
+      - generic [ref=f9e33]:
+        - generic [ref=f9e34]: Idioma
+        - combobox "Idioma" [ref=f9e35]:
+          - option "Español" [selected]
+          - option "English"
+          - option "Português"
+    - generic [ref=f9e36]:
+      - heading "Vistas del sistema" [level=2] [ref=f9e37]
+      - generic [ref=f9e38]:
+        - button "Vista cliente" [ref=f9e39] [cursor=pointer]
+        - button "Vista admin" [ref=f9e40] [cursor=pointer]
+    - generic [ref=f9e41]:
+      - generic [ref=f9e42]:
+        - article [ref=f9e43]:
+          - paragraph [ref=f9e44]: Total usuarios
+          - heading "-" [level=3] [ref=f9e45]
+        - article [ref=f9e46]:
+          - paragraph [ref=f9e47]: Prestamos activos
+          - heading "-" [level=3] [ref=f9e48]
+        - article [ref=f9e49]:
+          - paragraph [ref=f9e50]: Monto en prestamos
+          - heading "-" [level=3] [ref=f9e51]
+        - article [ref=f9e52]:
+          - paragraph [ref=f9e53]: Actividad 30 dias
+          - heading "-" [level=3] [ref=f9e54]
+        - article [ref=f9e55]:
+          - paragraph [ref=f9e56]: Total clientes
+          - heading "-" [level=3] [ref=f9e57]
+        - article [ref=f9e58]:
+          - paragraph [ref=f9e59]: Total cuentas
+          - heading "-" [level=3] [ref=f9e60]
+        - article [ref=f9e61]:
+          - paragraph [ref=f9e62]: Transacciones hoy
+          - heading "-" [level=3] [ref=f9e63]
+        - article [ref=f9e64]:
+          - paragraph [ref=f9e65]: Ingresos del dia
+          - heading "-" [level=3] [ref=f9e66]
+        - article [ref=f9e67]:
+          - paragraph [ref=f9e68]: Egresos del dia
+          - heading "-" [level=3] [ref=f9e69]
+        - article [ref=f9e70]:
+          - paragraph [ref=f9e71]: Prestamos vencidos
+          - heading "-" [level=3] [ref=f9e72]
+        - article [ref=f9e73]:
+          - paragraph [ref=f9e74]: Alertas de seguridad
+          - heading "-" [level=3] [ref=f9e75]
+      - generic [ref=f9e76]:
+        - generic [ref=f9e77]:
+          - heading "Roles y permisos" [level=2] [ref=f9e78]
+          - button "Actualizar roles" [ref=f9e79] [cursor=pointer]
+        - table [ref=f9e80]:
+          - rowgroup [ref=f9e81]:
+            - row [ref=f9e82]:
+              - columnheader "Rol" [ref=f9e83]
+              - columnheader "Permisos" [ref=f9e84]
+          - rowgroup [ref=f9e85]:
+            - row [ref=f9e86]:
+              - cell "Sin roles cargados" [ref=f9e87]
+      - generic [ref=f9e88]:
+        - generic [ref=f9e89]:
+          - heading "Contabilidad financiera" [level=2] [ref=f9e90]
+          - button "Actualizar contabilidad" [ref=f9e91] [cursor=pointer]
+        - generic [ref=f9e92]:
+          - article [ref=f9e93]:
+            - paragraph [ref=f9e94]: Balance general
+            - heading "-" [level=3] [ref=f9e95]
+          - article [ref=f9e96]:
+            - paragraph [ref=f9e97]: Ingresos
+            - heading "-" [level=3] [ref=f9e98]
+          - article [ref=f9e99]:
+            - paragraph [ref=f9e100]: Egresos
+            - heading "-" [level=3] [ref=f9e101]
+          - article [ref=f9e102]:
+            - paragraph [ref=f9e103]: Entradas de caja
+            - heading "-" [level=3] [ref=f9e104]
+        - table [ref=f9e105]:
+          - rowgroup [ref=f9e106]:
+            - row [ref=f9e107]:
+              - columnheader "ID" [ref=f9e108]
+              - columnheader "Fecha" [ref=f9e109]
+              - columnheader "Tipo" [ref=f9e110]
+              - columnheader "Monto" [ref=f9e111]
+          - rowgroup [ref=f9e112]:
+            - row [ref=f9e113]:
+              - cell "Sin movimientos contables" [ref=f9e114]
+      - generic [ref=f9e115]:
+        - heading "Operaciones de personal autorizado" [level=2] [ref=f9e116]
+        - paragraph [ref=f9e117]: Selecciona una operacion y recien se mostrara su formulario.
+        - generic [ref=f9e118]:
+          - button "Crear usuario (admin)" [ref=f9e119] [cursor=pointer]
+          - button "Originar prestamo (admin)" [ref=f9e120] [cursor=pointer]
+          - button "Operar cuenta de usuario" [ref=f9e121] [cursor=pointer]
+      - generic [ref=f9e122]:
+        - generic [ref=f9e123]:
+          - heading "Gestión de clientes y usuarios" [level=2] [ref=f9e124]
+          - button "Actualizar panel admin" [ref=f9e125] [cursor=pointer]
+        - generic [ref=f9e126]:
+          - textbox "ID, cuenta, nombre, correo o teléfono" [ref=f9e127]
+          - button "Buscar usuario" [ref=f9e128] [cursor=pointer]
+      - generic [ref=f9e129]:
+        - heading "Consulta de cuenta y prestamo" [level=2] [ref=f9e131]
+        - generic [ref=f9e132]:
+          - textbox "Account ID o numero de cuenta *" [ref=f9e133]: "9000000001"
+          - button "Consultar cuenta" [ref=f9e134] [cursor=pointer]
+        - paragraph [ref=f9e135]: Sin cuenta seleccionada.
+      - generic [ref=f9e136]:
+        - generic [ref=f9e137]:
+          - heading "Archivos del usuario (admin)" [level=2] [ref=f9e138]
+          - button "Actualizar archivos" [ref=f9e139] [cursor=pointer]
+        - table [ref=f9e140]:
+          - rowgroup [ref=f9e141]:
+            - row [ref=f9e142]:
+              - columnheader "ID" [ref=f9e143]
+              - columnheader "Archivo" [ref=f9e144]
+              - columnheader "Tipo" [ref=f9e145]
+              - columnheader "Tamaño" [ref=f9e146]
+              - columnheader "Fecha" [ref=f9e147]
+          - rowgroup [ref=f9e148]:
+            - row [ref=f9e149]:
+              - cell "Sin archivos" [ref=f9e150]
+      - generic [ref=f9e151]:
+        - generic [ref=f9e152]:
+          - heading "Usuarios del sistema" [level=2] [ref=f9e153]
+          - generic [ref=f9e154]:
+            - generic [ref=f9e155]:
+              - text: Ver
+              - combobox "Ver" [ref=f9e156]:
+                - option "10" [selected]
+                - option "20"
+                - option "50"
+            - button "Anterior" [disabled] [ref=f9e157] [cursor=pointer]
+            - generic [ref=f9e158]: 1 / 1
+            - button "Siguiente" [disabled] [ref=f9e159] [cursor=pointer]
+        - table [ref=f9e160]:
+          - rowgroup [ref=f9e161]:
+            - row [ref=f9e162]:
+              - columnheader "ID" [ref=f9e163]
+              - columnheader "Nombre" [ref=f9e164]
+              - columnheader "Correo electronico" [ref=f9e165]
+              - columnheader "Cuenta" [ref=f9e166]
+              - columnheader "Rol" [ref=f9e167]
+              - columnheader "Estado" [ref=f9e168]
+              - columnheader "Acciones" [ref=f9e169]
+          - rowgroup [ref=f9e170]:
+            - row [ref=f9e171]:
+              - cell "Sin datos" [ref=f9e172]
+      - generic [ref=f9e173]:
+        - generic [ref=f9e174]:
+          - heading "Bitacora de operaciones" [level=2] [ref=f9e175]
+          - button "Actualizar" [ref=f9e176] [cursor=pointer]
+        - paragraph [ref=f9e177]: Consulta depositos, debitos y pagos por dia, semana o mes desde la fecha indicada.
+        - generic [ref=f9e178]:
+          - generic [ref=f9e179]:
+            - text: Periodo
+            - combobox "Periodo" [ref=f9e180]:
+              - option "Dia" [selected]
+              - option "Semana"
+              - option "Mes"
+          - generic [ref=f9e181]:
+            - text: Fecha de consulta
+            - textbox "Fecha de consulta" [ref=f9e182]: 2026-11-19
+          - generic [ref=f9e183]:
+            - text: Tipo de operacion
+            - combobox "Tipo de operacion" [ref=f9e184]:
+              - option "Todas" [selected]
+              - option "Depositos"
+              - option "Retiros"
+              - option "Transferencias"
+              - option "Pago de prestamo"
+              - option "Pago de servicios"
+              - option "Deposito ATM"
+              - option "Retiro ATM"
+              - option "Debitos (todas las salidas)"
+          - generic [ref=f9e185]:
+            - text: Ejecutado por
+            - combobox "Ejecutado por" [ref=f9e186]:
+              - option "Todos" [selected]
+              - option "Admin"
+              - option "Usuario"
+        - generic [ref=f9e187]:
+          - generic [ref=f9e188]:
+            - text: Ver
+            - combobox "Ver" [ref=f9e189]:
+              - option "10" [selected]
+              - option "20"
+              - option "50"
+          - button "Anterior" [disabled] [ref=f9e190] [cursor=pointer]
+          - generic [ref=f9e191]: 1 / 1
+          - button "Siguiente" [disabled] [ref=f9e192] [cursor=pointer]
+          - button "Descargar archivo" [ref=f9e193] [cursor=pointer]
+        - paragraph [ref=f9e194]: Sin operaciones registradas.
+        - table [ref=f9e195]:
+          - rowgroup [ref=f9e196]:
+            - row [ref=f9e197]:
+              - columnheader "Fecha" [ref=f9e198]
+              - columnheader "Tipo" [ref=f9e199]
+              - columnheader "Monto" [ref=f9e200]
+              - columnheader "Descripcion" [ref=f9e201]
+              - columnheader "Usuario" [ref=f9e202]
+              - columnheader "Cuenta" [ref=f9e203]
+              - columnheader "Ejecutado por" [ref=f9e204]
+              - columnheader "Estado" [ref=f9e205]
+          - rowgroup [ref=f9e206]:
+            - row [ref=f9e207]:
+              - cell "Sin operaciones" [ref=f9e208]
+      - generic [ref=f9e209]:
+        - generic [ref=f9e210]:
+          - heading "Reporte de inicios de sesion" [level=2] [ref=f9e211]
+          - button "Actualizar" [ref=f9e212] [cursor=pointer]
+        - paragraph [ref=f9e213]: Consulta los accesos exitosos, fallidos o bloqueados por dia, semana o mes.
+        - generic [ref=f9e214]:
+          - generic [ref=f9e215]:
+            - text: Periodo
+            - combobox "Periodo" [ref=f9e216]:
+              - option "Dia" [selected]
+              - option "Semana"
+              - option "Mes"
+          - generic [ref=f9e217]:
+            - text: Fecha de consulta
+            - textbox "Fecha de consulta" [ref=f9e218]: 2026-11-19
+          - generic [ref=f9e219]:
+            - text: Resultado
+            - combobox "Resultado" [ref=f9e220]:
+              - option "Todos" [selected]
+              - option "Exitoso"
+              - option "Fallido"
+              - option "blocked"
+        - generic [ref=f9e221]:
+          - generic [ref=f9e222]:
+            - text: Ver
+            - combobox "Ver" [ref=f9e223]:
+              - option "10" [selected]
+              - option "20"
+              - option "50"
+          - button "Anterior" [disabled] [ref=f9e224] [cursor=pointer]
+          - generic [ref=f9e225]: 1 / 1
+          - button "Siguiente" [disabled] [ref=f9e226] [cursor=pointer]
+          - button "Descargar archivo" [ref=f9e227] [cursor=pointer]
+        - paragraph [ref=f9e228]: Sin inicios de sesion registrados.
+        - table [ref=f9e229]:
+          - rowgroup [ref=f9e230]:
+            - row [ref=f9e231]:
+              - columnheader "Fecha" [ref=f9e232]
+              - columnheader "Resultado" [ref=f9e233]
+              - columnheader "ID usuario" [ref=f9e234]
+              - columnheader "Nombre" [ref=f9e235]
+              - columnheader "Numero de cuenta" [ref=f9e236]
+          - rowgroup [ref=f9e237]:
+            - row [ref=f9e238]:
+              - cell "Sin accesos registrados" [ref=f9e239]
+      - generic [ref=f9e240]:
+        - heading "Bitacora de operaciones admin" [level=2] [ref=f9e242]
+        - list [ref=f9e243]:
+          - listitem [ref=f9e244]: 2026-11-19T19:46:50.547Z | Consulta de accesos periodo=day fecha=2026-11-19 total=18
+          - listitem [ref=f9e245]: 2026-11-19T19:46:50.025Z | Consulta bitacora de operaciones periodo=day fecha=2026-11-19 total=0
+          - listitem [ref=f9e246]: 2026-11-19T19:46:47.277Z | Consulta reporte de actividad de cuentas (30 dias)
+          - listitem [ref=f9e247]: 2026-11-19T19:46:46.912Z | Consulta reporte prestamos activos=43 monto=710115.12
+          - listitem [ref=f9e248]: 2026-11-19T19:46:46.329Z | Consulta de usuarios manager total=175
+          - listitem [ref=f9e249]: 2026-11-19T19:27:46.747Z | Consulta bitacora de operaciones periodo=day fecha=2026-11-19 total=0
+          - listitem [ref=f9e250]: 2026-11-19T19:27:45.678Z | Consulta reporte de actividad de cuentas (30 dias)
+          - listitem [ref=f9e251]: 2026-11-19T19:27:44.541Z | Consulta reporte prestamos activos=43 monto=710115.12
+          - listitem [ref=f9e252]: 2026-11-19T19:27:43.440Z | Consulta de usuarios manager total=175
+          - listitem [ref=f9e253]: 2026-11-19T19:26:50.628Z | Consulta de accesos periodo=day fecha=2026-11-19 total=15
+          - listitem [ref=f9e254]: 2026-11-19T19:26:50.156Z | Consulta bitacora de operaciones periodo=day fecha=2026-11-19 total=0
+          - listitem [ref=f9e255]: 2026-11-19T19:26:49.576Z | Consulta reporte de actividad de cuentas (30 dias)
+          - listitem [ref=f9e256]: 2026-11-19T19:26:48.735Z | Consulta reporte prestamos activos=43 monto=710115.12
+          - listitem [ref=f9e257]: 2026-11-19T19:26:46.859Z | Consulta de usuarios manager total=175
+          - listitem [ref=f9e258]: 2026-11-19T19:10:09.162Z | Consulta de cuenta admin lookup=9000000001
+          - listitem [ref=f9e259]: 2026-11-19T19:07:57.149Z | Consulta de accesos periodo=day fecha=2026-11-19 total=9
+          - listitem [ref=f9e260]: 2026-11-19T19:07:56.794Z | Consulta bitacora de operaciones periodo=day fecha=2026-11-19 total=0
+          - listitem [ref=f9e261]: 2026-11-19T19:07:56.400Z | Consulta reporte de actividad de cuentas (30 dias)
+          - listitem [ref=f9e262]: 2026-11-19T19:07:56.002Z | Consulta reporte prestamos activos=43 monto=710115.12
+          - listitem [ref=f9e263]: 2026-11-19T19:07:55.458Z | Consulta de usuarios manager total=175
+    - generic [ref=f9e264]:
+      - generic [ref=f9e265]:
+        - heading "Respuesta API" [level=2] [ref=f9e266]
+        - generic [ref=f9e267]: "Status: -"
+      - generic [ref=f9e268]: Listo para operar.
