@@ -1,0 +1,91 @@
+- generic [active] [ref=f34e1]:
+  - banner [ref=f34e2]:
+    - navigation [ref=f34e3]:
+      - generic [ref=f34e4]:
+        - generic [ref=f34e5]: AngelFire
+        - list [ref=f34e6]:
+          - listitem [ref=f34e7]:
+            - link "Home" [ref=f34e8] [cursor=pointer]:
+              - /url: /angelfire/
+          - listitem [ref=f34e9]:
+            - link "About us" [ref=f34e10] [cursor=pointer]:
+              - /url: "#about"
+          - listitem [ref=f34e11]:
+            - link "Contact" [ref=f34e12] [cursor=pointer]:
+              - /url: "#contact"
+      - generic [ref=f34e13]:
+        - link "Sign in" [ref=f34e14] [cursor=pointer]:
+          - /url: /angelfire/login.html?show=1
+        - generic [ref=f34e15]:
+          - generic [ref=f34e16]: Language
+          - combobox "Idioma" [ref=f34e17]:
+            - option "Español"
+            - option "English" [selected]
+            - option "Português"
+  - main [ref=f34e18]:
+    - generic [ref=f34e19]:
+      - img "AngelFire" [ref=f34e20]
+      - paragraph [ref=f34e21]: Financial Institution
+      - heading "AngelFire" [level=1] [ref=f34e22]
+      - paragraph [ref=f34e23]: Sign in with your account number and PIN. If you do not have an account yet, register to receive the account number used to access the operations dashboard.
+      - list [ref=f34e24]:
+        - listitem [ref=f34e25]: Sign-in uses account_number + PIN.
+        - listitem [ref=f34e26]: If you do not have an account, you can open the registration form.
+        - listitem [ref=f34e27]: After signing in, your name and account_number will appear on the dashboard.
+      - paragraph [ref=f34e28]:
+        - link "AutoPlay" [ref=f34e29] [cursor=pointer]:
+          - /url: https://sdetqa.vercel.app/autoplay
+      - paragraph [ref=f34e30]:
+        - link "Survey form" [ref=f34e31] [cursor=pointer]:
+          - /url: /angelfire/survey.html
+      - region "Web tables for testing" [ref=f34e32]:
+        - heading "Static web table" [level=2] [ref=f34e33]
+        - paragraph [ref=f34e34]: Static table of account types and benefits.
+        - table "Static web table" [ref=f34e36]:
+          - rowgroup [ref=f34e37]:
+            - row [ref=f34e38]:
+              - columnheader "Account type" [ref=f34e39]
+              - columnheader "Maintenance (Bs)" [ref=f34e40]
+              - columnheader "Transfers" [ref=f34e41]
+              - columnheader "Support" [ref=f34e42]
+          - rowgroup [ref=f34e43]:
+            - row [ref=f34e44]:
+              - cell "Basic" [ref=f34e45]
+              - cell "10" [ref=f34e46]
+              - cell "Domestic" [ref=f34e47]
+              - cell "Standard" [ref=f34e48]
+            - row [ref=f34e49]:
+              - cell "Digital" [ref=f34e50]
+              - cell "20" [ref=f34e51]
+              - cell "Domestic + QR" [ref=f34e52]
+              - cell "Chat" [ref=f34e53]
+            - row [ref=f34e54]:
+              - cell "Premium" [ref=f34e55]
+              - cell "40" [ref=f34e56]
+              - cell "International" [ref=f34e57]
+              - cell "Priority" [ref=f34e58]
+      - region "Sponsors" [ref=f34e59]:
+        - heading "Sponsors" [level=2] [ref=f34e60]
+        - paragraph [ref=f34e61]:
+          - link "Open Web Shop" [ref=f34e62] [cursor=pointer]:
+            - /url: https://demowebshop.tricentis.com/
+            - text: Demo Web Shop
+        - img "sponsor" [ref=f34e63]
+        - paragraph [ref=f34e65]:
+          - link "▸ Currency exchange rates" [ref=f34e66] [cursor=pointer]:
+            - /url: "#"
+    - generic [ref=f34e67]:
+      - generic [ref=f34e68]:
+        - heading "Sign in" [level=2] [ref=f34e69]
+        - textbox "Account number" [ref=f34e70]: "2222086457"
+        - generic [ref=f34e71]:
+          - textbox "PIN" [ref=f34e72]: Seguridad1!
+          - button "Show PIN" [ref=f34e73] [cursor=pointer]
+        - button "Sign in" [ref=f34e75] [cursor=pointer]
+        - group [ref=f34e76]:
+          - generic "Administrator access" [ref=f34e77] [cursor=pointer]
+        - button "I do not have an account, register" [ref=f34e78] [cursor=pointer]
+      - generic [ref=f34e79]:
+        - heading "API response" [level=2] [ref=f34e80]
+        - paragraph [ref=f34e81]: "Status: -"
+        - generic [ref=f34e82]: Listo para autenticar.

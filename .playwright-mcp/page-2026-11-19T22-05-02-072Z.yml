@@ -1,0 +1,91 @@
+- generic [active] [ref=f17e1]:
+  - banner [ref=f17e2]:
+    - navigation [ref=f17e3]:
+      - generic [ref=f17e4]:
+        - generic [ref=f17e5]: AngelFire
+        - list [ref=f17e6]:
+          - listitem [ref=f17e7]:
+            - link "Inicio" [ref=f17e8] [cursor=pointer]:
+              - /url: /angelfire/
+          - listitem [ref=f17e9]:
+            - link "Sobre nosotros" [ref=f17e10] [cursor=pointer]:
+              - /url: "#about"
+          - listitem [ref=f17e11]:
+            - link "Contacto" [ref=f17e12] [cursor=pointer]:
+              - /url: "#contact"
+      - generic [ref=f17e13]:
+        - link "Acceder" [ref=f17e14] [cursor=pointer]:
+          - /url: /angelfire/login.html?show=1
+        - generic [ref=f17e15]:
+          - generic [ref=f17e16]: Idioma
+          - combobox "Idioma" [ref=f17e17]:
+            - option "Español" [selected]
+            - option "English"
+            - option "Português"
+  - main [ref=f17e18]:
+    - generic [ref=f17e19]:
+      - img "AngelFire" [ref=f17e20]
+      - paragraph [ref=f17e21]: Institucion Financiera
+      - heading "AngelFire" [level=1] [ref=f17e22]
+      - paragraph [ref=f17e23]: Inicia sesion con numero de cuenta y PIN. Si aun no tienes cuenta, registrate y el sistema mostrara tu account_number para ingresar al panel operativo.
+      - list [ref=f17e24]:
+        - listitem [ref=f17e25]: El login usa account_number + PIN.
+        - listitem [ref=f17e26]: Si no tienes cuenta, puedes abrir el formulario de registro.
+        - listitem [ref=f17e27]: Tras ingresar, veras tu nombre y account_number en el panel.
+      - paragraph [ref=f17e28]:
+        - link "AutoPlay" [ref=f17e29] [cursor=pointer]:
+          - /url: https://sdetqa.vercel.app/autoplay
+      - paragraph [ref=f17e30]:
+        - link "Formulario de encuestas" [ref=f17e31] [cursor=pointer]:
+          - /url: /angelfire/survey.html
+      - region "Tablas web para pruebas" [ref=f17e32]:
+        - heading "Static web table" [level=2] [ref=f17e33]
+        - paragraph [ref=f17e34]: Tabla estatica de tipos de cuenta y beneficios.
+        - table "Static web table" [ref=f17e36]:
+          - rowgroup [ref=f17e37]:
+            - row [ref=f17e38]:
+              - columnheader "Tipo de cuenta" [ref=f17e39]
+              - columnheader "Mantenimiento (Bs)" [ref=f17e40]
+              - columnheader "Transferencias" [ref=f17e41]
+              - columnheader "Atencion" [ref=f17e42]
+          - rowgroup [ref=f17e43]:
+            - row [ref=f17e44]:
+              - cell "Basica" [ref=f17e45]
+              - cell "10" [ref=f17e46]
+              - cell "Nacionales" [ref=f17e47]
+              - cell "Standard" [ref=f17e48]
+            - row [ref=f17e49]:
+              - cell "Digital" [ref=f17e50]
+              - cell "20" [ref=f17e51]
+              - cell "Nacionales + QR" [ref=f17e52]
+              - cell "Chat" [ref=f17e53]
+            - row [ref=f17e54]:
+              - cell "Premium" [ref=f17e55]
+              - cell "40" [ref=f17e56]
+              - cell "Internacionales" [ref=f17e57]
+              - cell "Prioritaria" [ref=f17e58]
+      - region "Sponsors" [ref=f17e59]:
+        - heading "Sponsors" [level=2] [ref=f17e60]
+        - paragraph [ref=f17e61]:
+          - link "Abrir Web Shop" [ref=f17e62] [cursor=pointer]:
+            - /url: https://demowebshop.tricentis.com/
+            - text: Demo Web Shop
+        - img "sponsor" [ref=f17e63]
+        - paragraph [ref=f17e65]:
+          - link "▸ Cotizacion de monedas" [ref=f17e66] [cursor=pointer]:
+            - /url: "#"
+    - generic [ref=f17e67]:
+      - generic [ref=f17e68]:
+        - heading "Login" [level=2] [ref=f17e69]
+        - textbox "Numero de cuenta" [ref=f17e70]: "2100470400"
+        - generic [ref=f17e71]:
+          - textbox "PIN" [ref=f17e72]: "1234"
+          - button "Ver PIN" [ref=f17e73] [cursor=pointer]
+        - button "Ingresar" [ref=f17e75] [cursor=pointer]
+        - group [ref=f17e76]:
+          - generic "Acceso para administradores" [ref=f17e77] [cursor=pointer]
+        - button "No tengo cuenta, registrarme" [ref=f17e78] [cursor=pointer]
+      - generic [ref=f17e79]:
+        - heading "Respuesta API" [level=2] [ref=f17e80]
+        - paragraph [ref=f17e81]: "Status: -"
+        - generic [ref=f17e82]: Listo para autenticar.

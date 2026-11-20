@@ -36,6 +36,12 @@ class ApplicationController < ActionController::API
     render json: { errors: "Acceso restringido a personal autorizado" }, status: :forbidden
   end
 
+  def require_customer_service!
+    return if current_user&.customer_service? || current_user&.management?
+
+    render json: { errors: 'Acceso restringido a Atención al Cliente' }, status: :forbidden
+  end
+
   def authenticate_request
     api_key = request.headers["X-API-Key"]
     return authenticate_api_key(api_key) if api_key.present?

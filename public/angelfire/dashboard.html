@@ -31,15 +31,23 @@
           <h2>Permisos por seccion</h2>
           <ul class="permission-list">
             <li>
-              Cliente
+              Autogestión cliente
               <span id="permClient" class="perm-badge" data-testid="perm-client">Bloqueado</span>
             </li>
             <li>
-              Admin Dashboard
+              Operaciones administrativas
               <span id="permAdmin" class="perm-badge" data-testid="perm-admin">Bloqueado</span>
             </li>
             <li>
-              Manager Users
+              Caja operativa
+              <span id="permCashier" class="perm-badge" data-testid="perm-cashier">Bloqueado</span>
+            </li>
+            <li>
+              Atención al cliente
+              <span id="permCustomerService" class="perm-badge" data-testid="perm-customer-service">Bloqueado</span>
+            </li>
+            <li>
+              Usuarios
               <span id="permManagerUsers" class="perm-badge" data-testid="perm-manager-users">Bloqueado</span>
             </li>
           </ul>
@@ -76,9 +84,10 @@
         <section class="view-switch panel">
           <h2>Vistas del sistema</h2>
           <div class="row-actions">
-            <button id="viewClientBtn" class="btn" type="button" data-testid="view-client-btn">Vista cliente</button>
+            <button id="viewClientBtn" class="btn" type="button" data-roles="customer" data-testid="view-client-btn">Vista cliente</button>
             <button id="viewCashierBtn" class="btn ghost hidden" type="button" data-roles="cashier" data-testid="view-cashier-btn">Vista cajero</button>
-            <button id="viewAdminBtn" class="btn ghost hidden" type="button" data-roles="admin,manager,cashier" data-testid="view-admin-btn">Vista admin</button>
+            <button id="viewCustomerServiceBtn" class="btn ghost hidden" type="button" data-roles="customer_service" data-testid="view-customer-service-btn">Vista atención al cliente</button>
+            <button id="viewAdminBtn" class="btn ghost hidden" type="button" data-roles="admin,manager" data-testid="view-admin-btn">Vista admin</button>
           </div>
         </section>
 
@@ -131,6 +140,51 @@
               <p>Prestamo activo</p>
               <h3 id="loanStateValue" data-testid="loan-state-value">Sin datos</h3>
             </article>
+          </section>
+
+          <section class="kpi-grid" data-roles="customer">
+            <article class="kpi"><p>Saldo consolidado</p><h3 id="customerPortalBalance">S/ 0.00</h3></article>
+            <article class="kpi"><p>Disponible</p><h3 id="customerPortalAvailable">S/ 0.00</h3></article>
+            <article class="kpi"><p>Ingresos del mes</p><h3 id="customerPortalIncome">S/ 0.00</h3></article>
+            <article class="kpi"><p>Gastos del mes</p><h3 id="customerPortalExpenses">S/ 0.00</h3></article>
+          </section>
+
+          <section class="operations-grid" data-roles="customer">
+            <form id="customerCreditRequestForm" class="panel">
+              <h2>Solicitar crédito</h2>
+              <input id="customerCreditAccountId" type="number" min="1" placeholder="ID de cuenta" required />
+              <input id="customerCreditAmount" type="number" min="1" step="0.01" placeholder="Monto" required />
+              <input id="customerCreditMonths" type="number" min="1" placeholder="Plazo en meses" required />
+              <textarea id="customerCreditReason" rows="2" placeholder="Motivo"></textarea>
+              <button class="btn" type="submit">Enviar solicitud</button>
+            </form>
+
+            <form id="customerSupportForm" class="panel">
+              <h2>Soporte</h2>
+              <input id="customerTicketSubject" placeholder="Asunto" required />
+              <textarea id="customerTicketDescription" rows="3" placeholder="Describe el problema" required></textarea>
+              <button class="btn" type="submit">Crear ticket</button>
+            </form>
+
+            <form id="customerPreferencesForm" class="panel">
+              <h2>Preferencias</h2>
+              <label for="customerTheme">Tema</label>
+              <select id="customerTheme">
+                <option value="light" data-i18n-value="Claro">Claro</option>
+                <option value="dark" data-i18n-value="Oscuro">Oscuro</option>
+              </select>
+              <button class="btn" type="submit">Guardar</button>
+            </form>
+          </section>
+
+          <section class="panel table-panel" data-roles="customer">
+            <div class="table-header">
+              <h2>Notificaciones</h2>
+              <button id="customerRefreshNotificationsBtn" class="btn ghost" type="button">Actualizar</button>
+            </div>
+            <ul id="customerNotificationsRows" class="audit-list">
+              <li>Sin notificaciones</li>
+            </ul>
           </section>
 
           <section class="operations-grid">
@@ -352,10 +406,11 @@
                   <th>Ejecutado por</th>
                   <th>Id usuario</th>
                   <th>Fecha</th>
+                  <th>Comprobante</th>
                 </tr>
               </thead>
               <tbody id="txRows" data-testid="tx-rows">
-                <tr><td colspan="8">Sin movimientos</td></tr>
+                <tr><td colspan="9">Sin movimientos</td></tr>
               </tbody>
             </table>
           </section>
@@ -835,6 +890,95 @@
 
         </section>
 
+        <section id="customerServiceView" class="hidden" data-roles="customer_service">
+          <section class="kpi-grid">
+            <article class="kpi"><p>Clientes encontrados</p><h3 id="customerServiceFoundCount">0</h3></article>
+            <article class="kpi"><p>Casos abiertos</p><h3 id="customerServiceOpenTickets">0</h3></article>
+          </section>
+
+          <section class="panel admin-client-management">
+            <div class="table-header"><h2>Atención al cliente</h2></div>
+            <form id="customerServiceRegisterForm" class="operations-grid">
+              <div class="panel">
+                <h3>Registrar nuevo cliente</h3>
+                <input id="customerServiceRegisterFirstName" placeholder="Nombre" required />
+                <input id="customerServiceRegisterLastName" placeholder="Apellido" required />
+                <input id="customerServiceRegisterEmail" type="email" placeholder="Correo" required />
+                <input id="customerServiceRegisterPhone" placeholder="Teléfono" />
+                <input id="customerServiceRegisterDocument" placeholder="CI / Pasaporte" />
+                <input id="customerServiceRegisterAddress" placeholder="Dirección" />
+                <input id="customerServiceRegisterPin" type="password" inputmode="numeric" minlength="4" maxlength="4" placeholder="PIN inicial" required />
+                <button class="btn" type="submit">Registrar cliente</button>
+              </div>
+            </form>
+
+            <form id="customerServiceSearchForm" class="row-actions">
+              <input id="customerServiceSearchQuery" placeholder="CI, nombre, teléfono, correo o cuenta" required />
+              <button class="btn" type="submit">Buscar cliente</button>
+            </form>
+            <p id="customerServiceMessage" class="field-help">Sin cliente seleccionado.</p>
+
+            <div id="customerServiceResults" class="admin-client-results"></div>
+            <article id="customerServiceProfile" class="admin-client-profile hidden">
+              <div class="admin-client-profile-header">
+                <div><p class="eyebrow">Cliente seleccionado</p><h3 id="customerServiceName">-</h3><p id="customerServiceMeta" class="field-help">-</p></div>
+                <span id="customerServiceStatus" class="perm-badge">-</span>
+              </div>
+
+              <div class="admin-client-grid">
+                <form id="customerServiceUpdateForm" class="admin-client-edit-form">
+                  <h4>Actualizar datos personales</h4>
+                  <input id="customerServiceFirstName" placeholder="Nombre" />
+                  <input id="customerServiceLastName" placeholder="Apellido" />
+                  <input id="customerServiceEmail" type="email" placeholder="Correo" />
+                  <input id="customerServicePhone" placeholder="Teléfono" />
+                  <input id="customerServiceDocument" placeholder="Documento" />
+                  <input id="customerServiceAddress" placeholder="Dirección" />
+                  <button class="btn" type="submit">Guardar datos</button>
+                </form>
+
+                <form id="customerServiceAccessForm" class="admin-client-edit-form">
+                  <h4>Acceso y cuentas</h4>
+                  <input id="customerServiceResetPin" type="password" inputmode="numeric" minlength="4" maxlength="4" placeholder="Nuevo PIN" />
+                  <button id="customerServiceResetPinBtn" class="btn ghost" type="button">Restablecer PIN</button>
+                  <button id="customerServiceUnblockBtn" class="btn ghost" type="button">Desbloquear usuario</button>
+                  <button id="customerServiceDeactivateBtn" class="btn ghost" type="button">Inactivar usuario</button>
+                  <button id="customerServiceReactivateBtn" class="btn ghost" type="button">Reactivar usuario</button>
+                  <select id="customerServiceAccountCategory">
+                    <option value="savings">Ahorro</option>
+                    <option value="checking">Corriente</option>
+                  </select>
+                  <button id="customerServiceOpenAccountBtn" class="btn" type="button">Crear cuenta</button>
+                </form>
+              </div>
+
+              <div>
+                <h4>Cuentas</h4>
+                <div id="customerServiceAccounts" class="admin-client-accounts"></div>
+              </div>
+            </article>
+          </section>
+
+          <section class="panel table-panel">
+            <div class="table-header"><h2>Casos y reclamos</h2><button id="customerServiceRefreshTicketsBtn" class="btn ghost" type="button">Actualizar</button></div>
+            <form id="customerServiceCreateTicketForm" class="row-actions">
+              <input id="customerServiceTicketUserId" type="number" min="1" placeholder="ID de usuario" required />
+              <input id="customerServiceTicketSubject" placeholder="Asunto" required />
+              <input id="customerServiceTicketDescription" placeholder="Descripción" required />
+              <select id="customerServiceTicketPriority">
+                <option value="normal">Normal</option>
+                <option value="high">Alta</option>
+                <option value="urgent">Urgente</option>
+              </select>
+              <button class="btn" type="submit">Crear caso</button>
+            </form>
+            <table>
+              <thead><tr><th>ID</th><th>Usuario</th><th>Asunto</th><th>Estado</th><th>Prioridad</th></tr></thead>
+              <tbody id="customerServiceTicketsRows"><tr><td colspan="5">Sin casos</td></tr></tbody>
+            </table>
+          </section>
+        </section>
+
         <section id="cashierView" class="hidden" data-roles="cashier">
           <section class="kpi-grid">
             <article class="kpi"><p>Saldo inicial caja</p><h3 id="cashierOpeningBalance">S/ 0.00</h3></article>
@@ -878,32 +1022,6 @@
             </table>
           </section>
 
-          <section class="operations-grid">
-            <form id="cashRegisterClientForm" class="panel">
-              <h2>Registrar cliente</h2>
-              <input name="first_name" placeholder="Nombre" required />
-              <input name="last_name" placeholder="Apellidos" required />
-              <input name="email" type="email" placeholder="Correo" required />
-              <input name="phone" placeholder="Teléfono" />
-              <input name="document_number" placeholder="CI / Pasaporte" />
-              <input name="address" placeholder="Dirección" />
-              <input name="date_of_birth" type="date" placeholder="Fecha de nacimiento" />
-              <input name="pin" type="password" inputmode="numeric" minlength="4" maxlength="4" placeholder="PIN 4 dígitos" required />
-              <button class="btn" type="submit">Registrar</button>
-            </form>
-            <form id="cashOpenAccountForm" class="panel">
-              <h2>Aperturar cuenta</h2>
-              <input id="cashOpenAccountUserId" type="number" min="1" placeholder="ID de cliente" required />
-              <select id="cashOpenAccountCategory">
-                <option value="savings">Ahorro</option>
-                <option value="checking">Corriente</option>
-                <option value="business">Empresarial</option>
-                <option value="investment">Inversión</option>
-                <option value="credit">Crédito</option>
-              </select>
-              <button class="btn" type="submit">Crear cuenta</button>
-            </form>
-          </section>
 
           <section class="panel table-panel">
             <div class="table-header">

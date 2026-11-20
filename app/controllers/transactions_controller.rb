@@ -29,6 +29,7 @@ class TransactionsController < ApplicationController
       transactions: @transactions.map do |transaction|
         actor_data = TransactionService.parse_actor_from_description(transaction.description)
         display_type = transaction_display_type(transaction, actor_data[:detail])
+        receipt = Receipt.find_by(transaction_id: transaction.id)
         {
           id: transaction.id,
           transaction_type: transaction.transaction_type,
@@ -42,7 +43,9 @@ class TransactionsController < ApplicationController
           performed_by_name: actor_data[:name],
           performed_by_label: actor_data[:label],
           status: transaction.status,
-          created_at: transaction.created_at
+          created_at: transaction.created_at,
+          receipt_id: receipt&.id,
+          receipt_number: receipt&.receipt_number
         }
       end
     }, status: :ok

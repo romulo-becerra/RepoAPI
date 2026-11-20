@@ -33,6 +33,87 @@ Admin semilla (db:seed):
 - Cuenta sugerida: 9000000001
 - PIN: vacio (UI usa fallback 1234) o 1234
 
+## Matriz actual de roles
+
+- customer: servicios propios, transferencias, pagos, préstamos, comprobantes y soporte.
+- cashier: caja, arqueo, cierre, operaciones sobre cuentas y reportes diarios.
+- customer_service: clientes, acceso, cuentas, soporte y reclamos.
+- manager: gestión, reportes, préstamos y conciliaciones.
+- admin: administración completa.
+- accountant, auditor, supervisor, financial_manager y super_admin: roles especializados disponibles en el modelo y catálogo de roles.
+
+## Endpoints nuevos por módulo
+
+### Recuperación y reversión
+
+- POST /api/v1/password/reset/request
+- POST /api/v1/password/reset
+- POST /api/v1/accounts/:id/reverse/:transaction_id
+
+### Portal del cliente
+
+- GET /api/v1/customer/dashboard
+- GET /api/v1/customer/transactions
+- GET /api/v1/customer/accounts/:account_id/statement
+- GET /api/v1/customer/credit_requests
+- POST /api/v1/customer/credit_requests
+- GET /api/v1/customer/tickets
+- POST /api/v1/customer/tickets
+- GET /api/v1/customer/preferences
+- PATCH /api/v1/customer/preferences
+- GET /api/v1/customer/notifications
+- PATCH /api/v1/customer/notifications/:id/read
+
+### Comprobantes
+
+- GET /api/v1/receipts/:id
+- GET /api/v1/receipts/:id/download
+- GET /api/v1/transactions/:transaction_id/receipt
+
+### Caja del cajero
+
+- POST /api/v1/cashier/cash/open
+- GET /api/v1/cashier/cash/status
+- GET /api/v1/cashier/cash/movements
+- POST /api/v1/cashier/cash/reconciliation
+- POST /api/v1/cashier/cash/close
+- GET /api/v1/cashier/reports/daily
+- GET /api/v1/cashier/receipts
+- GET /api/v1/cashier/clients/search
+
+### Atención al Cliente
+
+- GET /api/v1/customer_service/users/search
+- POST /api/v1/customer_service/users
+- PATCH /api/v1/customer_service/users/:id
+- PATCH /api/v1/customer_service/users/:id/unblock
+- PATCH /api/v1/customer_service/users/:id/deactivate
+- PATCH /api/v1/customer_service/users/:id/reactivate
+- PATCH /api/v1/customer_service/users/:id/reset_password
+- POST /api/v1/customer_service/accounts
+- PATCH /api/v1/customer_service/accounts/:id/status
+- GET /api/v1/customer_service/users/:user_id/accounts
+- GET /api/v1/customer_service/tickets
+- POST /api/v1/customer_service/tickets
+- PATCH /api/v1/customer_service/tickets/:id/close
+
+### Roles, conciliación, contabilidad y facturas
+
+- GET /api/v1/manager/roles
+- GET /api/v1/manager/reports/dashboard
+- GET /api/v1/manager/reconciliations
+- POST /api/v1/manager/reconciliations
+- GET /api/v1/manager/accounting/accounts
+- POST /api/v1/manager/accounting/accounts
+- GET /api/v1/manager/accounting/journal_entries
+- POST /api/v1/manager/accounting/journal_entries
+- POST /api/v1/manager/accounting/journal_entries/:id/approve
+- GET /api/v1/manager/accounting/reports
+- GET /api/v1/manager/invoices
+- POST /api/v1/manager/invoices
+- PATCH /api/v1/manager/accounts/:account_id/limits
+- PATCH /api/v1/manager/accounts/:account_id/status
+
 ## 1. Salud y autenticacion
 
 ### GET /

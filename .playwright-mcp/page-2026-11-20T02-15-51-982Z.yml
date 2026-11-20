@@ -1,0 +1,1216 @@
+- generic [ref=f3e2]:
+  - generic [ref=f3e3]:
+    - heading "API v1 endpoint catalog" [level=1] [ref=f3e4]
+    - paragraph [ref=f3e5]:
+      - text: "Public path:"
+      - code [ref=f3e6]: /angelfire/endpoints.html
+      - text: ". Recommended base URL for local testing:"
+      - code [ref=f3e7]: http://localhost:3001
+      - text: .
+    - generic [ref=f3e8]:
+      - generic [ref=f3e9]: Language
+      - combobox "Idioma" [ref=f3e10]:
+        - option "Español"
+        - option "English" [selected]
+        - option "Português"
+  - generic [ref=f3e11]:
+    - generic [ref=f3e12]:
+      - textbox "Search by path, description, or payload..." [ref=f3e13]
+      - combobox [ref=f3e14]:
+        - option "All methods" [selected]
+        - option "GET"
+        - option "POST"
+        - option "PUT"
+        - option "PATCH"
+        - option "DELETE"
+      - combobox [ref=f3e15]:
+        - option "All access" [selected]
+        - option "Public"
+        - option "Customer"
+        - option "Cashier"
+        - option "Customer Service"
+        - option "Manager / Admin"
+        - option "Admin"
+    - generic [ref=f3e16]:
+      - generic [ref=f3e17]: "Public: no Authorization required"
+      - generic [ref=f3e18]: "Customer: solo su propia cuenta y operaciones de cliente"
+      - generic [ref=f3e19]: "Cashier: operaciones de caja y atención"
+      - generic [ref=f3e20]: "Customer Service: clientes, cuentas, acceso y casos"
+      - generic [ref=f3e21]: "Management: manager/admin con reportes y gestión"
+      - generic [ref=f3e22]: "Admin: control total del sistema"
+      - generic [ref=f3e23]: "Multipart: use form-data (file)"
+  - generic [ref=f3e24]:
+    - heading "Matriz de permisos del sistema" [level=2] [ref=f3e25]
+    - table [ref=f3e26]:
+      - rowgroup [ref=f3e27]:
+        - row [ref=f3e28]:
+          - columnheader "Role" [ref=f3e29]
+          - columnheader "Operaciones visibles" [ref=f3e30]
+      - rowgroup [ref=f3e31]:
+        - row [ref=f3e32]:
+          - cell [ref=f3e33]:
+            - strong [ref=f3e34]: customer
+          - cell "Account propia, transferencias, pagos, movimientos y consultas de préstamo." [ref=f3e35]
+        - row [ref=f3e36]:
+          - cell [ref=f3e37]:
+            - strong [ref=f3e38]: cashier
+          - cell "Deposits, retiros, atención de cuenta y operaciones de caja; sin administración de usuarios." [ref=f3e39]
+        - row [ref=f3e40]:
+          - cell [ref=f3e41]:
+            - strong [ref=f3e42]: customer_service
+          - cell "Registration y actualización de clientes, desbloqueo, reset de PIN, cuentas, documentos y casos de soporte." [ref=f3e43]
+        - row [ref=f3e44]:
+          - cell [ref=f3e45]:
+            - strong [ref=f3e46]: manager
+          - cell "Reportes, gestión, consultas de usuarios y cuentas, originación de préstamos y auditoría." [ref=f3e47]
+        - row [ref=f3e48]:
+          - cell [ref=f3e49]:
+            - strong [ref=f3e50]: admin
+          - cell "Todo lo anterior más creación, eliminación, bloqueo y manejo de usuarios y roles." [ref=f3e51]
+  - table [ref=f3e53]:
+    - rowgroup [ref=f3e54]:
+      - row [ref=f3e55]:
+        - columnheader "Method" [ref=f3e56]
+        - columnheader "Path" [ref=f3e57]
+        - columnheader "Auth" [ref=f3e58]
+        - columnheader "Description" [ref=f3e59]
+        - columnheader "Minimum query / body" [ref=f3e60]
+        - columnheader "Quick example" [ref=f3e61]
+    - rowgroup [ref=f3e62]:
+      - row [ref=f3e63]:
+        - cell "GET" [ref=f3e64]
+        - cell "/up" [ref=f3e66]
+        - cell "public" [ref=f3e67]
+        - cell "Health check de Rails" [ref=f3e68]
+        - cell "-" [ref=f3e69]
+        - 'cell "GET {{baseUrl}}/up" [ref=f3e70]':
+          - text: "GET {{baseUrl}}/up"
+          - group [ref=f3e71]:
+            - generic "View full example (optional)" [ref=f3e72] [cursor=pointer]
+      - row [ref=f3e73]:
+        - cell "GET" [ref=f3e74]
+        - cell "/" [ref=f3e76]
+        - cell "public" [ref=f3e77]
+        - cell "Status base del servicio" [ref=f3e78]
+        - cell "-" [ref=f3e79]
+        - 'cell "GET {{baseUrl}}/" [ref=f3e80]':
+          - text: "GET {{baseUrl}}/"
+          - group [ref=f3e81]:
+            - generic "View full example (optional)" [ref=f3e82] [cursor=pointer]
+      - row [ref=f3e83]:
+        - cell "POST" [ref=f3e84]
+        - cell "/api/v1/register" [ref=f3e86]
+        - cell "public" [ref=f3e87]
+        - cell "Registration de usuario" [ref=f3e88]
+        - 'cell "{\"first_name\",\"last_name\",\"email\",\"phone?\",\"date_of_birth\",\"pin\",\"address\"}" [ref=f3e89]'
+        - 'cell "POST {{baseUrl}}/api/v1/register" [ref=f3e90]':
+          - text: "POST {{baseUrl}}/api/v1/register"
+          - group [ref=f3e91]:
+            - generic "View full example (optional)" [ref=f3e92] [cursor=pointer]
+      - row [ref=f3e93]:
+        - cell "POST" [ref=f3e94]
+        - cell "/api/v1/login" [ref=f3e96]
+        - cell "public" [ref=f3e97]
+        - cell "Sign in por account_number + pin" [ref=f3e98]
+        - 'cell "{\"account_number\",\"pin\"}" [ref=f3e99]'
+        - 'cell "POST {{baseUrl}}/api/v1/login" [ref=f3e100]':
+          - text: "POST {{baseUrl}}/api/v1/login"
+          - group [ref=f3e101]:
+            - generic "View full example (optional)" [ref=f3e102] [cursor=pointer]
+      - row [ref=f3e103]:
+        - cell "POST" [ref=f3e104]
+        - cell "/api/v1/logout" [ref=f3e106]
+        - cell "customer" [ref=f3e107]
+        - cell "Sign out" [ref=f3e108]
+        - cell "-" [ref=f3e109]
+        - 'cell "POST {{baseUrl}}/api/v1/logout" [ref=f3e110]':
+          - text: "POST {{baseUrl}}/api/v1/logout"
+          - group [ref=f3e111]:
+            - generic "View full example (optional)" [ref=f3e112] [cursor=pointer]
+      - row [ref=f3e113]:
+        - cell "GET" [ref=f3e114]
+        - cell "/api/v1/accounts" [ref=f3e116]
+        - cell "customer" [ref=f3e117]
+        - cell "Listar cuentas del usuario autenticado" [ref=f3e118]
+        - cell "-" [ref=f3e119]
+        - 'cell "GET {{baseUrl}}/api/v1/accounts" [ref=f3e120]':
+          - text: "GET {{baseUrl}}/api/v1/accounts"
+          - group [ref=f3e121]:
+            - generic "View full example (optional)" [ref=f3e122] [cursor=pointer]
+      - row [ref=f3e123]:
+        - cell "POST" [ref=f3e124]
+        - cell "/api/v1/accounts" [ref=f3e126]
+        - cell "customer" [ref=f3e127]
+        - cell "Create a new account for the user" [ref=f3e128]
+        - 'cell "{}" [ref=f3e129]'
+        - 'cell "POST {{baseUrl}}/api/v1/accounts" [ref=f3e130]':
+          - text: "POST {{baseUrl}}/api/v1/accounts"
+          - group [ref=f3e131]:
+            - generic "View full example (optional)" [ref=f3e132] [cursor=pointer]
+      - row [ref=f3e133]:
+        - cell "GET" [ref=f3e134]
+        - cell "/api/v1/accounts/:id" [ref=f3e136]
+        - cell "customer" [ref=f3e137]
+        - cell "Description de cuenta + prestamo active" [ref=f3e138]
+        - cell "path :id" [ref=f3e139]
+        - 'cell "GET {{baseUrl}}/api/v1/accounts/12" [ref=f3e140]':
+          - text: "GET {{baseUrl}}/api/v1/accounts/12"
+          - group [ref=f3e141]:
+            - generic "View full example (optional)" [ref=f3e142] [cursor=pointer]
+      - row [ref=f3e143]:
+        - cell "GET" [ref=f3e144]
+        - cell "/api/v1/accounts/:id/balance" [ref=f3e146]
+        - cell "customer" [ref=f3e147]
+        - cell "Account balance" [ref=f3e148]
+        - cell "path :id" [ref=f3e149]
+        - 'cell "GET {{baseUrl}}/api/v1/accounts/12/balance" [ref=f3e150]':
+          - text: "GET {{baseUrl}}/api/v1/accounts/12/balance"
+          - group [ref=f3e151]:
+            - generic "View full example (optional)" [ref=f3e152] [cursor=pointer]
+      - row [ref=f3e153]:
+        - cell "GET" [ref=f3e154]
+        - cell "/api/v1/accounts/:id/summary" [ref=f3e156]
+        - cell "customer" [ref=f3e157]
+        - cell "Summary monthly (income/expense)" [ref=f3e158]
+        - cell "path :id" [ref=f3e159]
+        - 'cell "GET {{baseUrl}}/api/v1/accounts/12/summary" [ref=f3e160]':
+          - text: "GET {{baseUrl}}/api/v1/accounts/12/summary"
+          - group [ref=f3e161]:
+            - generic "View full example (optional)" [ref=f3e162] [cursor=pointer]
+      - row [ref=f3e163]:
+        - cell "POST" [ref=f3e164]
+        - cell "/api/v1/accounts/:id/deposit" [ref=f3e166]
+        - cell "customer" [ref=f3e167]
+        - cell "Deposit en cuenta propia" [ref=f3e168]
+        - 'cell "{\"amount\",\"description?\"}" [ref=f3e169]'
+        - 'cell "POST {{baseUrl}}/api/v1/accounts/12/deposit" [ref=f3e170]':
+          - text: "POST {{baseUrl}}/api/v1/accounts/12/deposit"
+          - group [ref=f3e171]:
+            - generic "View full example (optional)" [ref=f3e172] [cursor=pointer]
+      - row [ref=f3e173]:
+        - cell "POST" [ref=f3e174]
+        - cell "/api/v1/accounts/:id/withdraw" [ref=f3e176]
+        - cell "customer" [ref=f3e177]
+        - cell "Withdraw de cuenta propia" [ref=f3e178]
+        - 'cell "{\"amount\",\"description?\"}" [ref=f3e179]'
+        - 'cell "POST {{baseUrl}}/api/v1/accounts/12/withdraw" [ref=f3e180]':
+          - text: "POST {{baseUrl}}/api/v1/accounts/12/withdraw"
+          - group [ref=f3e181]:
+            - generic "View full example (optional)" [ref=f3e182] [cursor=pointer]
+      - row [ref=f3e183]:
+        - cell "POST" [ref=f3e184]
+        - cell "/api/v1/accounts/:id/transfer" [ref=f3e186]
+        - cell "customer" [ref=f3e187]
+        - cell "Transfer funds a otra cuenta" [ref=f3e188]
+        - 'cell "{\"recipient_account_id\",\"amount\",\"description?\"}" [ref=f3e189]'
+        - 'cell "POST {{baseUrl}}/api/v1/accounts/12/transfer" [ref=f3e190]':
+          - text: "POST {{baseUrl}}/api/v1/accounts/12/transfer"
+          - group [ref=f3e191]:
+            - generic "View full example (optional)" [ref=f3e192] [cursor=pointer]
+      - row [ref=f3e193]:
+        - cell "POST" [ref=f3e194]
+        - cell "/api/v1/accounts/:id/pay_service" [ref=f3e196]
+        - cell "customer" [ref=f3e197]
+        - cell "Payment de servicio" [ref=f3e198]
+        - 'cell "{\"service_id\",\"amount\",\"description?\"}" [ref=f3e199]'
+        - 'cell "POST {{baseUrl}}/api/v1/accounts/12/pay_service" [ref=f3e200]':
+          - text: "POST {{baseUrl}}/api/v1/accounts/12/pay_service"
+          - group [ref=f3e201]:
+            - generic "View full example (optional)" [ref=f3e202] [cursor=pointer]
+      - row [ref=f3e203]:
+        - cell "GET" [ref=f3e204]
+        - cell "/api/v1/accounts/:account_id/transactions" [ref=f3e206]
+        - cell "customer" [ref=f3e207]
+        - cell "Paginated transactions (filters)" [ref=f3e208]
+        - 'cell "query: page, per_page, transaction_filter" [ref=f3e209]'
+        - 'cell "GET {{baseUrl}}/api/v1/accounts/12/transactions?page=1&per_page=10" [ref=f3e210]':
+          - text: "GET {{baseUrl}}/api/v1/accounts/12/transactions?page=1&per_page=10"
+          - group [ref=f3e211]:
+            - generic "View full example (optional)" [ref=f3e212] [cursor=pointer]
+      - row [ref=f3e213]:
+        - cell "POST" [ref=f3e214]
+        - cell "/api/v1/accounts/:account_id/transactions" [ref=f3e216]
+        - cell "customer" [ref=f3e217]
+        - cell "Transfer via recurso transactions" [ref=f3e218]
+        - 'cell "{\"recipient_id\",\"amount\",\"description?\"}" [ref=f3e219]'
+        - 'cell "POST {{baseUrl}}/api/v1/accounts/12/transactions" [ref=f3e220]':
+          - text: "POST {{baseUrl}}/api/v1/accounts/12/transactions"
+          - group [ref=f3e221]:
+            - generic "View full example (optional)" [ref=f3e222] [cursor=pointer]
+      - row [ref=f3e223]:
+        - cell "GET" [ref=f3e224]
+        - cell "/api/v1/accounts/:account_id/loans" [ref=f3e226]
+        - cell "customer" [ref=f3e227]
+        - cell "Listar prestamos de la cuenta" [ref=f3e228]
+        - cell "-" [ref=f3e229]
+        - 'cell "GET {{baseUrl}}/api/v1/accounts/12/loans" [ref=f3e230]':
+          - text: "GET {{baseUrl}}/api/v1/accounts/12/loans"
+          - group [ref=f3e231]:
+            - generic "View full example (optional)" [ref=f3e232] [cursor=pointer]
+      - row [ref=f3e233]:
+        - cell "POST" [ref=f3e234]
+        - cell "/api/v1/accounts/:account_id/loans" [ref=f3e236]
+        - cell "customer" [ref=f3e237]
+        - cell "Create loan (if enabled)" [ref=f3e238]
+        - 'cell "{\"amount\",\"term_months\",\"first_due_date\"}" [ref=f3e239]'
+        - 'cell "POST {{baseUrl}}/api/v1/accounts/12/loans" [ref=f3e240]':
+          - text: "POST {{baseUrl}}/api/v1/accounts/12/loans"
+          - group [ref=f3e241]:
+            - generic "View full example (optional)" [ref=f3e242] [cursor=pointer]
+      - row [ref=f3e243]:
+        - cell "GET" [ref=f3e244]
+        - cell "/api/v1/accounts/:account_id/loans/:id" [ref=f3e246]
+        - cell "customer" [ref=f3e247]
+        - cell "Description de prestamo" [ref=f3e248]
+        - cell "path :id" [ref=f3e249]
+        - 'cell "GET {{baseUrl}}/api/v1/accounts/12/loans/5" [ref=f3e250]':
+          - text: "GET {{baseUrl}}/api/v1/accounts/12/loans/5"
+          - group [ref=f3e251]:
+            - generic "View full example (optional)" [ref=f3e252] [cursor=pointer]
+      - row [ref=f3e253]:
+        - cell "POST" [ref=f3e254]
+        - cell "/api/v1/accounts/:account_id/loans/:id/pay" [ref=f3e256]
+        - cell "customer" [ref=f3e257]
+        - cell "Payment de prestamo" [ref=f3e258]
+        - 'cell "{\"amount\",\"paid_on?\"}" [ref=f3e259]'
+        - 'cell "POST {{baseUrl}}/api/v1/accounts/12/loans/5/pay" [ref=f3e260]':
+          - text: "POST {{baseUrl}}/api/v1/accounts/12/loans/5/pay"
+          - group [ref=f3e261]:
+            - generic "View full example (optional)" [ref=f3e262] [cursor=pointer]
+      - row [ref=f3e263]:
+        - cell "GET" [ref=f3e264]
+        - cell "/api/v1/accounts/:account_id/loans/:id/installments" [ref=f3e266]
+        - cell "customer" [ref=f3e267]
+        - cell "Paid installments y pendientes (paginadas pendientes)" [ref=f3e268]
+        - 'cell "query: page, per_page" [ref=f3e269]'
+        - 'cell "GET {{baseUrl}}/api/v1/accounts/12/loans/5/installments?page=1&per_page=10" [ref=f3e270]':
+          - text: "GET {{baseUrl}}/api/v1/accounts/12/loans/5/installments?page=1&per_page=10"
+          - group [ref=f3e271]:
+            - generic "View full example (optional)" [ref=f3e272] [cursor=pointer]
+      - row [ref=f3e273]:
+        - cell "GET" [ref=f3e274]
+        - cell "/api/v1/recipients" [ref=f3e276]
+        - cell "customer" [ref=f3e277]
+        - cell "Listar destinatarios" [ref=f3e278]
+        - cell "-" [ref=f3e279]
+        - 'cell "GET {{baseUrl}}/api/v1/recipients" [ref=f3e280]':
+          - text: "GET {{baseUrl}}/api/v1/recipients"
+          - group [ref=f3e281]:
+            - generic "View full example (optional)" [ref=f3e282] [cursor=pointer]
+      - row [ref=f3e283]:
+        - cell "POST" [ref=f3e284]
+        - cell "/api/v1/recipients" [ref=f3e286]
+        - cell "customer" [ref=f3e287]
+        - cell "Create recipient" [ref=f3e288]
+        - 'cell "{\"name\",\"account_id\"}" [ref=f3e289]'
+        - 'cell "POST {{baseUrl}}/api/v1/recipients" [ref=f3e290]':
+          - text: "POST {{baseUrl}}/api/v1/recipients"
+          - group [ref=f3e291]:
+            - generic "View full example (optional)" [ref=f3e292] [cursor=pointer]
+      - row [ref=f3e293]:
+        - cell "DELETE" [ref=f3e294]
+        - cell "/api/v1/recipients/:id" [ref=f3e296]
+        - cell "customer" [ref=f3e297]
+        - cell "Delete recipient" [ref=f3e298]
+        - cell "path :id" [ref=f3e299]
+        - 'cell "DELETE {{baseUrl}}/api/v1/recipients/8" [ref=f3e300]':
+          - text: "DELETE {{baseUrl}}/api/v1/recipients/8"
+          - group [ref=f3e301]:
+            - generic "View full example (optional)" [ref=f3e302] [cursor=pointer]
+      - row [ref=f3e303]:
+        - cell "GET" [ref=f3e304]
+        - cell "/api/v1/recipients/search" [ref=f3e306]
+        - cell "customer" [ref=f3e307]
+        - cell "Search recipients" [ref=f3e308]
+        - cell "query segun implementacion" [ref=f3e309]
+        - 'cell "GET {{baseUrl}}/api/v1/recipients/search?query=juan" [ref=f3e310]':
+          - text: "GET {{baseUrl}}/api/v1/recipients/search?query=juan"
+          - group [ref=f3e311]:
+            - generic "View full example (optional)" [ref=f3e312] [cursor=pointer]
+      - row [ref=f3e313]:
+        - cell "GET" [ref=f3e314]
+        - cell "/api/v1/services" [ref=f3e316]
+        - cell "public" [ref=f3e317]
+        - cell "Listar servicios" [ref=f3e318]
+        - cell "-" [ref=f3e319]
+        - 'cell "GET {{baseUrl}}/api/v1/services" [ref=f3e320]':
+          - text: "GET {{baseUrl}}/api/v1/services"
+          - group [ref=f3e321]:
+            - generic "View full example (optional)" [ref=f3e322] [cursor=pointer]
+      - row [ref=f3e323]:
+        - cell "GET" [ref=f3e324]
+        - cell "/api/v1/services/:id" [ref=f3e326]
+        - cell "public" [ref=f3e327]
+        - cell "Description de servicio" [ref=f3e328]
+        - cell "path :id" [ref=f3e329]
+        - 'cell "GET {{baseUrl}}/api/v1/services/1" [ref=f3e330]':
+          - text: "GET {{baseUrl}}/api/v1/services/1"
+          - group [ref=f3e331]:
+            - generic "View full example (optional)" [ref=f3e332] [cursor=pointer]
+      - row [ref=f3e333]:
+        - cell "POST" [ref=f3e334]
+        - cell "/api/v1/atm/accounts/:id/deposit" [ref=f3e336]
+        - cell "cashier" [ref=f3e337]
+        - cell "ATM deposit / caja" [ref=f3e338]
+        - 'cell "{\"amount\"}" [ref=f3e339]'
+        - 'cell "POST {{baseUrl}}/api/v1/atm/accounts/12/deposit" [ref=f3e340]':
+          - text: "POST {{baseUrl}}/api/v1/atm/accounts/12/deposit"
+          - group [ref=f3e341]:
+            - generic "View full example (optional)" [ref=f3e342] [cursor=pointer]
+      - row [ref=f3e343]:
+        - cell "POST" [ref=f3e344]
+        - cell "/api/v1/atm/accounts/:id/withdraw" [ref=f3e346]
+        - cell "cashier" [ref=f3e347]
+        - cell "ATM withdrawal / caja" [ref=f3e348]
+        - 'cell "{\"amount\"}" [ref=f3e349]'
+        - 'cell "POST {{baseUrl}}/api/v1/atm/accounts/12/withdraw" [ref=f3e350]':
+          - text: "POST {{baseUrl}}/api/v1/atm/accounts/12/withdraw"
+          - group [ref=f3e351]:
+            - generic "View full example (optional)" [ref=f3e352] [cursor=pointer]
+      - row [ref=f3e353]:
+        - cell "GET" [ref=f3e354]
+        - cell "/api/v1/atm/accounts/:id/balance" [ref=f3e356]
+        - cell "cashier" [ref=f3e357]
+        - cell "ATM balance / caja" [ref=f3e358]
+        - cell "-" [ref=f3e359]
+        - 'cell "GET {{baseUrl}}/api/v1/atm/accounts/12/balance" [ref=f3e360]':
+          - text: "GET {{baseUrl}}/api/v1/atm/accounts/12/balance"
+          - group [ref=f3e361]:
+            - generic "View full example (optional)" [ref=f3e362] [cursor=pointer]
+      - row [ref=f3e363]:
+        - cell "GET" [ref=f3e364]
+        - cell "/api/v1/atm/accounts/:id/statement" [ref=f3e366]
+        - cell "cashier" [ref=f3e367]
+        - cell "Status de cuenta ATM / caja" [ref=f3e368]
+        - cell "-" [ref=f3e369]
+        - 'cell "GET {{baseUrl}}/api/v1/atm/accounts/12/statement" [ref=f3e370]':
+          - text: "GET {{baseUrl}}/api/v1/atm/accounts/12/statement"
+          - group [ref=f3e371]:
+            - generic "View full example (optional)" [ref=f3e372] [cursor=pointer]
+      - row [ref=f3e373]:
+        - cell "PATCH" [ref=f3e374]
+        - cell "/api/v1/users/:id" [ref=f3e376]
+        - cell "customer" [ref=f3e377]
+        - cell "Update details de usuario" [ref=f3e378]
+        - 'cell "{\"first_name?\",\"last_name?\",\"email?\",\"phone?\",\"pin?\"}" [ref=f3e379]'
+        - 'cell "PATCH {{baseUrl}}/api/v1/users/3" [ref=f3e380]':
+          - text: "PATCH {{baseUrl}}/api/v1/users/3"
+          - group [ref=f3e381]:
+            - generic "View full example (optional)" [ref=f3e382] [cursor=pointer]
+      - row [ref=f3e383]:
+        - cell "PUT" [ref=f3e384]
+        - cell "/api/v1/users/:id/pin" [ref=f3e386]
+        - cell "customer" [ref=f3e387]
+        - cell "Change PIN" [ref=f3e388]
+        - 'cell "{\"current_pin\",\"new_pin\"}" [ref=f3e389]'
+        - 'cell "PUT {{baseUrl}}/api/v1/users/3/pin" [ref=f3e390]':
+          - text: "PUT {{baseUrl}}/api/v1/users/3/pin"
+          - group [ref=f3e391]:
+            - generic "View full example (optional)" [ref=f3e392] [cursor=pointer]
+      - row [ref=f3e393]:
+        - cell "GET" [ref=f3e394]
+        - cell "/api/v1/users/:id/profile" [ref=f3e396]
+        - cell "customer" [ref=f3e397]
+        - cell "User profile" [ref=f3e398]
+        - cell "-" [ref=f3e399]
+        - 'cell "GET {{baseUrl}}/api/v1/users/3/profile" [ref=f3e400]':
+          - text: "GET {{baseUrl}}/api/v1/users/3/profile"
+          - group [ref=f3e401]:
+            - generic "View full example (optional)" [ref=f3e402] [cursor=pointer]
+      - row [ref=f3e403]:
+        - cell "GET" [ref=f3e404]
+        - cell "/api/v1/users/:id/address" [ref=f3e406]
+        - cell "customer" [ref=f3e407]
+        - cell "Obtener direccion" [ref=f3e408]
+        - cell "-" [ref=f3e409]
+        - 'cell "GET {{baseUrl}}/api/v1/users/3/address" [ref=f3e410]':
+          - text: "GET {{baseUrl}}/api/v1/users/3/address"
+          - group [ref=f3e411]:
+            - generic "View full example (optional)" [ref=f3e412] [cursor=pointer]
+      - row [ref=f3e413]:
+        - cell "PUT" [ref=f3e414]
+        - cell "/api/v1/users/:id/address" [ref=f3e416]
+        - cell "customer" [ref=f3e417]
+        - cell "Create/update address" [ref=f3e418]
+        - 'cell "{\"country\",\"city\",\"province\",\"street\", ...}" [ref=f3e419]'
+        - 'cell "PUT {{baseUrl}}/api/v1/users/3/address" [ref=f3e420]':
+          - text: "PUT {{baseUrl}}/api/v1/users/3/address"
+          - group [ref=f3e421]:
+            - generic "View full example (optional)" [ref=f3e422] [cursor=pointer]
+      - row [ref=f3e423]:
+        - cell "GET" [ref=f3e424]
+        - cell "/api/v1/users/:id/files" [ref=f3e426]
+        - cell "customer" [ref=f3e427]
+        - cell "Listar archivos usuario" [ref=f3e428]
+        - cell "-" [ref=f3e429]
+        - 'cell "GET {{baseUrl}}/api/v1/users/3/files" [ref=f3e430]':
+          - text: "GET {{baseUrl}}/api/v1/users/3/files"
+          - group [ref=f3e431]:
+            - generic "View full example (optional)" [ref=f3e432] [cursor=pointer]
+      - row [ref=f3e433]:
+        - cell "POST" [ref=f3e434]
+        - cell "/api/v1/users/:id/files" [ref=f3e436]
+        - cell "customer" [ref=f3e437]
+        - cell "Upload file (texto o imagen)" [ref=f3e438]
+        - 'cell "multipart/form-data: file" [ref=f3e439]'
+        - 'cell "POST {{baseUrl}}/api/v1/users/3/files" [ref=f3e440]':
+          - text: "POST {{baseUrl}}/api/v1/users/3/files"
+          - group [ref=f3e441]:
+            - generic "View full example (optional)" [ref=f3e442] [cursor=pointer]
+      - row [ref=f3e443]:
+        - cell "DELETE" [ref=f3e444]
+        - cell "/api/v1/users/:id/files/:file_id" [ref=f3e446]
+        - cell "customer" [ref=f3e447]
+        - cell "Delete file" [ref=f3e448]
+        - cell "path :file_id" [ref=f3e449]
+        - 'cell "DELETE {{baseUrl}}/api/v1/users/3/files/10" [ref=f3e450]':
+          - text: "DELETE {{baseUrl}}/api/v1/users/3/files/10"
+          - group [ref=f3e451]:
+            - generic "View full example (optional)" [ref=f3e452] [cursor=pointer]
+      - row [ref=f3e453]:
+        - cell "GET" [ref=f3e454]
+        - cell "/api/v1/manager/reports/overview" [ref=f3e456]
+        - cell "management" [ref=f3e457]
+        - cell "Reporte ejecutivo general" [ref=f3e458]
+        - cell "-" [ref=f3e459]
+        - 'cell "GET {{baseUrl}}/api/v1/manager/reports/overview" [ref=f3e460]':
+          - text: "GET {{baseUrl}}/api/v1/manager/reports/overview"
+          - group [ref=f3e461]:
+            - generic "View full example (optional)" [ref=f3e462] [cursor=pointer]
+      - row [ref=f3e463]:
+        - cell "GET" [ref=f3e464]
+        - cell "/api/v1/manager/reports/loans" [ref=f3e466]
+        - cell "management" [ref=f3e467]
+        - cell "Reporte de prestamos" [ref=f3e468]
+        - 'cell "query: status?" [ref=f3e469]'
+        - 'cell "GET {{baseUrl}}/api/v1/manager/reports/loans?status=active" [ref=f3e470]':
+          - text: "GET {{baseUrl}}/api/v1/manager/reports/loans?status=active"
+          - group [ref=f3e471]:
+            - generic "View full example (optional)" [ref=f3e472] [cursor=pointer]
+      - row [ref=f3e473]:
+        - cell "GET" [ref=f3e474]
+        - cell "/api/v1/manager/reports/accounts_activity" [ref=f3e476]
+        - cell "management" [ref=f3e477]
+        - cell "Actividad de cuentas" [ref=f3e478]
+        - 'cell "query: days?" [ref=f3e479]'
+        - 'cell "GET {{baseUrl}}/api/v1/manager/reports/accounts_activity?days=30" [ref=f3e480]':
+          - text: "GET {{baseUrl}}/api/v1/manager/reports/accounts_activity?days=30"
+          - group [ref=f3e481]:
+            - generic "View full example (optional)" [ref=f3e482] [cursor=pointer]
+      - row [ref=f3e483]:
+        - cell "GET" [ref=f3e484]
+        - cell "/api/v1/manager/logins" [ref=f3e486]
+        - cell "management" [ref=f3e487]
+        - cell "Reporte de accesos por dia, semana o mes" [ref=f3e488]
+        - 'cell "query: period, date, status, page, per_page" [ref=f3e489]'
+        - 'cell "GET {{baseUrl}}/api/v1/manager/logins?period=month&date=2026-09-30" [ref=f3e490]':
+          - text: "GET {{baseUrl}}/api/v1/manager/logins?period=month&date=2026-09-30"
+          - group [ref=f3e491]:
+            - generic "View full example (optional)" [ref=f3e492] [cursor=pointer]
+      - row [ref=f3e493]:
+        - cell "GET" [ref=f3e494]
+        - cell "/api/v1/manager/logins/download" [ref=f3e496]
+        - cell "management" [ref=f3e497]
+        - cell "Download sign-in report as CSV" [ref=f3e498]
+        - 'cell "query: period, date, status" [ref=f3e499]'
+        - 'cell "GET {{baseUrl}}/api/v1/manager/logins/download?period=month&date=2026-09-30" [ref=f3e500]':
+          - text: "GET {{baseUrl}}/api/v1/manager/logins/download?period=month&date=2026-09-30"
+          - group [ref=f3e501]:
+            - generic "View full example (optional)" [ref=f3e502] [cursor=pointer]
+      - row [ref=f3e503]:
+        - cell "GET" [ref=f3e504]
+        - cell "/api/v1/manager/users" [ref=f3e506]
+        - cell "management" [ref=f3e507]
+        - cell "Paginated users" [ref=f3e508]
+        - 'cell "query: page, per_page" [ref=f3e509]'
+        - 'cell "GET {{baseUrl}}/api/v1/manager/users?page=1&per_page=20" [ref=f3e510]':
+          - text: "GET {{baseUrl}}/api/v1/manager/users?page=1&per_page=20"
+          - group [ref=f3e511]:
+            - generic "View full example (optional)" [ref=f3e512] [cursor=pointer]
+      - row [ref=f3e513]:
+        - cell "POST" [ref=f3e514]
+        - cell "/api/v1/manager/users" [ref=f3e516]
+        - cell "admin" [ref=f3e517]
+        - cell "Create user por admin" [ref=f3e518]
+        - 'cell "{\"first_name\",\"last_name\",\"email\",\"pin\",\"role\",\"phone?\"}" [ref=f3e519]'
+        - 'cell "POST {{baseUrl}}/api/v1/manager/users" [ref=f3e520]':
+          - text: "POST {{baseUrl}}/api/v1/manager/users"
+          - group [ref=f3e521]:
+            - generic "View full example (optional)" [ref=f3e522] [cursor=pointer]
+      - row [ref=f3e523]:
+        - cell "DELETE" [ref=f3e524]
+        - cell "/api/v1/manager/users/:id" [ref=f3e526]
+        - cell "admin" [ref=f3e527]
+        - cell "Delete user" [ref=f3e528]
+        - cell "path :id" [ref=f3e529]
+        - 'cell "DELETE {{baseUrl}}/api/v1/manager/users/40" [ref=f3e530]':
+          - text: "DELETE {{baseUrl}}/api/v1/manager/users/40"
+          - group [ref=f3e531]:
+            - generic "View full example (optional)" [ref=f3e532] [cursor=pointer]
+      - row [ref=f3e533]:
+        - cell "POST" [ref=f3e534]
+        - cell "/api/v1/manager/loans/:id/cancel" [ref=f3e536]
+        - cell "management" [ref=f3e537]
+        - cell "Cancel prestamo" [ref=f3e538]
+        - cell "path :id" [ref=f3e539]
+        - 'cell "POST {{baseUrl}}/api/v1/manager/loans/9/cancel" [ref=f3e540]':
+          - text: "POST {{baseUrl}}/api/v1/manager/loans/9/cancel"
+          - group [ref=f3e541]:
+            - generic "View full example (optional)" [ref=f3e542] [cursor=pointer]
+      - row [ref=f3e543]:
+        - cell "POST" [ref=f3e544]
+        - cell "/api/v1/manager/accounts/:account_id/loans/preview" [ref=f3e546]
+        - cell "management" [ref=f3e547]
+        - cell "Preview schedule de pagos" [ref=f3e548]
+        - 'cell "{\"amount\",\"term_months\",\"first_due_date\"}" [ref=f3e549]'
+        - 'cell "POST {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/preview" [ref=f3e550]':
+          - text: "POST {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/preview"
+          - group [ref=f3e551]:
+            - generic "View full example (optional)" [ref=f3e552] [cursor=pointer]
+      - row [ref=f3e553]:
+        - cell "POST" [ref=f3e554]
+        - cell "/api/v1/manager/accounts/:account_id/loans" [ref=f3e556]
+        - cell "management" [ref=f3e557]
+        - cell "Originar prestamo en cuenta objetivo" [ref=f3e558]
+        - 'cell "{\"amount\",\"term_months\",\"first_due_date\"}" [ref=f3e559]'
+        - 'cell "POST {{baseUrl}}/api/v1/manager/accounts/9000000001/loans" [ref=f3e560]':
+          - text: "POST {{baseUrl}}/api/v1/manager/accounts/9000000001/loans"
+          - group [ref=f3e561]:
+            - generic "View full example (optional)" [ref=f3e562] [cursor=pointer]
+      - row [ref=f3e563]:
+        - cell "GET" [ref=f3e564]
+        - cell "/api/v1/manager/accounts/:account_id/summary" [ref=f3e566]
+        - cell "management" [ref=f3e567]
+        - cell "Summary por cuenta (saldo + prestamos)" [ref=f3e568]
+        - cell ":account_id o account_number" [ref=f3e569]
+        - 'cell "GET {{baseUrl}}/api/v1/manager/accounts/9000000001/summary" [ref=f3e570]':
+          - text: "GET {{baseUrl}}/api/v1/manager/accounts/9000000001/summary"
+          - group [ref=f3e571]:
+            - generic "View full example (optional)" [ref=f3e572] [cursor=pointer]
+      - row [ref=f3e573]:
+        - cell "GET" [ref=f3e574]
+        - cell "/api/v1/manager/accounts/:account_id/loans/:loan_id/installments" [ref=f3e576]
+        - cell "management" [ref=f3e577]
+        - cell "Plan de pagos paginado" [ref=f3e578]
+        - 'cell "query: page, per_page" [ref=f3e579]'
+        - 'cell "GET {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/installments?page=1&per_page=10" [ref=f3e580]':
+          - text: "GET {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/installments?page=1&per_page=10"
+          - group [ref=f3e581]:
+            - generic "View full example (optional)" [ref=f3e582] [cursor=pointer]
+      - row [ref=f3e583]:
+        - cell "GET" [ref=f3e584]
+        - cell "/api/v1/manager/accounts/:account_id/loans/:loan_id/installments/summary" [ref=f3e586]
+        - cell "management" [ref=f3e587]
+        - cell "Summary de cuotas (paid/pending)" [ref=f3e588]
+        - cell "-" [ref=f3e589]
+        - 'cell "GET {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/installments/summary" [ref=f3e590]':
+          - text: "GET {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/installments/summary"
+          - group [ref=f3e591]:
+            - generic "View full example (optional)" [ref=f3e592] [cursor=pointer]
+      - row [ref=f3e593]:
+        - cell "GET" [ref=f3e594]
+        - cell "/api/v1/manager/accounts/:account_id/loans/:loan_id/installments/download" [ref=f3e596]
+        - cell "management" [ref=f3e597]
+        - cell "Download payment schedule CSV" [ref=f3e598]
+        - cell "-" [ref=f3e599]
+        - 'cell "GET {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/installments/download" [ref=f3e600]':
+          - text: "GET {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/installments/download"
+          - group [ref=f3e601]:
+            - generic "View full example (optional)" [ref=f3e602] [cursor=pointer]
+      - row [ref=f3e603]:
+        - cell "GET" [ref=f3e604]
+        - cell "/api/v1/manager/operations" [ref=f3e606]
+        - cell "management" [ref=f3e607]
+        - cell "Operations log by day, week or month" [ref=f3e608]
+        - 'cell "query: period, date, operation_type, performed_by, page, per_page" [ref=f3e609]'
+        - 'cell "GET {{baseUrl}}/api/v1/manager/operations?period=month&date=2026-09-30" [ref=f3e610]':
+          - text: "GET {{baseUrl}}/api/v1/manager/operations?period=month&date=2026-09-30"
+          - group [ref=f3e611]:
+            - generic "View full example (optional)" [ref=f3e612] [cursor=pointer]
+      - row [ref=f3e613]:
+        - cell "GET" [ref=f3e614]
+        - cell "/api/v1/manager/operations/download" [ref=f3e616]
+        - cell "management" [ref=f3e617]
+        - cell "Download the operations log as CSV" [ref=f3e618]
+        - 'cell "query: period, date, operation_type, performed_by" [ref=f3e619]'
+        - 'cell "GET {{baseUrl}}/api/v1/manager/operations/download?period=month&date=2026-09-30" [ref=f3e620]':
+          - text: "GET {{baseUrl}}/api/v1/manager/operations/download?period=month&date=2026-09-30"
+          - group [ref=f3e621]:
+            - generic "View full example (optional)" [ref=f3e622] [cursor=pointer]
+      - row [ref=f3e623]:
+        - cell "POST" [ref=f3e624]
+        - cell "/api/v1/manager/accounts/:account_id/deposit" [ref=f3e626]
+        - cell "cashier" [ref=f3e627]
+        - cell "Deposit por caja/cajero" [ref=f3e628]
+        - 'cell "{\"amount\",\"description?\"}" [ref=f3e629]'
+        - 'cell "POST {{baseUrl}}/api/v1/manager/accounts/9000000001/deposit" [ref=f3e630]':
+          - text: "POST {{baseUrl}}/api/v1/manager/accounts/9000000001/deposit"
+          - group [ref=f3e631]:
+            - generic "View full example (optional)" [ref=f3e632] [cursor=pointer]
+      - row [ref=f3e633]:
+        - cell "POST" [ref=f3e634]
+        - cell "/api/v1/manager/accounts/:account_id/withdraw" [ref=f3e636]
+        - cell "cashier" [ref=f3e637]
+        - cell "Withdraw por caja/cajero" [ref=f3e638]
+        - 'cell "{\"amount\",\"description?\"}" [ref=f3e639]'
+        - 'cell "POST {{baseUrl}}/api/v1/manager/accounts/9000000001/withdraw" [ref=f3e640]':
+          - text: "POST {{baseUrl}}/api/v1/manager/accounts/9000000001/withdraw"
+          - group [ref=f3e641]:
+            - generic "View full example (optional)" [ref=f3e642] [cursor=pointer]
+      - row [ref=f3e643]:
+        - cell "POST" [ref=f3e644]
+        - cell "/api/v1/manager/accounts/:account_id/loans/:loan_id/pay" [ref=f3e646]
+        - cell "management" [ref=f3e647]
+        - cell "Pay loan por gestión" [ref=f3e648]
+        - 'cell "{\"amount\",\"paid_on?\"}" [ref=f3e649]'
+        - 'cell "POST {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/pay" [ref=f3e650]':
+          - text: "POST {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/pay"
+          - group [ref=f3e651]:
+            - generic "View full example (optional)" [ref=f3e652] [cursor=pointer]
+      - row [ref=f3e653]:
+        - cell "POST" [ref=f3e654]
+        - cell "/api/v1/password/reset/request" [ref=f3e656]
+        - cell "public" [ref=f3e657]
+        - cell "Solicitar restablecimiento de PIN" [ref=f3e658]
+        - 'cell "{\"email\"}" [ref=f3e659]'
+        - 'cell "POST {{baseUrl}}/api/v1/password/reset/request" [ref=f3e660]':
+          - text: "POST {{baseUrl}}/api/v1/password/reset/request"
+          - group [ref=f3e661]:
+            - generic "View full example (optional)" [ref=f3e662] [cursor=pointer]
+      - row [ref=f3e663]:
+        - cell "POST" [ref=f3e664]
+        - cell "/api/v1/password/reset" [ref=f3e666]
+        - cell "public" [ref=f3e667]
+        - cell "Reset PIN con token" [ref=f3e668]
+        - 'cell "{\"email\",\"reset_token\",\"new_pin\"}" [ref=f3e669]'
+        - 'cell "POST {{baseUrl}}/api/v1/password/reset" [ref=f3e670]':
+          - text: "POST {{baseUrl}}/api/v1/password/reset"
+          - group [ref=f3e671]:
+            - generic "View full example (optional)" [ref=f3e672] [cursor=pointer]
+      - row [ref=f3e673]:
+        - cell "POST" [ref=f3e674]
+        - cell "/api/v1/accounts/:id/reverse/:transaction_id" [ref=f3e676]
+        - cell "management" [ref=f3e677]
+        - cell "Revertir transacción" [ref=f3e678]
+        - 'cell "{\"reason\"}" [ref=f3e679]'
+        - 'cell "POST {{baseUrl}}/api/v1/accounts/1/reverse/100" [ref=f3e680]':
+          - text: "POST {{baseUrl}}/api/v1/accounts/1/reverse/100"
+          - group [ref=f3e681]:
+            - generic "View full example (optional)" [ref=f3e682] [cursor=pointer]
+      - row [ref=f3e683]:
+        - cell "GET" [ref=f3e684]
+        - cell "/api/v1/receipts/:id" [ref=f3e686]
+        - cell "customer" [ref=f3e687]
+        - cell "Consultar comprobante digital" [ref=f3e688]
+        - cell "path :id" [ref=f3e689]
+        - 'cell "GET {{baseUrl}}/api/v1/receipts/1" [ref=f3e690]':
+          - text: "GET {{baseUrl}}/api/v1/receipts/1"
+          - group [ref=f3e691]:
+            - generic "View full example (optional)" [ref=f3e692] [cursor=pointer]
+      - row [ref=f3e693]:
+        - cell "GET" [ref=f3e694]
+        - cell "/api/v1/receipts/:id/download" [ref=f3e696]
+        - cell "customer" [ref=f3e697]
+        - cell "Download comprobante" [ref=f3e698]
+        - cell "path :id" [ref=f3e699]
+        - 'cell "GET {{baseUrl}}/api/v1/receipts/1/download" [ref=f3e700]':
+          - text: "GET {{baseUrl}}/api/v1/receipts/1/download"
+          - group [ref=f3e701]:
+            - generic "View full example (optional)" [ref=f3e702] [cursor=pointer]
+      - row [ref=f3e703]:
+        - cell "GET" [ref=f3e704]
+        - cell "/api/v1/transactions/:transaction_id/receipt" [ref=f3e706]
+        - cell "customer" [ref=f3e707]
+        - cell "Consultar o generar comprobante por movimiento" [ref=f3e708]
+        - cell "path :transaction_id" [ref=f3e709]
+        - 'cell "GET {{baseUrl}}/api/v1/transactions/184/receipt" [ref=f3e710]':
+          - text: "GET {{baseUrl}}/api/v1/transactions/184/receipt"
+          - group [ref=f3e711]:
+            - generic "View full example (optional)" [ref=f3e712] [cursor=pointer]
+      - row [ref=f3e713]:
+        - cell "GET" [ref=f3e714]
+        - cell "/api/v1/customer/dashboard" [ref=f3e716]
+        - cell "customer" [ref=f3e717]
+        - cell "Financial summary consolidado del cliente" [ref=f3e718]
+        - cell "-" [ref=f3e719]
+        - 'cell "GET {{baseUrl}}/api/v1/customer/dashboard" [ref=f3e720]':
+          - text: "GET {{baseUrl}}/api/v1/customer/dashboard"
+          - group [ref=f3e721]:
+            - generic "View full example (optional)" [ref=f3e722] [cursor=pointer]
+      - row [ref=f3e723]:
+        - cell "GET" [ref=f3e724]
+        - cell "/api/v1/customer/transactions" [ref=f3e726]
+        - cell "customer" [ref=f3e727]
+        - cell "Movimientos filtrables del cliente" [ref=f3e728]
+        - 'cell "query: from?, to?, min_amount?, max_amount?, format?" [ref=f3e729]'
+        - 'cell "GET {{baseUrl}}/api/v1/customer/transactions" [ref=f3e730]':
+          - text: "GET {{baseUrl}}/api/v1/customer/transactions"
+          - group [ref=f3e731]:
+            - generic "View full example (optional)" [ref=f3e732] [cursor=pointer]
+      - row [ref=f3e733]:
+        - cell "GET" [ref=f3e734]
+        - cell "/api/v1/customer/accounts/:account_id/statement" [ref=f3e736]
+        - cell "customer" [ref=f3e737]
+        - cell "Status de cuenta del cliente" [ref=f3e738]
+        - cell "path :account_id" [ref=f3e739]
+        - 'cell "GET {{baseUrl}}/api/v1/customer/accounts/12/statement" [ref=f3e740]':
+          - text: "GET {{baseUrl}}/api/v1/customer/accounts/12/statement"
+          - group [ref=f3e741]:
+            - generic "View full example (optional)" [ref=f3e742] [cursor=pointer]
+      - row [ref=f3e743]:
+        - cell "GET" [ref=f3e744]
+        - cell "/api/v1/customer/credit_requests" [ref=f3e746]
+        - cell "customer" [ref=f3e747]
+        - cell "Historial de solicitudes de crédito" [ref=f3e748]
+        - cell "-" [ref=f3e749]
+        - 'cell "GET {{baseUrl}}/api/v1/customer/credit_requests" [ref=f3e750]':
+          - text: "GET {{baseUrl}}/api/v1/customer/credit_requests"
+          - group [ref=f3e751]:
+            - generic "View full example (optional)" [ref=f3e752] [cursor=pointer]
+      - row [ref=f3e753]:
+        - cell "POST" [ref=f3e754]
+        - cell "/api/v1/customer/credit_requests" [ref=f3e756]
+        - cell "customer" [ref=f3e757]
+        - cell "Crear solicitud de crédito" [ref=f3e758]
+        - 'cell "{\"account_id\",\"amount\",\"term_months\",\"reason?\"}" [ref=f3e759]'
+        - 'cell "POST {{baseUrl}}/api/v1/customer/credit_requests" [ref=f3e760]':
+          - text: "POST {{baseUrl}}/api/v1/customer/credit_requests"
+          - group [ref=f3e761]:
+            - generic "View full example (optional)" [ref=f3e762] [cursor=pointer]
+      - row [ref=f3e763]:
+        - cell "GET" [ref=f3e764]
+        - cell "/api/v1/customer/tickets" [ref=f3e766]
+        - cell "customer" [ref=f3e767]
+        - cell "Consultar tickets de soporte" [ref=f3e768]
+        - cell "-" [ref=f3e769]
+        - 'cell "GET {{baseUrl}}/api/v1/customer/tickets" [ref=f3e770]':
+          - text: "GET {{baseUrl}}/api/v1/customer/tickets"
+          - group [ref=f3e771]:
+            - generic "View full example (optional)" [ref=f3e772] [cursor=pointer]
+      - row [ref=f3e773]:
+        - cell "POST" [ref=f3e774]
+        - cell "/api/v1/customer/tickets" [ref=f3e776]
+        - cell "customer" [ref=f3e777]
+        - cell "Create ticket de soporte" [ref=f3e778]
+        - 'cell "{\"subject\",\"description\"}" [ref=f3e779]'
+        - 'cell "POST {{baseUrl}}/api/v1/customer/tickets" [ref=f3e780]':
+          - text: "POST {{baseUrl}}/api/v1/customer/tickets"
+          - group [ref=f3e781]:
+            - generic "View full example (optional)" [ref=f3e782] [cursor=pointer]
+      - row [ref=f3e783]:
+        - cell "GET" [ref=f3e784]
+        - cell "/api/v1/customer/preferences" [ref=f3e786]
+        - cell "customer" [ref=f3e787]
+        - cell "Consultar preferencias personales" [ref=f3e788]
+        - cell "-" [ref=f3e789]
+        - 'cell "GET {{baseUrl}}/api/v1/customer/preferences" [ref=f3e790]':
+          - text: "GET {{baseUrl}}/api/v1/customer/preferences"
+          - group [ref=f3e791]:
+            - generic "View full example (optional)" [ref=f3e792] [cursor=pointer]
+      - row [ref=f3e793]:
+        - cell "PATCH" [ref=f3e794]
+        - cell "/api/v1/customer/preferences" [ref=f3e796]
+        - cell "customer" [ref=f3e797]
+        - cell "Refresh tema personal" [ref=f3e798]
+        - 'cell "{\"theme\":\"light|dark\"}" [ref=f3e799]'
+        - 'cell "PATCH {{baseUrl}}/api/v1/customer/preferences" [ref=f3e800]':
+          - text: "PATCH {{baseUrl}}/api/v1/customer/preferences"
+          - group [ref=f3e801]:
+            - generic "View full example (optional)" [ref=f3e802] [cursor=pointer]
+      - row [ref=f3e803]:
+        - cell "GET" [ref=f3e804]
+        - cell "/api/v1/customer/notifications" [ref=f3e806]
+        - cell "customer" [ref=f3e807]
+        - cell "Listar notificaciones" [ref=f3e808]
+        - cell "-" [ref=f3e809]
+        - 'cell "GET {{baseUrl}}/api/v1/customer/notifications" [ref=f3e810]':
+          - text: "GET {{baseUrl}}/api/v1/customer/notifications"
+          - group [ref=f3e811]:
+            - generic "View full example (optional)" [ref=f3e812] [cursor=pointer]
+      - row [ref=f3e813]:
+        - cell "PATCH" [ref=f3e814]
+        - cell "/api/v1/customer/notifications/:id/read" [ref=f3e816]
+        - cell "customer" [ref=f3e817]
+        - cell "Marcar notificación como leída" [ref=f3e818]
+        - cell "path :id" [ref=f3e819]
+        - 'cell "PATCH {{baseUrl}}/api/v1/customer/notifications/1/read" [ref=f3e820]':
+          - text: "PATCH {{baseUrl}}/api/v1/customer/notifications/1/read"
+          - group [ref=f3e821]:
+            - generic "View full example (optional)" [ref=f3e822] [cursor=pointer]
+      - row [ref=f3e823]:
+        - cell "POST" [ref=f3e824]
+        - cell "/api/v1/cashier/cash/open" [ref=f3e826]
+        - cell "cashier" [ref=f3e827]
+        - cell "Cash register opening" [ref=f3e828]
+        - 'cell "{\"opening_balance\"}" [ref=f3e829]'
+        - 'cell "POST {{baseUrl}}/api/v1/cashier/cash/open" [ref=f3e830]':
+          - text: "POST {{baseUrl}}/api/v1/cashier/cash/open"
+          - group [ref=f3e831]:
+            - generic "View full example (optional)" [ref=f3e832] [cursor=pointer]
+      - row [ref=f3e833]:
+        - cell "GET" [ref=f3e834]
+        - cell "/api/v1/cashier/cash/status" [ref=f3e836]
+        - cell "cashier" [ref=f3e837]
+        - cell "Status de caja" [ref=f3e838]
+        - cell "-" [ref=f3e839]
+        - 'cell "GET {{baseUrl}}/api/v1/cashier/cash/status" [ref=f3e840]':
+          - text: "GET {{baseUrl}}/api/v1/cashier/cash/status"
+          - group [ref=f3e841]:
+            - generic "View full example (optional)" [ref=f3e842] [cursor=pointer]
+      - row [ref=f3e843]:
+        - cell "GET" [ref=f3e844]
+        - cell "/api/v1/cashier/cash/movements" [ref=f3e846]
+        - cell "cashier" [ref=f3e847]
+        - cell "Movimientos de caja abierta" [ref=f3e848]
+        - cell "-" [ref=f3e849]
+        - 'cell "GET {{baseUrl}}/api/v1/cashier/cash/movements" [ref=f3e850]':
+          - text: "GET {{baseUrl}}/api/v1/cashier/cash/movements"
+          - group [ref=f3e851]:
+            - generic "View full example (optional)" [ref=f3e852] [cursor=pointer]
+      - row [ref=f3e853]:
+        - cell "POST" [ref=f3e854]
+        - cell "/api/v1/cashier/cash/reconciliation" [ref=f3e856]
+        - cell "cashier" [ref=f3e857]
+        - cell "Cash count" [ref=f3e858]
+        - 'cell "{\"physical_balance\"}" [ref=f3e859]'
+        - 'cell "POST {{baseUrl}}/api/v1/cashier/cash/reconciliation" [ref=f3e860]':
+          - text: "POST {{baseUrl}}/api/v1/cashier/cash/reconciliation"
+          - group [ref=f3e861]:
+            - generic "View full example (optional)" [ref=f3e862] [cursor=pointer]
+      - row [ref=f3e863]:
+        - cell "POST" [ref=f3e864]
+        - cell "/api/v1/cashier/cash/close" [ref=f3e866]
+        - cell "cashier" [ref=f3e867]
+        - cell "Cash register closing" [ref=f3e868]
+        - 'cell "{\"physical_balance\",\"notes?\"}" [ref=f3e869]'
+        - 'cell "POST {{baseUrl}}/api/v1/cashier/cash/close" [ref=f3e870]':
+          - text: "POST {{baseUrl}}/api/v1/cashier/cash/close"
+          - group [ref=f3e871]:
+            - generic "View full example (optional)" [ref=f3e872] [cursor=pointer]
+      - row [ref=f3e873]:
+        - cell "GET" [ref=f3e874]
+        - cell "/api/v1/cashier/reports/daily" [ref=f3e876]
+        - cell "cashier" [ref=f3e877]
+        - cell "Reporte diario de cajero" [ref=f3e878]
+        - cell "-" [ref=f3e879]
+        - 'cell "GET {{baseUrl}}/api/v1/cashier/reports/daily" [ref=f3e880]':
+          - text: "GET {{baseUrl}}/api/v1/cashier/reports/daily"
+          - group [ref=f3e881]:
+            - generic "View full example (optional)" [ref=f3e882] [cursor=pointer]
+      - row [ref=f3e883]:
+        - cell "GET" [ref=f3e884]
+        - cell "/api/v1/cashier/receipts" [ref=f3e886]
+        - cell "cashier" [ref=f3e887]
+        - cell "Comprobantes emitidos por cajero" [ref=f3e888]
+        - cell "-" [ref=f3e889]
+        - 'cell "GET {{baseUrl}}/api/v1/cashier/receipts" [ref=f3e890]':
+          - text: "GET {{baseUrl}}/api/v1/cashier/receipts"
+          - group [ref=f3e891]:
+            - generic "View full example (optional)" [ref=f3e892] [cursor=pointer]
+      - row [ref=f3e893]:
+        - cell "GET" [ref=f3e894]
+        - cell "/api/v1/cashier/clients/search" [ref=f3e896]
+        - cell "cashier" [ref=f3e897]
+        - cell "Buscar clientes para operación" [ref=f3e898]
+        - 'cell "query: q?" [ref=f3e899]'
+        - 'cell "GET {{baseUrl}}/api/v1/cashier/clients/search?q=Juan" [ref=f3e900]':
+          - text: "GET {{baseUrl}}/api/v1/cashier/clients/search?q=Juan"
+          - group [ref=f3e901]:
+            - generic "View full example (optional)" [ref=f3e902] [cursor=pointer]
+      - row [ref=f3e903]:
+        - cell "GET" [ref=f3e904]
+        - cell "/api/v1/customer_service/users/search" [ref=f3e906]
+        - cell "customer_service" [ref=f3e907]
+        - cell "Buscar clientes" [ref=f3e908]
+        - 'cell "query: q?" [ref=f3e909]'
+        - 'cell "GET {{baseUrl}}/api/v1/customer_service/users/search?q=Juan" [ref=f3e910]':
+          - text: "GET {{baseUrl}}/api/v1/customer_service/users/search?q=Juan"
+          - group [ref=f3e911]:
+            - generic "View full example (optional)" [ref=f3e912] [cursor=pointer]
+      - row [ref=f3e913]:
+        - cell "POST" [ref=f3e914]
+        - cell "/api/v1/customer_service/users" [ref=f3e916]
+        - cell "customer_service" [ref=f3e917]
+        - cell "Register customer" [ref=f3e918]
+        - 'cell "{\"first_name\",\"last_name\",\"email\",\"pin\",\"phone?\",\"document_number?\",\"address?\"}" [ref=f3e919]'
+        - 'cell "POST {{baseUrl}}/api/v1/customer_service/users" [ref=f3e920]':
+          - text: "POST {{baseUrl}}/api/v1/customer_service/users"
+          - group [ref=f3e921]:
+            - generic "View full example (optional)" [ref=f3e922] [cursor=pointer]
+      - row [ref=f3e923]:
+        - cell "PATCH" [ref=f3e924]
+        - cell "/api/v1/customer_service/users/:id" [ref=f3e926]
+        - cell "customer_service" [ref=f3e927]
+        - cell "Update details del cliente" [ref=f3e928]
+        - 'cell "{\"first_name?\",\"last_name?\",\"email?\",\"phone?\",\"document_number?\",\"address?\"}" [ref=f3e929]'
+        - 'cell "PATCH {{baseUrl}}/api/v1/customer_service/users/12" [ref=f3e930]':
+          - text: "PATCH {{baseUrl}}/api/v1/customer_service/users/12"
+          - group [ref=f3e931]:
+            - generic "View full example (optional)" [ref=f3e932] [cursor=pointer]
+      - row [ref=f3e933]:
+        - cell "PATCH" [ref=f3e934]
+        - cell "/api/v1/customer_service/users/:id/unblock" [ref=f3e936]
+        - cell "customer_service" [ref=f3e937]
+        - cell "Unblock user" [ref=f3e938]
+        - cell "path :id" [ref=f3e939]
+        - 'cell "PATCH {{baseUrl}}/api/v1/customer_service/users/12/unblock" [ref=f3e940]':
+          - text: "PATCH {{baseUrl}}/api/v1/customer_service/users/12/unblock"
+          - group [ref=f3e941]:
+            - generic "View full example (optional)" [ref=f3e942] [cursor=pointer]
+      - row [ref=f3e943]:
+        - cell "PATCH" [ref=f3e944]
+        - cell "/api/v1/customer_service/users/:id/deactivate" [ref=f3e946]
+        - cell "customer_service" [ref=f3e947]
+        - cell "Deactivate user" [ref=f3e948]
+        - cell "path :id" [ref=f3e949]
+        - 'cell "PATCH {{baseUrl}}/api/v1/customer_service/users/12/deactivate" [ref=f3e950]':
+          - text: "PATCH {{baseUrl}}/api/v1/customer_service/users/12/deactivate"
+          - group [ref=f3e951]:
+            - generic "View full example (optional)" [ref=f3e952] [cursor=pointer]
+      - row [ref=f3e953]:
+        - cell "PATCH" [ref=f3e954]
+        - cell "/api/v1/customer_service/users/:id/reactivate" [ref=f3e956]
+        - cell "customer_service" [ref=f3e957]
+        - cell "Reactivate user" [ref=f3e958]
+        - cell "path :id" [ref=f3e959]
+        - 'cell "PATCH {{baseUrl}}/api/v1/customer_service/users/12/reactivate" [ref=f3e960]':
+          - text: "PATCH {{baseUrl}}/api/v1/customer_service/users/12/reactivate"
+          - group [ref=f3e961]:
+            - generic "View full example (optional)" [ref=f3e962] [cursor=pointer]
+      - row [ref=f3e963]:
+        - cell "PATCH" [ref=f3e964]
+        - cell "/api/v1/customer_service/users/:id/reset_password" [ref=f3e966]
+        - cell "customer_service" [ref=f3e967]
+        - cell "Reset PIN" [ref=f3e968]
+        - 'cell "{\"pin\"}" [ref=f3e969]'
+        - 'cell "PATCH {{baseUrl}}/api/v1/customer_service/users/12/reset_password" [ref=f3e970]':
+          - text: "PATCH {{baseUrl}}/api/v1/customer_service/users/12/reset_password"
+          - group [ref=f3e971]:
+            - generic "View full example (optional)" [ref=f3e972] [cursor=pointer]
+      - row [ref=f3e973]:
+        - cell "POST" [ref=f3e974]
+        - cell "/api/v1/customer_service/accounts" [ref=f3e976]
+        - cell "customer_service" [ref=f3e977]
+        - cell "Create account ahorro/corriente" [ref=f3e978]
+        - 'cell "{\"user_id\",\"account_category\"}" [ref=f3e979]'
+        - 'cell "POST {{baseUrl}}/api/v1/customer_service/accounts" [ref=f3e980]':
+          - text: "POST {{baseUrl}}/api/v1/customer_service/accounts"
+          - group [ref=f3e981]:
+            - generic "View full example (optional)" [ref=f3e982] [cursor=pointer]
+      - row [ref=f3e983]:
+        - cell "PATCH" [ref=f3e984]
+        - cell "/api/v1/customer_service/accounts/:id/status" [ref=f3e986]
+        - cell "customer_service" [ref=f3e987]
+        - cell "Cambiar estado de cuenta" [ref=f3e988]
+        - 'cell "{\"status\":\"active|frozen|closed\"}" [ref=f3e989]'
+        - 'cell "PATCH {{baseUrl}}/api/v1/customer_service/accounts/12/status" [ref=f3e990]':
+          - text: "PATCH {{baseUrl}}/api/v1/customer_service/accounts/12/status"
+          - group [ref=f3e991]:
+            - generic "View full example (optional)" [ref=f3e992] [cursor=pointer]
+      - row [ref=f3e993]:
+        - cell "GET" [ref=f3e994]
+        - cell "/api/v1/customer_service/users/:user_id/accounts" [ref=f3e996]
+        - cell "customer_service" [ref=f3e997]
+        - cell "Consultar cuentas del usuario" [ref=f3e998]
+        - cell "path :user_id" [ref=f3e999]
+        - 'cell "GET {{baseUrl}}/api/v1/customer_service/users/12/accounts" [ref=f3e1000]':
+          - text: "GET {{baseUrl}}/api/v1/customer_service/users/12/accounts"
+          - group [ref=f3e1001]:
+            - generic "View full example (optional)" [ref=f3e1002] [cursor=pointer]
+      - row [ref=f3e1003]:
+        - cell "GET" [ref=f3e1004]
+        - cell "/api/v1/customer_service/tickets" [ref=f3e1006]
+        - cell "customer_service" [ref=f3e1007]
+        - cell "Consultar casos y reclamos" [ref=f3e1008]
+        - 'cell "query: user_id?" [ref=f3e1009]'
+        - 'cell "GET {{baseUrl}}/api/v1/customer_service/tickets" [ref=f3e1010]':
+          - text: "GET {{baseUrl}}/api/v1/customer_service/tickets"
+          - group [ref=f3e1011]:
+            - generic "View full example (optional)" [ref=f3e1012] [cursor=pointer]
+      - row [ref=f3e1013]:
+        - cell "POST" [ref=f3e1014]
+        - cell "/api/v1/customer_service/tickets" [ref=f3e1016]
+        - cell "customer_service" [ref=f3e1017]
+        - cell "Create case" [ref=f3e1018]
+        - 'cell "{\"user_id\",\"subject\",\"description\",\"priority?\"}" [ref=f3e1019]'
+        - 'cell "POST {{baseUrl}}/api/v1/customer_service/tickets" [ref=f3e1020]':
+          - text: "POST {{baseUrl}}/api/v1/customer_service/tickets"
+          - group [ref=f3e1021]:
+            - generic "View full example (optional)" [ref=f3e1022] [cursor=pointer]
+      - row [ref=f3e1023]:
+        - cell "PATCH" [ref=f3e1024]
+        - cell "/api/v1/customer_service/tickets/:id/close" [ref=f3e1026]
+        - cell "customer_service" [ref=f3e1027]
+        - cell "Close caso" [ref=f3e1028]
+        - cell "path :id" [ref=f3e1029]
+        - 'cell "PATCH {{baseUrl}}/api/v1/customer_service/tickets/1/close" [ref=f3e1030]':
+          - text: "PATCH {{baseUrl}}/api/v1/customer_service/tickets/1/close"
+          - group [ref=f3e1031]:
+            - generic "View full example (optional)" [ref=f3e1032] [cursor=pointer]
+      - row [ref=f3e1033]:
+        - cell "GET" [ref=f3e1034]
+        - cell "/api/v1/manager/roles" [ref=f3e1036]
+        - cell "management" [ref=f3e1037]
+        - cell "Consultar roles y permisos" [ref=f3e1038]
+        - cell "-" [ref=f3e1039]
+        - 'cell "GET {{baseUrl}}/api/v1/manager/roles" [ref=f3e1040]':
+          - text: "GET {{baseUrl}}/api/v1/manager/roles"
+          - group [ref=f3e1041]:
+            - generic "View full example (optional)" [ref=f3e1042] [cursor=pointer]
+      - row [ref=f3e1043]:
+        - cell "GET" [ref=f3e1044]
+        - cell "/api/v1/manager/reports/dashboard" [ref=f3e1046]
+        - cell "management" [ref=f3e1047]
+        - cell "Indicadores del dashboard principal" [ref=f3e1048]
+        - cell "-" [ref=f3e1049]
+        - 'cell "GET {{baseUrl}}/api/v1/manager/reports/dashboard" [ref=f3e1050]':
+          - text: "GET {{baseUrl}}/api/v1/manager/reports/dashboard"
+          - group [ref=f3e1051]:
+            - generic "View full example (optional)" [ref=f3e1052] [cursor=pointer]
+      - row [ref=f3e1053]:
+        - cell "GET" [ref=f3e1054]
+        - cell "/api/v1/manager/reconciliations" [ref=f3e1056]
+        - cell "management" [ref=f3e1057]
+        - cell "Historial de conciliaciones" [ref=f3e1058]
+        - 'cell "query: account_id?" [ref=f3e1059]'
+        - 'cell "GET {{baseUrl}}/api/v1/manager/reconciliations" [ref=f3e1060]':
+          - text: "GET {{baseUrl}}/api/v1/manager/reconciliations"
+          - group [ref=f3e1061]:
+            - generic "View full example (optional)" [ref=f3e1062] [cursor=pointer]
+      - row [ref=f3e1063]:
+        - cell "POST" [ref=f3e1064]
+        - cell "/api/v1/manager/reconciliations" [ref=f3e1066]
+        - cell "management" [ref=f3e1067]
+        - cell "Crear conciliación" [ref=f3e1068]
+        - 'cell "{\"account_id\",\"reported_balance\",\"notes?\"}" [ref=f3e1069]'
+        - 'cell "POST {{baseUrl}}/api/v1/manager/reconciliations" [ref=f3e1070]':
+          - text: "POST {{baseUrl}}/api/v1/manager/reconciliations"
+          - group [ref=f3e1071]:
+            - generic "View full example (optional)" [ref=f3e1072] [cursor=pointer]
+      - row [ref=f3e1073]:
+        - cell "GET" [ref=f3e1074]
+        - cell "/api/v1/manager/accounting/accounts" [ref=f3e1076]
+        - cell "management" [ref=f3e1077]
+        - cell "Catálogo contable" [ref=f3e1078]
+        - cell "-" [ref=f3e1079]
+        - 'cell "GET {{baseUrl}}/api/v1/manager/accounting/accounts" [ref=f3e1080]':
+          - text: "GET {{baseUrl}}/api/v1/manager/accounting/accounts"
+          - group [ref=f3e1081]:
+            - generic "View full example (optional)" [ref=f3e1082] [cursor=pointer]
+      - row [ref=f3e1083]:
+        - cell "POST" [ref=f3e1084]
+        - cell "/api/v1/manager/accounting/accounts" [ref=f3e1086]
+        - cell "management" [ref=f3e1087]
+        - cell "Create account contable" [ref=f3e1088]
+        - 'cell "{\"code\",\"name\",\"account_type\"}" [ref=f3e1089]'
+        - 'cell "POST {{baseUrl}}/api/v1/manager/accounting/accounts" [ref=f3e1090]':
+          - text: "POST {{baseUrl}}/api/v1/manager/accounting/accounts"
+          - group [ref=f3e1091]:
+            - generic "View full example (optional)" [ref=f3e1092] [cursor=pointer]
+      - row [ref=f3e1093]:
+        - cell "GET" [ref=f3e1094]
+        - cell "/api/v1/manager/accounting/journal_entries" [ref=f3e1096]
+        - cell "management" [ref=f3e1097]
+        - cell "Asientos contables" [ref=f3e1098]
+        - cell "-" [ref=f3e1099]
+        - 'cell "GET {{baseUrl}}/api/v1/manager/accounting/journal_entries" [ref=f3e1100]':
+          - text: "GET {{baseUrl}}/api/v1/manager/accounting/journal_entries"
+          - group [ref=f3e1101]:
+            - generic "View full example (optional)" [ref=f3e1102] [cursor=pointer]
+      - row [ref=f3e1103]:
+        - cell "POST" [ref=f3e1104]
+        - cell "/api/v1/manager/accounting/journal_entries" [ref=f3e1106]
+        - cell "management" [ref=f3e1107]
+        - cell "Crear asiento contable" [ref=f3e1108]
+        - 'cell "{\"reference\",\"description\",\"lines\"}" [ref=f3e1109]'
+        - 'cell "POST {{baseUrl}}/api/v1/manager/accounting/journal_entries" [ref=f3e1110]':
+          - text: "POST {{baseUrl}}/api/v1/manager/accounting/journal_entries"
+          - group [ref=f3e1111]:
+            - generic "View full example (optional)" [ref=f3e1112] [cursor=pointer]
+      - row [ref=f3e1113]:
+        - cell "POST" [ref=f3e1114]
+        - cell "/api/v1/manager/accounting/journal_entries/:id/approve" [ref=f3e1116]
+        - cell "management" [ref=f3e1117]
+        - cell "Aprobar asiento contable" [ref=f3e1118]
+        - cell "path :id" [ref=f3e1119]
+        - 'cell "POST {{baseUrl}}/api/v1/manager/accounting/journal_entries/1/approve" [ref=f3e1120]':
+          - text: "POST {{baseUrl}}/api/v1/manager/accounting/journal_entries/1/approve"
+          - group [ref=f3e1121]:
+            - generic "View full example (optional)" [ref=f3e1122] [cursor=pointer]
+      - row [ref=f3e1123]:
+        - cell "GET" [ref=f3e1124]
+        - cell "/api/v1/manager/accounting/reports" [ref=f3e1126]
+        - cell "management" [ref=f3e1127]
+        - cell "Estados contables y libro diario/mayor" [ref=f3e1128]
+        - cell "-" [ref=f3e1129]
+        - 'cell "GET {{baseUrl}}/api/v1/manager/accounting/reports" [ref=f3e1130]':
+          - text: "GET {{baseUrl}}/api/v1/manager/accounting/reports"
+          - group [ref=f3e1131]:
+            - generic "View full example (optional)" [ref=f3e1132] [cursor=pointer]
+      - row [ref=f3e1133]:
+        - cell "GET" [ref=f3e1134]
+        - cell "/api/v1/manager/invoices" [ref=f3e1136]
+        - cell "management" [ref=f3e1137]
+        - cell "Consultar facturas" [ref=f3e1138]
+        - cell "-" [ref=f3e1139]
+        - 'cell "GET {{baseUrl}}/api/v1/manager/invoices" [ref=f3e1140]':
+          - text: "GET {{baseUrl}}/api/v1/manager/invoices"
+          - group [ref=f3e1141]:
+            - generic "View full example (optional)" [ref=f3e1142] [cursor=pointer]
+      - row [ref=f3e1143]:
+        - cell "POST" [ref=f3e1144]
+        - cell "/api/v1/manager/invoices" [ref=f3e1146]
+        - cell "management" [ref=f3e1147]
+        - cell "Crear factura" [ref=f3e1148]
+        - 'cell "{\"account_id\",\"amount\",\"description?\"}" [ref=f3e1149]'
+        - 'cell "POST {{baseUrl}}/api/v1/manager/invoices" [ref=f3e1150]':
+          - text: "POST {{baseUrl}}/api/v1/manager/invoices"
+          - group [ref=f3e1151]:
+            - generic "View full example (optional)" [ref=f3e1152] [cursor=pointer]
+      - row [ref=f3e1153]:
+        - cell "PATCH" [ref=f3e1154]
+        - cell "/api/v1/manager/accounts/:account_id/limits" [ref=f3e1156]
+        - cell "management" [ref=f3e1157]
+        - cell "Configurar límites diarios" [ref=f3e1158]
+        - 'cell "{\"daily_withdraw_limit\",\"daily_transfer_limit\"}" [ref=f3e1159]'
+        - 'cell "PATCH {{baseUrl}}/api/v1/manager/accounts/12/limits" [ref=f3e1160]':
+          - text: "PATCH {{baseUrl}}/api/v1/manager/accounts/12/limits"
+          - group [ref=f3e1161]:
+            - generic "View full example (optional)" [ref=f3e1162] [cursor=pointer]
+      - row [ref=f3e1163]:
+        - cell "PATCH" [ref=f3e1164]
+        - cell "/api/v1/manager/accounts/:account_id/status" [ref=f3e1166]
+        - cell "management" [ref=f3e1167]
+        - cell "Congelar/activar/cerrar cuenta" [ref=f3e1168]
+        - 'cell "{\"status\":\"active|frozen|closed\",\"reason?\"}" [ref=f3e1169]'
+        - 'cell "PATCH {{baseUrl}}/api/v1/manager/accounts/12/status" [ref=f3e1170]':
+          - text: "PATCH {{baseUrl}}/api/v1/manager/accounts/12/status"
+          - group [ref=f3e1171]:
+            - generic "View full example (optional)" [ref=f3e1172] [cursor=pointer]
+  - generic [ref=f3e1173]:
+    - heading "Suggested base headers" [level=2] [ref=f3e1174]
+    - paragraph [ref=f3e1175]: "Accept: application/json Content-Type: application/json Authorization: Bearer <token> (solo endpoints protegidos)"
+  - generic [ref=f3e1176]:
+    - heading "Postman/Insomnia notes" [level=2] [ref=f3e1177]
+    - list [ref=f3e1178]:
+      - listitem [ref=f3e1179]:
+        - text: Crea variable
+        - code [ref=f3e1180]: "{{baseUrl}}"
+        - text: with value
+        - code [ref=f3e1181]: http://localhost:3001
+        - text: .
+      - listitem [ref=f3e1182]:
+        - text: For manager endpoints, use a user token with role
+        - code [ref=f3e1183]: manager
+        - text: .
+      - listitem [ref=f3e1184]:
+        - text: To upload a file, use
+        - code [ref=f3e1185]: form-data
+        - text: and the field
+        - code [ref=f3e1186]: file
+        - text: .
+      - listitem [ref=f3e1187]:
+        - text: Downloading a payment schedule returns CSV in
+        - code [ref=f3e1188]: text/csv
+        - text: .
+    - paragraph [ref=f3e1189]: Document generated from active project routes for functional testing.

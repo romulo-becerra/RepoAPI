@@ -463,6 +463,7 @@
             <option value="public">Publico</option>
             <option value="customer">Customer</option>
             <option value="cashier">Cashier</option>
+            <option value="customer_service">Atención al Cliente</option>
             <option value="management">Manager / Admin</option>
             <option value="admin">Admin</option>
           </select>
@@ -471,6 +472,7 @@
           <span class="chip ok">Publico: sin Authorization</span>
           <span class="chip warn">Customer: solo su propia cuenta y operaciones de cliente</span>
           <span class="chip warn">Cashier: operaciones de caja y atención</span>
+          <span class="chip warn">Customer Service: clientes, cuentas, acceso y casos</span>
           <span class="chip warn">Management: manager/admin con reportes y gestión</span>
           <span class="chip warn">Admin: control total del sistema</span>
           <span class="chip">Multipart: usar form-data (archivo)</span>
@@ -494,6 +496,10 @@
             <tr>
               <td><strong>cashier</strong></td>
               <td>Depósitos, retiros, atención de cuenta y operaciones de caja; sin administración de usuarios.</td>
+            </tr>
+            <tr>
+              <td><strong>customer_service</strong></td>
+              <td>Registro y actualización de clientes, desbloqueo, reset de PIN, cuentas, documentos y casos de soporte.</td>
             </tr>
             <tr>
               <td><strong>manager</strong></td>
@@ -691,6 +697,63 @@ Authorization: Bearer &lt;token&gt; (solo endpoints protegidos)</p>
         { method: 'POST', path: '/api/v1/manager/accounts/:account_id/deposit', auth: 'cashier', desc: 'Depositar por caja/cajero', payload: '{"amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/deposit' },
         { method: 'POST', path: '/api/v1/manager/accounts/:account_id/withdraw', auth: 'cashier', desc: 'Retirar por caja/cajero', payload: '{"amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/withdraw' },
         { method: 'POST', path: '/api/v1/manager/accounts/:account_id/loans/:loan_id/pay', auth: 'management', desc: 'Pagar prestamo por gestión', payload: '{"amount","paid_on?"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounts/9000000001/loans/6/pay' }
+        ,
+        { method: 'POST', path: '/api/v1/password/reset/request', auth: 'public', desc: 'Solicitar restablecimiento de PIN', payload: '{"email"}', sample: 'POST {{baseUrl}}/api/v1/password/reset/request' },
+        { method: 'POST', path: '/api/v1/password/reset', auth: 'public', desc: 'Restablecer PIN con token', payload: '{"email","reset_token","new_pin"}', sample: 'POST {{baseUrl}}/api/v1/password/reset' },
+        { method: 'POST', path: '/api/v1/accounts/:id/reverse/:transaction_id', auth: 'management', desc: 'Revertir transacción', payload: '{"reason"}', sample: 'POST {{baseUrl}}/api/v1/accounts/1/reverse/100' },
+        { method: 'GET', path: '/api/v1/receipts/:id', auth: 'customer', desc: 'Consultar comprobante digital', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/receipts/1' },
+        { method: 'GET', path: '/api/v1/receipts/:id/download', auth: 'customer', desc: 'Descargar comprobante', payload: 'path :id', sample: 'GET {{baseUrl}}/api/v1/receipts/1/download' },
+        { method: 'GET', path: '/api/v1/transactions/:transaction_id/receipt', auth: 'customer', desc: 'Consultar o generar comprobante por movimiento', payload: 'path :transaction_id', sample: 'GET {{baseUrl}}/api/v1/transactions/184/receipt' },
+
+        { method: 'GET', path: '/api/v1/customer/dashboard', auth: 'customer', desc: 'Resumen financiero consolidado del cliente', payload: '-', sample: 'GET {{baseUrl}}/api/v1/customer/dashboard' },
+        { method: 'GET', path: '/api/v1/customer/transactions', auth: 'customer', desc: 'Movimientos filtrables del cliente', payload: 'query: from?, to?, min_amount?, max_amount?, format?', sample: 'GET {{baseUrl}}/api/v1/customer/transactions' },
+        { method: 'GET', path: '/api/v1/customer/accounts/:account_id/statement', auth: 'customer', desc: 'Estado de cuenta del cliente', payload: 'path :account_id', sample: 'GET {{baseUrl}}/api/v1/customer/accounts/12/statement' },
+        { method: 'GET', path: '/api/v1/customer/credit_requests', auth: 'customer', desc: 'Historial de solicitudes de crédito', payload: '-', sample: 'GET {{baseUrl}}/api/v1/customer/credit_requests' },
+        { method: 'POST', path: '/api/v1/customer/credit_requests', auth: 'customer', desc: 'Crear solicitud de crédito', payload: '{"account_id","amount","term_months","reason?"}', sample: 'POST {{baseUrl}}/api/v1/customer/credit_requests' },
+        { method: 'GET', path: '/api/v1/customer/tickets', auth: 'customer', desc: 'Consultar tickets de soporte', payload: '-', sample: 'GET {{baseUrl}}/api/v1/customer/tickets' },
+        { method: 'POST', path: '/api/v1/customer/tickets', auth: 'customer', desc: 'Crear ticket de soporte', payload: '{"subject","description"}', sample: 'POST {{baseUrl}}/api/v1/customer/tickets' },
+        { method: 'GET', path: '/api/v1/customer/preferences', auth: 'customer', desc: 'Consultar preferencias personales', payload: '-', sample: 'GET {{baseUrl}}/api/v1/customer/preferences' },
+        { method: 'PATCH', path: '/api/v1/customer/preferences', auth: 'customer', desc: 'Actualizar tema personal', payload: '{"theme":"light|dark"}', sample: 'PATCH {{baseUrl}}/api/v1/customer/preferences' },
+        { method: 'GET', path: '/api/v1/customer/notifications', auth: 'customer', desc: 'Listar notificaciones', payload: '-', sample: 'GET {{baseUrl}}/api/v1/customer/notifications' },
+        { method: 'PATCH', path: '/api/v1/customer/notifications/:id/read', auth: 'customer', desc: 'Marcar notificación como leída', payload: 'path :id', sample: 'PATCH {{baseUrl}}/api/v1/customer/notifications/1/read' },
+
+        { method: 'POST', path: '/api/v1/cashier/cash/open', auth: 'cashier', desc: 'Apertura de caja', payload: '{"opening_balance"}', sample: 'POST {{baseUrl}}/api/v1/cashier/cash/open' },
+        { method: 'GET', path: '/api/v1/cashier/cash/status', auth: 'cashier', desc: 'Estado de caja', payload: '-', sample: 'GET {{baseUrl}}/api/v1/cashier/cash/status' },
+        { method: 'GET', path: '/api/v1/cashier/cash/movements', auth: 'cashier', desc: 'Movimientos de caja abierta', payload: '-', sample: 'GET {{baseUrl}}/api/v1/cashier/cash/movements' },
+        { method: 'POST', path: '/api/v1/cashier/cash/reconciliation', auth: 'cashier', desc: 'Arqueo de caja', payload: '{"physical_balance"}', sample: 'POST {{baseUrl}}/api/v1/cashier/cash/reconciliation' },
+        { method: 'POST', path: '/api/v1/cashier/cash/close', auth: 'cashier', desc: 'Cierre de caja', payload: '{"physical_balance","notes?"}', sample: 'POST {{baseUrl}}/api/v1/cashier/cash/close' },
+        { method: 'GET', path: '/api/v1/cashier/reports/daily', auth: 'cashier', desc: 'Reporte diario de cajero', payload: '-', sample: 'GET {{baseUrl}}/api/v1/cashier/reports/daily' },
+        { method: 'GET', path: '/api/v1/cashier/receipts', auth: 'cashier', desc: 'Comprobantes emitidos por cajero', payload: '-', sample: 'GET {{baseUrl}}/api/v1/cashier/receipts' },
+        { method: 'GET', path: '/api/v1/cashier/clients/search', auth: 'cashier', desc: 'Buscar clientes para operación', payload: 'query: q?', sample: 'GET {{baseUrl}}/api/v1/cashier/clients/search?q=Juan' },
+
+        { method: 'GET', path: '/api/v1/customer_service/users/search', auth: 'customer_service', desc: 'Buscar clientes', payload: 'query: q?', sample: 'GET {{baseUrl}}/api/v1/customer_service/users/search?q=Juan' },
+        { method: 'POST', path: '/api/v1/customer_service/users', auth: 'customer_service', desc: 'Registrar cliente', payload: '{"first_name","last_name","email","pin","phone?","document_number?","address?"}', sample: 'POST {{baseUrl}}/api/v1/customer_service/users' },
+        { method: 'PATCH', path: '/api/v1/customer_service/users/:id', auth: 'customer_service', desc: 'Actualizar datos del cliente', payload: '{"first_name?","last_name?","email?","phone?","document_number?","address?"}', sample: 'PATCH {{baseUrl}}/api/v1/customer_service/users/12' },
+        { method: 'PATCH', path: '/api/v1/customer_service/users/:id/unblock', auth: 'customer_service', desc: 'Desbloquear usuario', payload: 'path :id', sample: 'PATCH {{baseUrl}}/api/v1/customer_service/users/12/unblock' },
+        { method: 'PATCH', path: '/api/v1/customer_service/users/:id/deactivate', auth: 'customer_service', desc: 'Inactivar usuario', payload: 'path :id', sample: 'PATCH {{baseUrl}}/api/v1/customer_service/users/12/deactivate' },
+        { method: 'PATCH', path: '/api/v1/customer_service/users/:id/reactivate', auth: 'customer_service', desc: 'Reactivar usuario', payload: 'path :id', sample: 'PATCH {{baseUrl}}/api/v1/customer_service/users/12/reactivate' },
+        { method: 'PATCH', path: '/api/v1/customer_service/users/:id/reset_password', auth: 'customer_service', desc: 'Restablecer PIN', payload: '{"pin"}', sample: 'PATCH {{baseUrl}}/api/v1/customer_service/users/12/reset_password' },
+        { method: 'POST', path: '/api/v1/customer_service/accounts', auth: 'customer_service', desc: 'Crear cuenta ahorro/corriente', payload: '{"user_id","account_category"}', sample: 'POST {{baseUrl}}/api/v1/customer_service/accounts' },
+        { method: 'PATCH', path: '/api/v1/customer_service/accounts/:id/status', auth: 'customer_service', desc: 'Cambiar estado de cuenta', payload: '{"status":"active|frozen|closed"}', sample: 'PATCH {{baseUrl}}/api/v1/customer_service/accounts/12/status' },
+        { method: 'GET', path: '/api/v1/customer_service/users/:user_id/accounts', auth: 'customer_service', desc: 'Consultar cuentas del usuario', payload: 'path :user_id', sample: 'GET {{baseUrl}}/api/v1/customer_service/users/12/accounts' },
+        { method: 'GET', path: '/api/v1/customer_service/tickets', auth: 'customer_service', desc: 'Consultar casos y reclamos', payload: 'query: user_id?', sample: 'GET {{baseUrl}}/api/v1/customer_service/tickets' },
+        { method: 'POST', path: '/api/v1/customer_service/tickets', auth: 'customer_service', desc: 'Crear caso', payload: '{"user_id","subject","description","priority?"}', sample: 'POST {{baseUrl}}/api/v1/customer_service/tickets' },
+        { method: 'PATCH', path: '/api/v1/customer_service/tickets/:id/close', auth: 'customer_service', desc: 'Cerrar caso', payload: 'path :id', sample: 'PATCH {{baseUrl}}/api/v1/customer_service/tickets/1/close' },
+
+        { method: 'GET', path: '/api/v1/manager/roles', auth: 'management', desc: 'Consultar roles y permisos', payload: '-', sample: 'GET {{baseUrl}}/api/v1/manager/roles' },
+        { method: 'GET', path: '/api/v1/manager/reports/dashboard', auth: 'management', desc: 'Indicadores del dashboard principal', payload: '-', sample: 'GET {{baseUrl}}/api/v1/manager/reports/dashboard' },
+        { method: 'GET', path: '/api/v1/manager/reconciliations', auth: 'management', desc: 'Historial de conciliaciones', payload: 'query: account_id?', sample: 'GET {{baseUrl}}/api/v1/manager/reconciliations' },
+        { method: 'POST', path: '/api/v1/manager/reconciliations', auth: 'management', desc: 'Crear conciliación', payload: '{"account_id","reported_balance","notes?"}', sample: 'POST {{baseUrl}}/api/v1/manager/reconciliations' },
+        { method: 'GET', path: '/api/v1/manager/accounting/accounts', auth: 'management', desc: 'Catálogo contable', payload: '-', sample: 'GET {{baseUrl}}/api/v1/manager/accounting/accounts' },
+        { method: 'POST', path: '/api/v1/manager/accounting/accounts', auth: 'management', desc: 'Crear cuenta contable', payload: '{"code","name","account_type"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounting/accounts' },
+        { method: 'GET', path: '/api/v1/manager/accounting/journal_entries', auth: 'management', desc: 'Asientos contables', payload: '-', sample: 'GET {{baseUrl}}/api/v1/manager/accounting/journal_entries' },
+        { method: 'POST', path: '/api/v1/manager/accounting/journal_entries', auth: 'management', desc: 'Crear asiento contable', payload: '{"reference","description","lines"}', sample: 'POST {{baseUrl}}/api/v1/manager/accounting/journal_entries' },
+        { method: 'POST', path: '/api/v1/manager/accounting/journal_entries/:id/approve', auth: 'management', desc: 'Aprobar asiento contable', payload: 'path :id', sample: 'POST {{baseUrl}}/api/v1/manager/accounting/journal_entries/1/approve' },
+        { method: 'GET', path: '/api/v1/manager/accounting/reports', auth: 'management', desc: 'Estados contables y libro diario/mayor', payload: '-', sample: 'GET {{baseUrl}}/api/v1/manager/accounting/reports' },
+        { method: 'GET', path: '/api/v1/manager/invoices', auth: 'management', desc: 'Consultar facturas', payload: '-', sample: 'GET {{baseUrl}}/api/v1/manager/invoices' },
+        { method: 'POST', path: '/api/v1/manager/invoices', auth: 'management', desc: 'Crear factura', payload: '{"account_id","amount","description?"}', sample: 'POST {{baseUrl}}/api/v1/manager/invoices' },
+        { method: 'PATCH', path: '/api/v1/manager/accounts/:account_id/limits', auth: 'management', desc: 'Configurar límites diarios', payload: '{"daily_withdraw_limit","daily_transfer_limit"}', sample: 'PATCH {{baseUrl}}/api/v1/manager/accounts/12/limits' },
+        { method: 'PATCH', path: '/api/v1/manager/accounts/:account_id/status', auth: 'management', desc: 'Congelar/activar/cerrar cuenta', payload: '{"status":"active|frozen|closed","reason?"}', sample: 'PATCH {{baseUrl}}/api/v1/manager/accounts/12/status' }
       ];
 
       const body = document.getElementById('endpointsBody');

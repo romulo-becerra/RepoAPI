@@ -86,6 +86,13 @@ RSpec.describe 'Users API', type: :request do
         )
       end
 
+      it 'also accepts the identifier parameter for login' do
+        post endpoint, params: { identifier: account.account_number, pin: '1234' }, headers: { 'Content-Type': 'application/json' }, as: :json
+
+        expect(response).to have_http_status(:ok)
+        expect(JSON.parse(response.body).dig('user', 'id')).to eq(user.id)
+      end
+
       it 'rejects login for blocked users' do
         user.update!(blocked: true)
 

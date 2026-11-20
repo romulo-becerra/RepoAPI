@@ -15,11 +15,16 @@ require "digest"
 require "securerandom"
 
 class User < ApplicationRecord
-
+  has_many :accounts, dependent: :destroy
   has_many :recipients, dependent: :destroy
   has_many :contacts, dependent: :destroy
   has_many :user_files, dependent: :destroy
+  has_many :user_sessions, dependent: :destroy
   has_one :user_address, dependent: :destroy
+  has_one :user_preference, dependent: :destroy
+  has_many :support_tickets, dependent: :destroy
+  has_many :notifications, dependent: :destroy
+  has_many :credit_requests, dependent: :destroy
   has_one :account, -> { where(default: true) }, class_name: "Account"
   has_secure_password :pin, validations: false
   has_secure_password :basic_auth_password, validations: false
@@ -36,7 +41,8 @@ class User < ApplicationRecord
     supervisor: 5,
     accountant: 6,
     auditor: 7,
-    financial_manager: 8
+    financial_manager: 8,
+    customer_service: 9
   }, default: :customer
 
   validates :first_name, presence: true
@@ -67,11 +73,50 @@ class User < ApplicationRecord
   end
 
   def staff?
-    admin? || manager? || cashier?
+    admin? || manager? || cashier? || customer_service?
   end
 
   def management?
     admin? || manager?
+  end
+
+  # Roles que pueden acceder al sistema de gestión (panel admin/gerente)
+  def management_roles?
+    admin? || manager? || financial_manager? || accountant? || auditor? || supervisor?
+  end
+
+  # Roles operativos (caja, atención al cliente)
+  def operational_roles?
+    cashier? || customer_service?
+  end
+
+  def update_last_login!(ip = nil)
+    update_columns(
+      last_login_at: Time.current,
+      last_login_ip: ip
+    )
+  end
+
+  def generate_remember_token
+    token = SecureRandom.urlsafe_base64(32)
+    update_columns(remember_token: Digest::SHA256.hexdigest(token))
+    token
+  end
+
+  def remember_token_valid?(token)
+    return false if remember_token.blank?
+    ActiveSupport::SecurityUtils.secure_compare(remember_token, Digest::SHA256.hexdigest(token.to_s))
+  end
+
+  # Busca usuario por email, account_number o número de documento
+  def self.find_by_login_identifier(identifier)
+    identifier = identifier.to_s.strip
+    return nil if identifier.blank?
+
+    find_by(email: identifier) ||
+      find_by(document_number: identifier) ||
+      find_by(id: identifier) ||
+      Account.includes(:user).find_by(account_number: identifier)&.user
   end
 
   def status_label
