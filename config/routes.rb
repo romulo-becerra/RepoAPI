@@ -28,13 +28,43 @@ Rails.application.routes.draw do
       get "accounts/:id/balance", to: "accounts#balance"
       get "accounts/:id/summary", to: "accounts#summary"
       get "recipients/search", to: "recipients#search"
+      get "receipts/:id", to: "receipts#show"
+      get "receipts/:id/download", to: "receipts#download"
+      get "transactions/:transaction_id/receipt", to: "receipts#transaction"
       post "logout", to: "users#logout"
+      get "customer/dashboard", to: "customer_portal#dashboard"
+      get "customer/transactions", to: "customer_portal#transactions"
+      get "customer/accounts/:account_id/statement", to: "customer_portal#statement"
+      get "customer/credit_requests", to: "customer_portal#credit_requests"
+      post "customer/credit_requests", to: "customer_portal#create_credit_request"
+      get "customer/tickets", to: "customer_portal#tickets"
+      post "customer/tickets", to: "customer_portal#create_ticket"
+      get "customer/preferences", to: "customer_portal#preferences"
+      patch "customer/preferences", to: "customer_portal#update_preferences"
+      get "customer/notifications", to: "customer_portal#notifications"
+      patch "customer/notifications/:id/read", to: "customer_portal#mark_notification_read"
 
       scope :atm do
         post "accounts/:id/deposit", to: "atm_operations#deposit"
         post "accounts/:id/withdraw", to: "atm_operations#withdraw"
         get "accounts/:id/balance", to: "atm_operations#balance"
         get "accounts/:id/statement", to: "atm_operations#statement"
+      end
+
+      scope :customer_service do
+        get "users/search", to: "customer_service#search"
+        post "users", to: "customer_service#register"
+        patch "users/:id", to: "customer_service#update"
+        patch "users/:id/unblock", to: "customer_service#unblock"
+        patch "users/:id/deactivate", to: "customer_service#deactivate"
+        patch "users/:id/reactivate", to: "customer_service#reactivate"
+        patch "users/:id/reset_password", to: "customer_service#reset_password"
+        post "accounts", to: "customer_service#open_account"
+        patch "accounts/:id/status", to: "customer_service#update_account_status"
+        get "users/:user_id/accounts", to: "customer_service#accounts"
+        get "tickets", to: "customer_service#tickets"
+        post "tickets", to: "customer_service#create_ticket"
+        patch "tickets/:id/close", to: "customer_service#close_ticket"
       end
 
       scope :cashier do
@@ -46,9 +76,6 @@ Rails.application.routes.draw do
         get "reports/daily", to: "cashier#daily_report"
         get "receipts", to: "cashier#receipts"
         get "clients/search", to: "cashier#search_clients"
-        post "clients", to: "cashier#register_client"
-        patch "clients/:id", to: "cashier#update_client"
-        post "accounts/open", to: "cashier#open_account"
       end
 
       namespace :manager do

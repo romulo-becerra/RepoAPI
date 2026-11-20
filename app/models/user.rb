@@ -20,6 +20,10 @@ class User < ApplicationRecord
   has_many :recipients, dependent: :destroy
   has_many :user_files, dependent: :destroy
   has_one :user_address, dependent: :destroy
+  has_one :user_preference, dependent: :destroy
+  has_many :support_tickets, dependent: :destroy
+  has_many :notifications, dependent: :destroy
+  has_many :credit_requests, dependent: :destroy
   has_one :account, -> { where(default: true) }, class_name: "Account"
   has_secure_password :pin, validations: false
 
@@ -35,7 +39,8 @@ class User < ApplicationRecord
     supervisor: 5,
     accountant: 6,
     auditor: 7,
-    financial_manager: 8
+    financial_manager: 8,
+    customer_service: 9
   }, default: :customer
 
   validates :first_name, presence: true
@@ -60,7 +65,7 @@ class User < ApplicationRecord
   end
 
   def staff?
-    admin? || manager? || cashier?
+    admin? || manager? || cashier? || customer_service?
   end
 
   def management?

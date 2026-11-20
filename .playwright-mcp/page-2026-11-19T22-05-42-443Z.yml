@@ -1,0 +1,264 @@
+- generic [ref=f18e2]:
+  - complementary [ref=f18e3]:
+    - generic [ref=f18e4]: AngelFire
+    - paragraph [ref=f18e5]: Core Banking Console
+    - generic [ref=f18e6]:
+      - heading "Sesion actual" [level=2] [ref=f18e7]
+      - paragraph [ref=f18e8]: Autenticado
+      - paragraph [ref=f18e9]: "Rol: customer"
+    - generic [ref=f18e10]:
+      - heading "Permisos por seccion" [level=2] [ref=f18e11]
+      - list [ref=f18e12]:
+        - listitem [ref=f18e13]:
+          - text: Cliente
+          - generic [ref=f18e14]: Habilitado
+        - listitem [ref=f18e15]:
+          - text: Admin Dashboard
+          - generic [ref=f18e16]: blocked
+        - listitem [ref=f18e17]:
+          - text: Manager Users
+          - generic [ref=f18e18]: blocked
+  - main [ref=f18e19]:
+    - generic [ref=f18e20]:
+      - generic [ref=f18e21]:
+        - paragraph [ref=f18e22]: Plataforma financiera
+        - heading "Panel Operativo" [level=1] [ref=f18e23]
+        - generic [ref=f18e24]:
+          - button "Actualizar datos" [ref=f18e25] [cursor=pointer]
+          - button "Cambiar PIN" [ref=f18e26] [cursor=pointer]
+          - button "Ocultar seccion" [ref=f18e27] [cursor=pointer]
+      - generic [ref=f18e28]:
+        - generic [ref=f18e29]:
+          - text: Base URL
+          - textbox "Base URL" [ref=f18e30]: http://localhost:3001
+        - button "Guardar" [ref=f18e31] [cursor=pointer]
+        - button "Cerrar sesion" [ref=f18e32] [cursor=pointer]
+      - generic [ref=f18e33]:
+        - generic [ref=f18e34]: Idioma
+        - combobox "Idioma" [ref=f18e35]:
+          - option "Español" [selected]
+          - option "English"
+          - option "Português"
+    - generic [ref=f18e36]:
+      - heading "Vistas del sistema" [level=2] [ref=f18e37]
+      - button "Vista cliente" [ref=f18e39] [cursor=pointer]
+    - generic [ref=f18e40]:
+      - generic [ref=f18e41]:
+        - article [ref=f18e42]:
+          - paragraph [ref=f18e43]: Saldo actual
+          - heading "S/ 0.00" [level=3] [ref=f18e44]
+          - button "Actualizar saldo" [ref=f18e45] [cursor=pointer]
+          - generic [ref=f18e46]:
+            - checkbox "Auto-actualizar cada 15s" [ref=f18e47]
+            - text: Auto-actualizar cada 15s
+        - article [ref=f18e48]:
+          - paragraph [ref=f18e49]: Cuenta
+          - heading "7204780796" [level=3] [ref=f18e50]
+        - article [ref=f18e51]:
+          - paragraph [ref=f18e52]: Usuario
+          - heading "Rolo update LAst upate" [level=3] [ref=f18e53]
+        - article [ref=f18e54]:
+          - paragraph [ref=f18e55]: Prestamo activo
+          - heading "Sin datos" [level=3] [ref=f18e56]
+      - generic [ref=f18e57]:
+        - article [ref=f18e58]:
+          - paragraph [ref=f18e59]: Saldo consolidado
+          - heading "S/ 0.00" [level=3] [ref=f18e60]
+        - article [ref=f18e61]:
+          - paragraph [ref=f18e62]: Disponible
+          - heading "S/ 0.00" [level=3] [ref=f18e63]
+        - article [ref=f18e64]:
+          - paragraph [ref=f18e65]: Ingresos del mes
+          - heading "S/ 0.00" [level=3] [ref=f18e66]
+        - article [ref=f18e67]:
+          - paragraph [ref=f18e68]: Gastos del mes
+          - heading "S/ 0.00" [level=3] [ref=f18e69]
+      - generic [ref=f18e70]:
+        - generic [ref=f18e71]:
+          - heading "Solicitar crédito" [level=2] [ref=f18e72]
+          - spinbutton "ID de cuenta" [ref=f18e73]
+          - spinbutton "Monto" [ref=f18e74]
+          - spinbutton "Plazo en meses" [ref=f18e75]
+          - textbox "Motivo" [ref=f18e76]
+          - button "Enviar solicitud" [ref=f18e77] [cursor=pointer]
+        - generic [ref=f18e78]:
+          - heading "Soporte" [level=2] [ref=f18e79]
+          - textbox "Asunto" [ref=f18e80]
+          - textbox "Describe el problema" [ref=f18e81]
+          - button "Crear ticket" [ref=f18e82] [cursor=pointer]
+        - generic [ref=f18e83]:
+          - heading "Preferencias" [level=2] [ref=f18e84]
+          - combobox [ref=f18e85]:
+            - option "Español" [selected]
+            - option "English"
+            - option "Português"
+          - combobox [ref=f18e86]:
+            - option "BOB" [selected]
+            - option "USD"
+          - combobox [ref=f18e87]:
+            - option "Claro" [selected]
+            - option "Oscuro"
+          - button "Guardar" [ref=f18e88] [cursor=pointer]
+      - generic [ref=f18e89]:
+        - generic [ref=f18e90]:
+          - heading "Notificaciones" [level=2] [ref=f18e91]
+          - button "Actualizar" [ref=f18e92] [cursor=pointer]
+        - list [ref=f18e93]:
+          - listitem [ref=f18e94]: Sin notificaciones
+      - generic [ref=f18e95]:
+        - generic [ref=f18e96]:
+          - heading "Retiro" [level=2] [ref=f18e97]
+          - generic [ref=f18e98]: Monto
+          - spinbutton "Monto" [ref=f18e99]: "50"
+          - generic [ref=f18e100]: Detalle
+          - textbox "Detalle" [ref=f18e101]:
+            - /placeholder: Motivo del retiro
+            - text: Retiro AngelFire
+          - button "Aplicar retiro" [ref=f18e102] [cursor=pointer]
+        - generic [ref=f18e103]:
+          - heading "Pago de servicios" [level=2] [ref=f18e104]
+          - generic [ref=f18e105]: Servicio
+          - combobox "Servicio" [ref=f18e106]
+          - generic [ref=f18e107]: Monto
+          - spinbutton "Monto" [ref=f18e108]: "80"
+          - generic [ref=f18e109]: Detalle
+          - textbox "Detalle" [ref=f18e110]:
+            - /placeholder: Motivo del pago
+            - text: Pago de servicio AngelFire
+          - button "Pagar servicio" [ref=f18e111] [cursor=pointer]
+        - generic [ref=f18e112]:
+          - heading "Transferencia" [level=2] [ref=f18e113]
+          - generic [ref=f18e114]: Cuenta destino
+          - textbox "Cuenta destino" [ref=f18e115]:
+            - /placeholder: Numero de cuenta o account ID
+          - generic [ref=f18e116]: Monto
+          - spinbutton "Monto" [ref=f18e117]: "25"
+          - generic [ref=f18e118]: Detalle
+          - textbox "Detalle" [ref=f18e119]:
+            - /placeholder: Motivo de la transferencia
+            - text: Transferencia AngelFire
+          - paragraph [ref=f18e120]: Ingresa la cuenta destino para transferir saldo.
+          - button "Transferir" [ref=f18e121] [cursor=pointer]
+      - generic [ref=f18e122]:
+        - generic [ref=f18e123]:
+          - heading "Plan de pagos del prestamo" [level=2] [ref=f18e124]
+          - button "Actualizar cuotas" [ref=f18e125] [cursor=pointer]
+        - paragraph [ref=f18e126]: No hay prestamo activo.
+        - generic [ref=f18e127]:
+          - heading "Pagar prestamo" [level=3] [ref=f18e128]
+          - paragraph [ref=f18e129]: "Proxima cuota pendiente: -"
+          - generic [ref=f18e130]:
+            - generic [ref=f18e131]:
+              - text: Cuotas a pagar
+              - spinbutton "Cuotas a pagar" [ref=f18e132]: "1"
+            - button "Calcular monto" [ref=f18e133] [cursor=pointer]
+          - generic [ref=f18e134]: Monto total a pagar
+          - spinbutton "Monto total a pagar" [ref=f18e135]: "1.00"
+          - button "Pagar cuotas" [ref=f18e136] [cursor=pointer]
+        - generic [ref=f18e137]:
+          - generic [ref=f18e138]:
+            - generic [ref=f18e139]:
+              - heading "Cuotas pendientes" [level=3] [ref=f18e140]
+              - generic [ref=f18e141]:
+                - generic [ref=f18e142]:
+                  - text: Ver
+                  - combobox "Ver" [ref=f18e143]:
+                    - option "10" [selected]
+                    - option "20"
+                    - option "50"
+                - button "Anterior" [disabled] [ref=f18e144] [cursor=pointer]
+                - generic [ref=f18e145]: 1 / 1
+                - button "Siguiente" [disabled] [ref=f18e146] [cursor=pointer]
+            - table [ref=f18e147]:
+              - rowgroup [ref=f18e148]:
+                - row [ref=f18e149]:
+                  - columnheader "#" [ref=f18e150]
+                  - columnheader "Vence" [ref=f18e151]
+                  - columnheader "Monto" [ref=f18e152]
+                  - columnheader "Capital" [ref=f18e153]
+                  - columnheader "Interes" [ref=f18e154]
+              - rowgroup [ref=f18e155]:
+                - row [ref=f18e156]:
+                  - cell "Sin datos" [ref=f18e157]
+          - generic [ref=f18e158]:
+            - heading "Cuotas pagadas" [level=3] [ref=f18e159]
+            - table [ref=f18e160]:
+              - rowgroup [ref=f18e161]:
+                - row [ref=f18e162]:
+                  - columnheader "#" [ref=f18e163]
+                  - columnheader "Pago" [ref=f18e164]
+                  - columnheader "Monto" [ref=f18e165]
+                  - columnheader "Capital" [ref=f18e166]
+                  - columnheader "Interes" [ref=f18e167]
+              - rowgroup [ref=f18e168]:
+                - row [ref=f18e169]:
+                  - cell "Sin datos" [ref=f18e170]
+      - generic [ref=f18e171]:
+        - generic [ref=f18e172]:
+          - heading "Archivos del usuario" [level=2] [ref=f18e173]
+          - button "Actualizar archivos" [ref=f18e174] [cursor=pointer]
+        - generic [ref=f18e175]:
+          - button "Choose File" [ref=f18e176]
+          - button "Subir archivo" [ref=f18e177] [cursor=pointer]
+        - table [ref=f18e178]:
+          - rowgroup [ref=f18e179]:
+            - row [ref=f18e180]:
+              - columnheader "ID" [ref=f18e181]
+              - columnheader "Archivo" [ref=f18e182]
+              - columnheader "Tipo" [ref=f18e183]
+              - columnheader "Tamaño" [ref=f18e184]
+              - columnheader "Fecha" [ref=f18e185]
+          - rowgroup [ref=f18e186]:
+            - row [ref=f18e187]:
+              - cell "Sin archivos" [ref=f18e188]
+      - generic [ref=f18e189]:
+        - generic [ref=f18e190]:
+          - heading "Movimientos de cuenta" [level=2] [ref=f18e191]
+          - generic [ref=f18e192]:
+            - generic [ref=f18e193]:
+              - text: Tipo
+              - combobox "Tipo" [ref=f18e194]:
+                - option "Todos" [selected]
+                - option "Debitos"
+                - option "Creditos"
+                - option "Depositos"
+                - option "Retiros"
+                - option "Transferencias"
+                - option "Pago servicio"
+                - option "Pago prestamo"
+                - option "Prestamo desembolsado"
+            - generic [ref=f18e195]:
+              - text: Ejecutado por
+              - combobox "Ejecutado por" [ref=f18e196]:
+                - option "Todos" [selected]
+                - option "Admin"
+                - option "Usuario"
+            - generic [ref=f18e197]:
+              - text: Ver
+              - combobox "Ver" [ref=f18e198]:
+                - option "10" [selected]
+                - option "20"
+                - option "50"
+            - button "Anterior" [disabled] [ref=f18e199] [cursor=pointer]
+            - generic [ref=f18e200]: 1 / 1
+            - button "Siguiente" [disabled] [ref=f18e201] [cursor=pointer]
+            - button "Actualizar" [ref=f18e202] [cursor=pointer]
+        - table [ref=f18e203]:
+          - rowgroup [ref=f18e204]:
+            - row [ref=f18e205]:
+              - columnheader "ID" [ref=f18e206]
+              - columnheader "Tipo" [ref=f18e207]
+              - columnheader "Detalle" [ref=f18e208]
+              - columnheader "Monto" [ref=f18e209]
+              - columnheader "Estado" [ref=f18e210]
+              - columnheader "Ejecutado por" [ref=f18e211]
+              - columnheader "Id usuario" [ref=f18e212]
+              - columnheader "Fecha" [ref=f18e213]
+          - rowgroup [ref=f18e214]:
+            - row [ref=f18e215]:
+              - cell "Sin movimientos" [ref=f18e216]
+    - generic [ref=f18e217]:
+      - generic [ref=f18e218]:
+        - heading "Respuesta API" [level=2] [ref=f18e219]
+        - generic [ref=f18e220]: "Status: -"
+      - generic [ref=f18e221]: Listo para operar.

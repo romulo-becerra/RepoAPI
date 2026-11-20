@@ -333,3 +333,80 @@ curl -X POST \
     "description": "string"
   }' \
   http://bankfacilito.xyz/api/v1/accounts/{account_id}/pay_service -i
+```
+
+---
+
+# Updated Endpoint Groups
+
+The active route inventory includes modules not described in the original sections:
+
+## Customer Portal
+
+- `GET /api/v1/customer/dashboard`
+- `GET /api/v1/customer/transactions`
+- `GET /api/v1/customer/accounts/:account_id/statement`
+- `GET /api/v1/customer/credit_requests`
+- `POST /api/v1/customer/credit_requests`
+- `GET /api/v1/customer/tickets`
+- `POST /api/v1/customer/tickets`
+- `GET /api/v1/customer/preferences`
+- `PATCH /api/v1/customer/preferences`
+- `GET /api/v1/customer/notifications`
+- `PATCH /api/v1/customer/notifications/:id/read`
+
+## Customer Service
+
+- `GET /api/v1/customer_service/users/search`
+- `POST /api/v1/customer_service/users`
+- `PATCH /api/v1/customer_service/users/:id`
+- `PATCH /api/v1/customer_service/users/:id/unblock`
+- `PATCH /api/v1/customer_service/users/:id/deactivate`
+- `PATCH /api/v1/customer_service/users/:id/reactivate`
+- `PATCH /api/v1/customer_service/users/:id/reset_password`
+- `POST /api/v1/customer_service/accounts`
+- `PATCH /api/v1/customer_service/accounts/:id/status`
+- `GET /api/v1/customer_service/users/:user_id/accounts`
+- `GET /api/v1/customer_service/tickets`
+- `POST /api/v1/customer_service/tickets`
+- `PATCH /api/v1/customer_service/tickets/:id/close`
+
+## Cashier
+
+- `POST /api/v1/cashier/cash/open`
+- `GET /api/v1/cashier/cash/status`
+- `GET /api/v1/cashier/cash/movements`
+- `POST /api/v1/cashier/cash/reconciliation`
+- `POST /api/v1/cashier/cash/close`
+- `GET /api/v1/cashier/reports/daily`
+- `GET /api/v1/cashier/receipts`
+- `GET /api/v1/cashier/clients/search`
+
+## Receipts and Reversals
+
+- `GET /api/v1/receipts/:id`
+- `GET /api/v1/receipts/:id/download`
+- `GET /api/v1/transactions/:transaction_id/receipt`
+- `POST /api/v1/accounts/:id/reverse/:transaction_id`
+
+## Management
+
+- `GET /api/v1/manager/roles`
+- `GET /api/v1/manager/reports/dashboard`
+- `GET /api/v1/manager/reconciliations`
+- `POST /api/v1/manager/reconciliations`
+- `GET /api/v1/manager/accounting/accounts`
+- `POST /api/v1/manager/accounting/accounts`
+- `GET /api/v1/manager/accounting/journal_entries`
+- `POST /api/v1/manager/accounting/journal_entries`
+- `POST /api/v1/manager/accounting/journal_entries/:id/approve`
+- `GET /api/v1/manager/accounting/reports`
+- `GET /api/v1/manager/invoices`
+- `POST /api/v1/manager/invoices`
+- `PATCH /api/v1/manager/accounts/:account_id/limits`
+- `PATCH /api/v1/manager/accounts/:account_id/status`
+
+## Password Reset
+
+- `POST /api/v1/password/reset/request`
+- `POST /api/v1/password/reset`

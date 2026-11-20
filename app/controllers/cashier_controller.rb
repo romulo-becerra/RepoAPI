@@ -161,45 +161,6 @@ class CashierController < ApplicationController
     }, status: :ok
   end
 
-  def register_client
-    user = User.new(
-      first_name: params[:first_name],
-      last_name: params[:last_name],
-      email: params[:email],
-      phone: params[:phone],
-      date_of_birth: params[:date_of_birth],
-      document_number: params[:document_number],
-      address: params[:address],
-      role: :customer
-    )
-    user.pin = params[:pin]
-    user.save!
-    AuditLog.record!(action: "cashier_register_client", auditable: user)
-    render json: { user: { id: user.id, first_name: user.first_name, last_name: user.last_name }, accounts: user.accounts.map { |account|
-      { id: account.id, account_number: account.account_number, balance: account.balance.to_f }
-    } }, status: :created
-  rescue ActiveRecord::RecordInvalid => error
-    render json: { errors: error.record.errors.full_messages }, status: :unprocessable_entity
-  end
-
-  def update_client
-    user = User.find(params[:id])
-    user.update!(phone: params[:phone], email: params[:email], address: params[:address])
-    AuditLog.record!(action: "cashier_update_client", auditable: user)
-    render json: { id: user.id, phone: user.phone, email: user.email }, status: :ok
-  rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound => error
-    render json: { errors: error.respond_to?(:record) ? error.record.errors.full_messages : error.message }, status: :unprocessable_entity
-  end
-
-  def open_account
-    user = User.find(params[:user_id])
-    category = %w[savings checking business investment credit].include?(params[:account_category]) ? params[:account_category] : "savings"
-    account = user.accounts.create!(default: false, account_type: :user, account_category: category)
-    AuditLog.record!(action: "cashier_open_account", auditable: account)
-    render json: { id: account.id, account_number: account.account_number, balance: account.balance.to_f, retained_balance: account.retained_balance.to_f, account_category: account.account_category, status: account.status }, status: :created
-  rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotFound => error
-    render json: { errors: error.respond_to?(:record) ? error.record.errors.full_messages : error.message }, status: :unprocessable_entity
-  end
 
   private
 

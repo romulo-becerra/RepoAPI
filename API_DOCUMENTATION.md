@@ -6,20 +6,22 @@ Este documento describe los endpoints disponibles en la API del proyecto, incluy
 - La API base es: http://localhost:3001
 - Los endpoints están bajo el prefijo /api/v1
 - La autenticación se realiza mediante JWT en el header Authorization: Bearer <token>
-- El sistema usa la siguiente matriz de roles verificada: customer, cashier, manager y admin.
+- El sistema usa la siguiente matriz: customer, cashier, customer_service, manager, admin y roles especializados.
 
 ## Matriz de permisos por rol
 
 | Rol | Permisos principales |
 | --- | --- |
 | customer | Consulta su propia cuenta, transferencias, pago de servicios, movimientos y estado de préstamos. |
-| cashier | Operaciones de caja y atención al cliente: depósito, retiro y operaciones sobre cuentas ajenas en ventanilla. |
+| cashier | Apertura/cierre de caja, depósitos, retiros, pagos y transferencias en ventanilla. |
+| customer_service | Registro y actualización de clientes, desbloqueo, reset de PIN, cuentas, soporte y casos. |
 | manager | Reportes, consultas de gestión, operaciones de cuenta, originación de préstamos y revisión de logs. |
 | admin | Acceso completo: administración de usuarios, estados, roles, reportes, operaciones y gestión interna. |
 
 ### Regla de acceso
 - customer solo puede operar sobre su propia cuenta y pagos de servicio asociados.
 - cashier puede realizar operaciones de caja, pero no crear usuarios ni administrar roles.
+- customer_service puede gestionar clientes, acceso básico, cuentas de ahorro/corriente y casos; no opera caja ni movimientos financieros.
 - manager puede consultar y operar en gestión, pero no crear/bloquear usuarios de administración ni cambiar roles.
 - admin es el único rol con capacidad total para crear, eliminar, bloquear y cambiar el estado de usuarios y roles.
 
@@ -464,3 +466,72 @@ curl -X GET http://localhost:3001/api/v1/manager/accounts/9000000001/loans/6/ins
 - El endpoint de resumen de cuenta para operaciones de personal autorizado también valida la cuenta antes de permitir continuar con depositos, retiros, pagos y prestamo: una cuenta invalida debe bloquear los campos y mostrar un mensaje de validacion; una cuenta valida muestra nombre del cliente asociado y habilita el flujo.
 - El acceso a la busqueda de cuenta aplica al staff autorizado (admin, manager y cashier) para la operacion de cuenta de usuario; el origen de prestamo sigue reservado a admin/manager, con la misma validacion previa de cuenta antes de habilitar monto, plazo y fecha.
 - Para mostrar totales paid/pending en frontend admin, se recomienda usar el endpoint /installments/summary en lugar de recorrer todas las páginas de /installments.
+
+## Actualización de endpoints (2026-11-19)
+
+### Cajero
+
+- POST /api/v1/cashier/cash/open
+- GET /api/v1/cashier/cash/status
+- GET /api/v1/cashier/cash/movements
+- POST /api/v1/cashier/cash/reconciliation
+- POST /api/v1/cashier/cash/close
+- GET /api/v1/cashier/reports/daily
+- GET /api/v1/cashier/receipts
+- GET /api/v1/cashier/clients/search
+
+### Atención al Cliente
+
+- GET /api/v1/customer_service/users/search
+- POST /api/v1/customer_service/users
+- PATCH /api/v1/customer_service/users/:id
+- PATCH /api/v1/customer_service/users/:id/unblock
+- PATCH /api/v1/customer_service/users/:id/deactivate
+- PATCH /api/v1/customer_service/users/:id/reactivate
+- PATCH /api/v1/customer_service/users/:id/reset_password
+- POST /api/v1/customer_service/accounts
+- PATCH /api/v1/customer_service/accounts/:id/status
+- GET /api/v1/customer_service/users/:user_id/accounts
+- GET /api/v1/customer_service/tickets
+- POST /api/v1/customer_service/tickets
+- PATCH /api/v1/customer_service/tickets/:id/close
+
+### Portal del cliente
+
+- GET /api/v1/customer/dashboard
+- GET /api/v1/customer/transactions
+- GET /api/v1/customer/accounts/:account_id/statement
+- GET /api/v1/customer/credit_requests
+- POST /api/v1/customer/credit_requests
+- GET /api/v1/customer/tickets
+- POST /api/v1/customer/tickets
+- GET /api/v1/customer/preferences
+- PATCH /api/v1/customer/preferences
+- GET /api/v1/customer/notifications
+- PATCH /api/v1/customer/notifications/:id/read
+
+### Comprobantes y recuperación
+
+- GET /api/v1/receipts/:id
+- GET /api/v1/receipts/:id/download
+- GET /api/v1/transactions/:transaction_id/receipt
+- POST /api/v1/password/reset/request
+- POST /api/v1/password/reset
+- POST /api/v1/accounts/:id/reverse/:transaction_id
+
+### Roles, conciliación, contabilidad y facturas
+
+- GET /api/v1/manager/roles
+- GET /api/v1/manager/reports/dashboard
+- GET /api/v1/manager/reconciliations
+- POST /api/v1/manager/reconciliations
+- GET /api/v1/manager/accounting/accounts
+- POST /api/v1/manager/accounting/accounts
+- GET /api/v1/manager/accounting/journal_entries
+- POST /api/v1/manager/accounting/journal_entries
+- POST /api/v1/manager/accounting/journal_entries/:id/approve
+- GET /api/v1/manager/accounting/reports
+- GET /api/v1/manager/invoices
+- POST /api/v1/manager/invoices
+- PATCH /api/v1/manager/accounts/:account_id/limits
+- PATCH /api/v1/manager/accounts/:account_id/status

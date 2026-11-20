@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
+ActiveRecord::Schema[8.0].define(version: 2026_11_19_171700) do
   create_table "account_reconciliations", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "created_by_id", null: false
@@ -107,6 +107,19 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
     t.index ["user_id"], name: "index_contacts_on_user_id"
   end
 
+  create_table "credit_requests", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.integer "account_id", null: false
+    t.decimal "amount", precision: 15, scale: 2, null: false
+    t.integer "term_months", null: false
+    t.integer "status", default: 0, null: false
+    t.text "reason"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["account_id"], name: "index_credit_requests_on_account_id"
+    t.index ["user_id"], name: "index_credit_requests_on_user_id"
+  end
+
   create_table "invoices", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "created_by_id"
@@ -193,6 +206,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
     t.index ["user_id"], name: "index_login_events_on_user_id"
   end
 
+  create_table "notifications", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "title", null: false
+    t.text "message", null: false
+    t.string "channel", default: "in_app", null: false
+    t.datetime "read_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_notifications_on_user_id"
+  end
+
   create_table "receipts", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "transaction_id"
@@ -226,6 +250,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["account_id"], name: "index_services_on_account_id"
+  end
+
+  create_table "support_tickets", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "subject", null: false
+    t.text "description", null: false
+    t.integer "status", default: 0, null: false
+    t.integer "priority", default: 1, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_support_tickets_on_user_id"
   end
 
   create_table "transactions", force: :cascade do |t|
@@ -273,6 +308,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
     t.index ["user_id"], name: "index_user_files_on_user_id"
   end
 
+  create_table "user_preferences", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "language", default: "es", null: false
+    t.string "preferred_currency", default: "BOB", null: false
+    t.string "timezone", default: "America/La_Paz", null: false
+    t.string "theme", default: "light", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_user_preferences_on_user_id", unique: true
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "first_name"
     t.string "last_name"
@@ -308,6 +354,8 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
   add_foreign_key "audit_logs", "users"
   add_foreign_key "cash_register_sessions", "users"
   add_foreign_key "contacts", "users"
+  add_foreign_key "credit_requests", "accounts"
+  add_foreign_key "credit_requests", "users"
   add_foreign_key "invoices", "accounts"
   add_foreign_key "invoices", "users", column: "created_by_id"
   add_foreign_key "journal_entries", "users", column: "approved_by_id"
@@ -317,14 +365,17 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_162000) do
   add_foreign_key "loan_installments", "loans"
   add_foreign_key "loans", "accounts"
   add_foreign_key "login_events", "users", on_delete: :nullify
+  add_foreign_key "notifications", "users"
   add_foreign_key "receipts", "accounts"
   add_foreign_key "receipts", "transactions"
   add_foreign_key "receipts", "users", column: "created_by_id"
   add_foreign_key "recipients", "accounts"
   add_foreign_key "recipients", "users"
   add_foreign_key "services", "accounts"
+  add_foreign_key "support_tickets", "users"
   add_foreign_key "transactions", "accounts"
   add_foreign_key "user_addresses", "users"
   add_foreign_key "user_files", "users"
   add_foreign_key "user_files", "users", column: "uploaded_by_user_id"
+  add_foreign_key "user_preferences", "users"
 end

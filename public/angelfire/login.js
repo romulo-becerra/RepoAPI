@@ -263,7 +263,11 @@ function setSession(payload, isAdminIntent = false) {
   state.accountNumber = payload.account ? String(payload.account.account_number) : '';
   state.fullName = payload.user ? `${payload.user.first_name} ${payload.user.last_name}` : '';
   state.role = payload.user ? String(payload.user.role) : '-';
-  state.activeView = state.role === 'cashier' ? 'cashier' : (['admin', 'manager'].includes(state.role) ? 'admin' : 'client');
+  state.activeView =
+    state.role === 'cashier' ? 'cashier'
+      : state.role === 'customer_service' ? 'customer_service'
+        : ['admin', 'manager'].includes(state.role) ? 'admin'
+          : 'client';
 
   if (state.role !== 'customer') {
     state.managerToken = state.token;

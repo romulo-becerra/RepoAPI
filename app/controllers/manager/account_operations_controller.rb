@@ -121,7 +121,8 @@ module Manager
         performed_by_user_id: current_user.id,
         performed_by_name: current_user.to_s
       )
-      create_receipt(transaction, "loan_payment", "Pago de préstamo")
+      loan_transaction = @account.transactions.order(created_at: :desc).find_by(transaction_type: :loan_payment)
+      create_receipt(loan_transaction, "loan_payment", "Pago de préstamo") if loan_transaction
 
       render json: {
         message: "Pago de préstamo aplicado por #{current_user.role}",

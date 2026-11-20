@@ -53,6 +53,7 @@ let opsPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_p
 let opsRequestId = 0;
 let loginsPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
 let loginsRequestId = 0;
+let selectedCustomerServiceUserId = '';
 let adminInstallmentsStatusTotalsCache = {};
 let currentAdminOperation = '';
 let modalDecisionResolver = null;
@@ -92,10 +93,12 @@ const el = {
   serviceId: document.getElementById('serviceId'),
   viewClientBtn: document.getElementById('viewClientBtn'),
   viewCashierBtn: document.getElementById('viewCashierBtn'),
+  viewCustomerServiceBtn: document.getElementById('viewCustomerServiceBtn'),
   viewAdminBtn: document.getElementById('viewAdminBtn'),
   clientView: document.getElementById('clientView'),
   adminView: document.getElementById('adminView'),
   cashierView: document.getElementById('cashierView'),
+  customerServiceView: document.getElementById('customerServiceView'),
   adminUsersCount: document.getElementById('adminUsersCount'),
   adminActiveLoans: document.getElementById('adminActiveLoans'),
   adminLoansAmount: document.getElementById('adminLoansAmount'),
@@ -180,6 +183,8 @@ const el = {
   loginsDownloadBtn: document.getElementById('loginsDownloadBtn'),
   permClient: document.getElementById('permClient'),
   permAdmin: document.getElementById('permAdmin'),
+  permCashier: document.getElementById('permCashier'),
+  permCustomerService: document.getElementById('permCustomerService'),
   permManagerUsers: document.getElementById('permManagerUsers'),
   profileFirstName: document.getElementById('profileFirstName'),
   profileLastName: document.getElementById('profileLastName'),
@@ -628,7 +633,7 @@ function hasSessionToken() {
 //   cashier -> counter operations only (deposit/withdraw/loan payment/service payment)
 //   customer -> self service (withdraw, service payment, loan payment, transfer)
 const MANAGEMENT_ROLES = ['admin', 'manager'];
-const STAFF_ROLES = ['admin', 'manager', 'cashier'];
+const STAFF_ROLES = ['admin', 'manager', 'cashier', 'customer_service'];
 const ADMIN_OPERATIONS = {
   'create-user': 'admin',
   'create-loan': 'manager',
@@ -714,6 +719,8 @@ function setPermissionBadge(node, enabled) {
 function renderPermissions() {
   setPermissionBadge(el.permClient, hasClientAccess());
   setPermissionBadge(el.permAdmin, hasManagerAccess());
+  setPermissionBadge(el.permCashier, state.role === 'cashier');
+  setPermissionBadge(el.permCustomerService, state.role === 'customer_service');
   setPermissionBadge(el.permManagerUsers, hasAdminAccess());
 }
 
@@ -750,11 +757,18 @@ function toggleAccountMaintenance(mode) {
 
 function resolvePreferredView() {
   const stored = state.activeView;
-  const fallback = state.role === 'cashier' ? 'cashier' : (hasStaffAccess() ? 'admin' : 'client');
-  if (stored === 'admin' && !hasStaffAccess()) {
+  const fallback =
+    state.role === 'cashier' ? 'cashier'
+      : state.role === 'customer_service' ? 'customer_service'
+        : hasStaffAccess() ? 'admin'
+          : 'client';
+  if (stored === 'admin' && !['admin', 'manager'].includes(state.role)) {
     return 'client';
   }
   if (stored === 'cashier' && state.role !== 'cashier') {
+    return 'client';
+  }
+  if (stored === 'customer_service' && state.role !== 'customer_service') {
     return 'client';
   }
   return stored || fallback;
@@ -765,8 +779,12 @@ function setView(view) {
     renderResponse(403, { errors: 'La vista cajero requiere rol Cashier.' });
     return;
   }
-  if (view === 'admin' && !hasStaffAccess()) {
-    renderResponse(403, { errors: 'La vista de operaciones requiere un rol Admin, Manager o Cashier.' });
+  if (view === 'customer_service' && state.role !== 'customer_service') {
+    renderResponse(403, { errors: 'La vista Atención al Cliente requiere el rol correspondiente.' });
+    return;
+  }
+  if (view === 'admin' && !['admin', 'manager'].includes(state.role)) {
+    renderResponse(403, { errors: 'La vista administrativa requiere rol Admin o Manager.' });
     return;
   }
 
@@ -778,9 +796,11 @@ function setView(view) {
   el.clientView.classList.toggle('hidden', view !== 'client');
   el.adminView.classList.toggle('hidden', view !== 'admin');
   el.cashierView.classList.toggle('hidden', view !== 'cashier');
+  el.customerServiceView.classList.toggle('hidden', view !== 'customer_service');
   el.viewClientBtn.classList.toggle('active-view', view === 'client');
   el.viewAdminBtn.classList.toggle('active-view', view === 'admin');
   el.viewCashierBtn.classList.toggle('active-view', view === 'cashier');
+  el.viewCustomerServiceBtn.classList.toggle('active-view', view === 'customer_service');
   syncBalanceAutoRefreshState();
   persistState();
 }
@@ -1857,12 +1877,12 @@ async function refreshClientDashboard() {
   state.txPerPage = txPaginationMeta.per_page;
   persistState();
   if (rows.length === 0) {
-    el.txRows.innerHTML = '<tr><td colspan="8">Sin movimientos</td></tr>';
+    el.txRows.innerHTML = '<tr><td colspan="9">Sin movimientos</td></tr>';
   } else {
     el.txRows.innerHTML = rows
       .map(
         (tx) =>
-          `<tr><td>${tx.id || '-'}</td><td>${formatTransactionType(tx.display_type || tx.transaction_type)}</td><td>${tx.description || '-'}</td><td class="${amountClassByMovement(tx)}">${signedAmountByMovement(tx)}</td><td>${tx.status || '-'}</td><td>${formatPerformedBy(tx)}</td><td>${tx.performed_by_user_id || '-'}</td><td>${tx.created_at || '-'}</td></tr>`
+          `<tr><td>${tx.id || '-'}</td><td>${formatTransactionType(tx.display_type || tx.transaction_type)}</td><td>${tx.description || '-'}</td><td class="${amountClassByMovement(tx)}">${signedAmountByMovement(tx)}</td><td>${tx.status || '-'}</td><td>${formatPerformedBy(tx)}</td><td>${tx.performed_by_user_id || '-'}</td><td>${tx.created_at || '-'}</td><td>${tx.receipt_id ? `<button class="btn ghost mini" type="button" data-receipt-download="${tx.receipt_id}">Descargar</button>` : `<button class="btn ghost mini" type="button" data-receipt-create="${tx.id}">Generar</button>`}</td></tr>`
       )
       .join('');
   }
@@ -2223,6 +2243,89 @@ async function refreshAccountingReports() {
     : '<tr><td colspan="4">Sin movimientos contables</td></tr>';
 }
 
+function applyDashboardTheme(theme) {
+  const isDark = theme === 'dark';
+  document.body.classList.toggle('dark-theme', isDark);
+  document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+  localStorage.setItem('angelfire-dashboard-theme', isDark ? 'dark' : 'light');
+}
+
+async function refreshCustomerPortal() {
+  if (state.role !== 'customer') return;
+
+  const dashboard = await apiCall('/api/v1/customer/dashboard', 'GET', null, 'user');
+  document.getElementById('customerPortalBalance').textContent = `S/ ${Number(dashboard.total_balance || 0).toFixed(2)}`;
+  document.getElementById('customerPortalAvailable').textContent = `S/ ${Number(dashboard.available_balance || 0).toFixed(2)}`;
+  document.getElementById('customerPortalIncome').textContent = `S/ ${Number(dashboard.income_month || 0).toFixed(2)}`;
+  document.getElementById('customerPortalExpenses').textContent = `S/ ${Number(dashboard.expenses_month || 0).toFixed(2)}`;
+
+  await refreshCustomerNotifications();
+
+  const preferences = await apiCall('/api/v1/customer/preferences', 'GET', null, 'user');
+  document.getElementById('customerTheme').value = preferences.theme || 'light';
+  applyDashboardTheme(preferences.theme || 'light');
+}
+
+async function refreshCustomerNotifications() {
+  const notifications = await apiCall('/api/v1/customer/notifications', 'GET', null, 'user');
+  const rows = notifications || [];
+  document.getElementById('customerNotificationsRows').innerHTML = rows.length
+    ? rows.map((item) => `<li>${escapeAdminText(item.title)}: ${escapeAdminText(item.message)}${item.read_at ? '' : ' (nuevo)'}</li>`).join('')
+    : '<li>Sin notificaciones</li>';
+}
+
+async function refreshCustomerServiceView() {
+  if (state.role !== 'customer_service') return;
+  await searchCustomerServiceUsers();
+  await refreshCustomerServiceTickets();
+}
+
+async function searchCustomerServiceUsers() {
+  const query = document.getElementById('customerServiceSearchQuery')?.value.trim() || '';
+  const payload = await apiCall(`/api/v1/customer_service/users/search?q=${encodeURIComponent(query)}`, 'GET', null, 'token');
+  const users = payload.users || [];
+  document.getElementById('customerServiceFoundCount').textContent = String(users.length);
+  document.getElementById('customerServiceResults').innerHTML = users.length
+    ? users.map((user) => `
+      <button class="admin-client-result" type="button" data-customer-service-user-id="${user.id}">
+        <strong>${escapeAdminText(`${user.first_name || ''} ${user.last_name || ''}`.trim())}</strong>
+        <span>ID ${user.id} | ${escapeAdminText(user.document_number || '-')} | ${escapeAdminText(user.email || '-')}</span>
+        <span>${escapeAdminText(user.status || '-')} | ${escapeAdminText(user.role || '-')}</span>
+      </button>
+    `).join('')
+    : '<p class="field-help">Sin usuarios encontrados.</p>';
+}
+
+async function selectCustomerServiceUser(userId) {
+  const payload = await apiCall(`/api/v1/customer_service/users/search?q=${encodeURIComponent(userId)}`, 'GET', null, 'token');
+  const user = (payload.users || []).find((item) => String(item.id) === String(userId));
+  if (!user) return;
+
+  selectedCustomerServiceUserId = String(user.id);
+  document.getElementById('customerServiceProfile').classList.remove('hidden');
+  document.getElementById('customerServiceName').textContent = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+  document.getElementById('customerServiceMeta').textContent = `ID ${user.id} | ${user.email || '-'} | ${user.phone || '-'} | Documento: ${user.document_number || '-'}`;
+  document.getElementById('customerServiceStatus').textContent = formatUserStatus(user);
+  document.getElementById('customerServiceFirstName').value = user.first_name || '';
+  document.getElementById('customerServiceLastName').value = user.last_name || '';
+  document.getElementById('customerServiceEmail').value = user.email || '';
+  document.getElementById('customerServicePhone').value = user.phone || '';
+  document.getElementById('customerServiceDocument').value = user.document_number || '';
+  document.getElementById('customerServiceAddress').value = user.address || '';
+  document.getElementById('customerServiceAccounts').innerHTML = (user.accounts || []).length
+    ? user.accounts.map((account) => `<article class="admin-client-account"><strong>${escapeAdminText(account.account_number)}</strong><span>${escapeAdminText(account.account_category || '-')}</span><span>Saldo: ${Number(account.balance || 0).toFixed(2)}</span></article>`).join('')
+    : '<p class="field-help">Sin cuentas.</p>';
+}
+
+async function refreshCustomerServiceTickets() {
+  const payload = await apiCall('/api/v1/customer_service/tickets', 'GET', null, 'token');
+  const tickets = Array.isArray(payload) ? payload : [];
+  document.getElementById('customerServiceOpenTickets').textContent = String(tickets.filter((ticket) => !['resolved', 'closed'].includes(ticket.status)).length);
+  document.getElementById('customerServiceTicketsRows').innerHTML = tickets.length
+    ? tickets.map((ticket) => `<tr><td>${ticket.id}</td><td>${ticket.user_id}</td><td>${escapeAdminText(ticket.subject)}</td><td>${escapeAdminText(ticket.status)}</td><td>${escapeAdminText(ticket.priority)}${ticket.status !== 'closed' ? ` | <button class="btn ghost mini" type="button" data-close-ticket="${ticket.id}">Cerrar</button>` : ''}</td></tr>`).join('')
+    : '<tr><td colspan="5">Sin casos</td></tr>';
+}
+
 async function refreshCashierDashboard() {
   if (state.role !== 'cashier') return;
 
@@ -2268,8 +2371,189 @@ async function refreshCashierClients() {
 
 function bindEvents() {
   el.viewCashierBtn?.addEventListener('click', () => setView('cashier'));
+  el.viewCustomerServiceBtn?.addEventListener('click', () => setView('customer_service'));
   el.viewClientBtn?.addEventListener('click', () => setView('client'));
   el.viewAdminBtn?.addEventListener('click', () => setView('admin'));
+
+  document.getElementById('customerServiceSearchForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    await searchCustomerServiceUsers();
+  });
+
+  document.getElementById('customerServiceRegisterForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      await apiCall('/api/v1/customer_service/users', 'POST', {
+        first_name: document.getElementById('customerServiceRegisterFirstName').value,
+        last_name: document.getElementById('customerServiceRegisterLastName').value,
+        email: document.getElementById('customerServiceRegisterEmail').value,
+        phone: document.getElementById('customerServiceRegisterPhone').value,
+        document_number: document.getElementById('customerServiceRegisterDocument').value,
+        address: document.getElementById('customerServiceRegisterAddress').value,
+        pin: document.getElementById('customerServiceRegisterPin').value
+      }, 'token');
+      event.currentTarget.reset();
+      await searchCustomerServiceUsers();
+      renderResponse(201, { message: 'Cliente registrado correctamente.' });
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('customerServiceResults')?.addEventListener('click', async (event) => {
+    const button = event.target instanceof HTMLElement ? event.target.closest('[data-customer-service-user-id]') : null;
+    if (button) await selectCustomerServiceUser(button.getAttribute('data-customer-service-user-id'));
+  });
+
+  document.getElementById('customerServiceUpdateForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!selectedCustomerServiceUserId) return;
+    try {
+      await apiCall(`/api/v1/customer_service/users/${selectedCustomerServiceUserId}`, 'PATCH', {
+        first_name: document.getElementById('customerServiceFirstName').value,
+        last_name: document.getElementById('customerServiceLastName').value,
+        email: document.getElementById('customerServiceEmail').value,
+        phone: document.getElementById('customerServicePhone').value,
+        document_number: document.getElementById('customerServiceDocument').value,
+        address: document.getElementById('customerServiceAddress').value
+      }, 'token');
+      await searchCustomerServiceUsers();
+      await selectCustomerServiceUser(selectedCustomerServiceUserId);
+      renderResponse(200, { message: 'Datos del cliente actualizados.' });
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('customerServiceUnblockBtn')?.addEventListener('click', async () => {
+    if (!selectedCustomerServiceUserId) return;
+    await apiCall(`/api/v1/customer_service/users/${selectedCustomerServiceUserId}/unblock`, 'PATCH', null, 'token');
+    await selectCustomerServiceUser(selectedCustomerServiceUserId);
+  });
+
+  document.getElementById('customerServiceDeactivateBtn')?.addEventListener('click', async () => {
+    if (!selectedCustomerServiceUserId) return;
+    await apiCall(`/api/v1/customer_service/users/${selectedCustomerServiceUserId}/deactivate`, 'PATCH', null, 'token');
+    await selectCustomerServiceUser(selectedCustomerServiceUserId);
+  });
+
+  document.getElementById('customerServiceReactivateBtn')?.addEventListener('click', async () => {
+    if (!selectedCustomerServiceUserId) return;
+    await apiCall(`/api/v1/customer_service/users/${selectedCustomerServiceUserId}/reactivate`, 'PATCH', null, 'token');
+    await selectCustomerServiceUser(selectedCustomerServiceUserId);
+  });
+
+  document.getElementById('customerServiceResetPinBtn')?.addEventListener('click', async () => {
+    if (!selectedCustomerServiceUserId) return;
+    const pin = document.getElementById('customerServiceResetPin').value;
+    await apiCall(`/api/v1/customer_service/users/${selectedCustomerServiceUserId}/reset_password`, 'PATCH', { pin }, 'token');
+    renderResponse(200, { message: 'PIN restablecido correctamente.' });
+  });
+
+  document.getElementById('customerServiceOpenAccountBtn')?.addEventListener('click', async () => {
+    if (!selectedCustomerServiceUserId) return;
+    await apiCall('/api/v1/customer_service/accounts', 'POST', {
+      user_id: selectedCustomerServiceUserId,
+      account_category: document.getElementById('customerServiceAccountCategory').value
+    }, 'token');
+    await selectCustomerServiceUser(selectedCustomerServiceUserId);
+  });
+
+  document.getElementById('customerServiceRefreshTicketsBtn')?.addEventListener('click', refreshCustomerServiceTickets);
+
+  document.getElementById('customerServiceCreateTicketForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      await apiCall('/api/v1/customer_service/tickets', 'POST', {
+        user_id: document.getElementById('customerServiceTicketUserId').value,
+        subject: document.getElementById('customerServiceTicketSubject').value,
+        description: document.getElementById('customerServiceTicketDescription').value,
+        priority: document.getElementById('customerServiceTicketPriority').value
+      }, 'token');
+      event.currentTarget.reset();
+      await refreshCustomerServiceTickets();
+      renderResponse(201, { message: 'Caso registrado correctamente.' });
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('customerServiceTicketsRows')?.addEventListener('click', async (event) => {
+    const button = event.target instanceof HTMLElement ? event.target.closest('[data-close-ticket]') : null;
+    if (!button) return;
+    await apiCall(`/api/v1/customer_service/tickets/${button.getAttribute('data-close-ticket')}/close`, 'PATCH', null, 'token');
+    await refreshCustomerServiceTickets();
+  });
+
+  el.txRows?.addEventListener('click', async (event) => {
+    const button = event.target instanceof HTMLElement ? event.target.closest('button') : null;
+    if (!button) return;
+
+    const downloadId = button.getAttribute('data-receipt-download');
+    const createId = button.getAttribute('data-receipt-create');
+    try {
+      if (createId) {
+        const receipt = await apiCall(`/api/v1/transactions/${createId}/receipt`, 'GET', null, 'user');
+        button.textContent = 'Descargar';
+        button.removeAttribute('data-receipt-create');
+        button.setAttribute('data-receipt-download', receipt.id);
+        renderResponse(200, { message: `Comprobante generado: ${receipt.receipt_number}` });
+        return;
+      }
+
+      if (downloadId) {
+        window.open(`${state.baseUrl}/api/v1/receipts/${downloadId}/download`, '_blank');
+      }
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('customerCreditRequestForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      await apiCall('/api/v1/customer/credit_requests', 'POST', {
+        account_id: document.getElementById('customerCreditAccountId').value,
+        amount: document.getElementById('customerCreditAmount').value,
+        term_months: document.getElementById('customerCreditMonths').value,
+        reason: document.getElementById('customerCreditReason').value
+      }, 'user');
+      renderResponse(201, { message: 'Solicitud de crédito creada.' });
+      event.currentTarget.reset();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('customerSupportForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      await apiCall('/api/v1/customer/tickets', 'POST', {
+        subject: document.getElementById('customerTicketSubject').value,
+        description: document.getElementById('customerTicketDescription').value
+      }, 'user');
+      renderResponse(201, { message: 'Ticket de soporte creado.' });
+      event.currentTarget.reset();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('customerPreferencesForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      const theme = document.getElementById('customerTheme').value;
+      await apiCall('/api/v1/customer/preferences', 'PATCH', {
+        theme
+      }, 'user');
+      applyDashboardTheme(theme);
+      renderResponse(200, { message: 'Preferencias actualizadas.' });
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('customerRefreshNotificationsBtn')?.addEventListener('click', refreshCustomerNotifications);
 
   document.getElementById('cashOpenForm')?.addEventListener('submit', async (event) => {
     event.preventDefault();
@@ -2313,32 +2597,6 @@ function bindEvents() {
   document.getElementById('cashRefreshMovementsBtn')?.addEventListener('click', refreshCashierMovements);
   document.getElementById('cashRefreshReportBtn')?.addEventListener('click', refreshCashierDashboard);
 
-  document.getElementById('cashRegisterClientForm')?.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const data = Object.fromEntries(new FormData(form).entries());
-    try {
-      await apiCall('/api/v1/cashier/clients', 'POST', data, 'token');
-      form.reset();
-      await refreshCashierClients();
-    } catch (error) {
-      renderResponse(422, { errors: error.message });
-    }
-  });
-
-  document.getElementById('cashOpenAccountForm')?.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    try {
-      const payload = await apiCall('/api/v1/cashier/accounts/open', 'POST', {
-        user_id: document.getElementById('cashOpenAccountUserId').value,
-        account_category: document.getElementById('cashOpenAccountCategory').value
-      }, 'token');
-      renderResponse(201, { message: `Cuenta creada: ${payload.account_number}` });
-      await refreshCashierClients();
-    } catch (error) {
-      renderResponse(422, { errors: error.message });
-    }
-  });
 
   if (hasCustomModal()) {
     el.actionModalConfirmBtn.addEventListener('click', () => resolveActionModal(true));
@@ -3670,6 +3928,8 @@ async function init() {
     return;
   }
 
+  applyDashboardTheme(localStorage.getItem('angelfire-dashboard-theme') || 'light');
+
   ensureDashboardUiElements();
   hydrateInputs();
   const preferredView = resolvePreferredView();
@@ -3692,6 +3952,12 @@ async function init() {
     }
     if (state.role === 'cashier') {
       await refreshCashierDashboard();
+    }
+    if (state.role === 'customer_service') {
+      await refreshCustomerServiceView();
+    }
+    if (state.role === 'customer') {
+      await refreshCustomerPortal();
     }
     setView(preferredView);
     syncBalanceAutoRefreshState();

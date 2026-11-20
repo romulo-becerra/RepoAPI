@@ -9,6 +9,7 @@ module Manager
       "accountant" => %w[accounting reconciliations reports invoices],
       "auditor" => %w[audit reports logins operations],
       "cashier" => %w[accounts deposits withdrawals service_payments],
+      "customer_service" => %w[clients accounts tickets cards documents credit_requests digital_banking],
       "supervisor" => %w[accounts transactions loans reports users],
       "customer" => %w[self_service]
     }.freeze
