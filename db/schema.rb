@@ -10,7 +10,6 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-<<<<<<< HEAD
 ActiveRecord::Schema[8.0].define(version: 2026_11_19_171700) do
   create_table "account_reconciliations", force: :cascade do |t|
     t.integer "account_id", null: false
@@ -37,9 +36,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_171700) do
     t.index ["code"], name: "index_accounting_accounts_on_code", unique: true
   end
 
-=======
-ActiveRecord::Schema[8.0].define(version: 2026_10_24_193000) do
->>>>>>> 947e293b3a3d075ed2ce53981334da79824bf72f
   create_table "accounts", force: :cascade do |t|
     t.integer "user_id"
     t.string "account_number"
@@ -71,7 +67,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_24_193000) do
     t.index ["user_id"], name: "index_api_keys_on_user_id"
   end
 
-<<<<<<< HEAD
   create_table "audit_logs", force: :cascade do |t|
     t.integer "user_id"
     t.string "auditable_type"
@@ -102,8 +97,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_24_193000) do
     t.index ["user_id"], name: "index_cash_register_sessions_on_user_id"
   end
 
-=======
->>>>>>> 947e293b3a3d075ed2ce53981334da79824bf72f
   create_table "contacts", force: :cascade do |t|
     t.integer "user_id", null: false
     t.string "name", null: false
@@ -114,7 +107,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_24_193000) do
     t.index ["user_id"], name: "index_contacts_on_user_id"
   end
 
-<<<<<<< HEAD
   create_table "credit_requests", force: :cascade do |t|
     t.integer "user_id", null: false
     t.integer "account_id", null: false
@@ -166,8 +158,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_24_193000) do
     t.index ["journal_entry_id"], name: "index_journal_lines_on_journal_entry_id"
   end
 
-=======
->>>>>>> 947e293b3a3d075ed2ce53981334da79824bf72f
   create_table "loan_installments", force: :cascade do |t|
     t.integer "loan_id", null: false
     t.integer "installment_number", null: false
@@ -343,7 +333,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_24_193000) do
     t.boolean "blocked", default: false, null: false
     t.date "date_of_birth"
     t.string "basic_auth_password_digest"
-<<<<<<< HEAD
     t.string "password_reset_digest"
     t.datetime "password_reset_sent_at"
     t.integer "failed_login_attempts", default: 0, null: false
@@ -351,8 +340,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_24_193000) do
     t.boolean "force_pin_change", default: false, null: false
     t.string "document_number"
     t.string "address"
-=======
->>>>>>> 947e293b3a3d075ed2ce53981334da79824bf72f
     t.index ["active"], name: "index_users_on_active"
     t.index ["blocked"], name: "index_users_on_blocked"
     t.index ["document_number"], name: "index_users_on_document_number", unique: true
@@ -364,7 +351,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_24_193000) do
   add_foreign_key "account_reconciliations", "users", column: "created_by_id"
   add_foreign_key "accounts", "users"
   add_foreign_key "api_keys", "users", on_delete: :cascade
-<<<<<<< HEAD
   add_foreign_key "audit_logs", "users"
   add_foreign_key "cash_register_sessions", "users"
   add_foreign_key "contacts", "users"
@@ -376,9 +362,6 @@ ActiveRecord::Schema[8.0].define(version: 2026_10_24_193000) do
   add_foreign_key "journal_entries", "users", column: "created_by_id"
   add_foreign_key "journal_lines", "accounting_accounts"
   add_foreign_key "journal_lines", "journal_entries"
-=======
-  add_foreign_key "contacts", "users"
->>>>>>> 947e293b3a3d075ed2ce53981334da79824bf72f
   add_foreign_key "loan_installments", "loans"
   add_foreign_key "loans", "accounts"
   add_foreign_key "login_events", "users", on_delete: :nullify

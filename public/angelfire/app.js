@@ -2510,7 +2510,6 @@ async function refreshCashierClients() {
 }
 
 function bindEvents() {
-<<<<<<< HEAD
   el.viewCashierBtn?.addEventListener('click', () => setView('cashier'));
   el.viewCustomerServiceBtn?.addEventListener('click', () => setView('customer_service'));
   el.viewClientBtn?.addEventListener('click', () => setView('client'));
@@ -2739,7 +2738,6 @@ function bindEvents() {
   document.getElementById('cashRefreshReportBtn')?.addEventListener('click', refreshCashierDashboard);
 
 
-=======
   el.contactForm.addEventListener('submit', async (event) => {
     event.preventDefault();
     const name = el.contactName.value.trim();
@@ -2755,7 +2753,6 @@ function bindEvents() {
     }
   });
 
->>>>>>> 947e293b3a3d075ed2ce53981334da79824bf72f
   if (hasCustomModal()) {
     el.actionModalConfirmBtn.addEventListener('click', () => resolveActionModal(true));
     el.actionModalCancelBtn.addEventListener('click', () => resolveActionModal(false));

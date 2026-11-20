@@ -134,11 +134,8 @@ Rails.application.routes.draw do
       resources :users, only: [ :update ] do
         member do
           put :pin
-<<<<<<< HEAD
           patch :force_password_change
-=======
           put :basic_auth_password
->>>>>>> 947e293b3a3d075ed2ce53981334da79824bf72f
           get :profile
           get :address, to: "user_addresses#show"
           put :address, to: "user_addresses#upsert"
