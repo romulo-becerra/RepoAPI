@@ -1,6 +1,7 @@
 class UsersController < ApplicationController
   skip_before_action :authenticate_request, only: [ :index, :register, :login, :password_reset_request, :password_reset ]
   before_action :require_admin!, only: [ :force_password_change ]
+  before_action :set_current_user_session, only: [ :logout, :sessions, :terminate_session, :terminate_all_sessions ]
 
   def index
     render json: { status: "ok", service: "bankfacilito", message: "API funcionando" }, status: :ok
@@ -25,35 +26,111 @@ class UsersController < ApplicationController
   end
 
   def login
-    account = Account.find_by(account_number: params[:account_number])
-    user = account&.user
+    identifier = params[:identifier].presence || params[:account_number]
+    identifier = identifier.to_s.strip
+    pin = params[:pin].to_s
+    expected_role = params[:role].to_s.strip.downcase
+    remember_me = params[:remember_me].to_s == "true"
 
-    if user&.locked_until.present? && user.locked_until > Time.current
-      record_login_event(user, account.account_number, :blocked)
+    # Buscar usuario por email, account_number o document_number
+    user = User.find_by_login_identifier(identifier)
+
+    if user.nil?
+      record_login_event(nil, identifier, :failure)
+      return render json: { errors: "Credenciales inválidas" }, status: :unauthorized
+    end
+
+    # Verificar que el usuario esté activo y no bloqueado
+    if user.locked_until.present? && user.locked_until > Time.current
+      record_login_event(user, identifier, :blocked)
       return render json: { errors: "Usuario bloqueado temporalmente" }, status: :forbidden
     end
 
-    if user && user.authenticate_pin(params[:pin])
-      unless user.can_authenticate?
-        record_login_event(user, account.account_number, :blocked)
-        return render json: { errors: "Usuario bloqueado o desactivado" }, status: :forbidden
-      end
-
-      @user = user
-      user.update!(failed_login_attempts: 0, locked_until: nil)
-      record_login_event(user, account.account_number, :success)
-      @account = account
-      @token = JsonWebToken.encode(user_id: @user.id)
-      render :login, status: :ok
-    else
-      if user
-        attempts = user.failed_login_attempts.to_i + 1
-        locked_until = attempts >= 5 ? 15.minutes.from_now : nil
-        user.update!(failed_login_attempts: attempts, locked_until: locked_until)
-      end
-      record_login_event(user, params[:account_number], :failure)
-      render json: { errors: "Número de cuenta o PIN incorrecto" }, status: :unauthorized
+    if !user.can_authenticate?
+      record_login_event(user, identifier, :blocked)
+      return render json: { errors: "Usuario bloqueado o desactivado" }, status: :forbidden
     end
+
+    # Verificar PIN
+    unless user.authenticate_pin(pin)
+      attempts = user.failed_login_attempts.to_i + 1
+      locked_until = attempts >= 5 ? 15.minutes.from_now : nil
+      user.update!(failed_login_attempts: attempts, locked_until: locked_until)
+      record_login_event(user, identifier, :failure)
+      return render json: { errors: "Número de cuenta o PIN incorrecto" }, status: :unauthorized
+    end
+
+    # Validar rol si se especificó
+    if expected_role.present? && user.role != expected_role
+      record_login_event(user, identifier, :failure)
+      return render json: {
+        errors: "Este usuario no tiene el rol #{expected_role}",
+        user_role: user.role
+      }, status: :forbidden
+    end
+
+    # Control de sesiones concurrentes para usuarios staff
+    if user.staff? || user.management?
+      active_session = user.user_sessions.active.find_by(session_token: nil)
+      if active_session
+        active_session.revoke!
+      end
+    end
+
+    # Limpiar intentos fallidos
+    user.update!(failed_login_attempts: 0, locked_until: nil)
+    user.update_last_login!(request.remote_ip)
+
+    # Generar token de recordar
+    remember_token = nil
+    if remember_me
+      remember_token = user.generate_remember_token
+    end
+
+    # Crear session de usuario
+    session = user.user_sessions.create!(
+      session_token: SecureRandom.urlsafe_base64(32),
+      ip_address: request.remote_ip,
+      user_agent: request.user_agent.to_s.truncate(255),
+      expires_at: remember_me ? 30.days.from_now : 24.hours.from_now,
+      device_name: detect_device(request.user_agent.to_s)
+    )
+
+    record_login_event(user, identifier, :success)
+    @user = user
+    @account = user.accounts.find_by(default: true) || user.accounts.first
+    @token = JsonWebToken.encode(user_id: user.id)
+    @session_token = session.session_token
+    @remember_token = remember_token
+    @permissions = role_permissions(user.role)
+    @dashboard_url = dashboard_url_for_role(user.role)
+
+    render :login, status: :ok
+  end
+
+  def login_admin
+    params[:role] = "admin"
+    login
+  end
+
+  def login_manager
+    params[:role] = "manager"
+    login
+  end
+
+  def login_cashier
+    params[:role] = "cashier"
+    login
+  end
+
+  def login_customer_service
+    params[:role] = "customer_service"
+    login
+  end
+
+  def login_customer
+    params[:role] = "customer"
+    login
   end
 
   def update
@@ -119,7 +196,40 @@ class UsersController < ApplicationController
   end
 
   def logout
+    # Revocar la session actual si existe
+    if @current_user && params[:session_token].present?
+      session = @current_user.user_sessions.find_by(session_token: params[:session_token])
+      session&.revoke!
+    end
     render json: { message: "Sesión cerrada correctamente" }, status: :ok
+  end
+
+  def sessions
+    @sessions = @current_user.user_sessions.active.order(created_at: :desc)
+    render json: {
+      sessions: @sessions.map { |s|
+        {
+          id: s.id,
+          device_name: s.device_name,
+          ip_address: s.ip_address,
+          created_at: s.created_at,
+          last_activity_at: s.last_activity_at,
+          expires_at: s.expires_at
+        }
+      }
+    }, status: :ok
+  end
+
+  def terminate_session
+    session = @current_user.user_sessions.find_by(id: params[:id])
+    return render json: { errors: "Sesión no encontrada" }, status: :not_found unless session
+    session.revoke!
+    render json: { message: "Sesión terminada" }, status: :ok
+  end
+
+  def terminate_all_sessions
+    @current_user.user_sessions.active.update_all(status: :revoked)
+    render json: { message: "Todas las sesiones terminadas" }, status: :ok
   end
 
   def password_reset_request
@@ -167,6 +277,24 @@ class UsersController < ApplicationController
     )
   end
 
+  def detect_device(user_agent)
+    return "Unknown" if user_agent.blank?
+    ua = user_agent.to_s.downcase
+    if ua.include?("android")
+      "Android Device"
+    elsif ua.include?("iphone") || ua.include?("ipad")
+      "iOS Device"
+    elsif ua.include?("macintosh") || ua.include?("mac os")
+      "Mac"
+    elsif ua.include?("windows")
+      "Windows PC"
+    elsif ua.include?("linux")
+      "Linux PC"
+    else
+      ua.truncate(50)
+    end
+  end
+
   def registration_params
     payload = request.raw_post.presence || request.body.read.to_s
     permitted = params.permit(
@@ -196,4 +324,41 @@ class UsersController < ApplicationController
   def user_params
     params.permit(:first_name, :last_name, :email, :phone, :date_of_birth, :pin)
   end
+
+  def role_permissions(role)
+    ROLE_PERMISSIONS_MAP[role.to_s] || []
+  end
+
+  def dashboard_url_for_role(role)
+    case role.to_s
+    when "customer"
+      "/customer/dashboard"
+    when "cashier"
+      "/cashier"
+    when "customer_service"
+      "/customer_service"
+    when "manager", "admin", "supervisor", "financial_manager", "accountant", "auditor"
+      "/manager/reports/dashboard"
+    else
+      "/"
+    end
+  end
+
+  def set_current_user_session
+    session_token = params[:session_token].presence || request.headers["X-Session-Token"]
+    @current_session = @current_user.user_sessions.find_by(session_token: session_token) if session_token.present?
+  end
+
+  ROLE_PERMISSIONS_MAP = {
+    "customer" => %w[self_service accounts transactions profile preferences],
+    "manager" => %w[users accounts transactions loans reports reconciliation accounting invoices audit logins operations],
+    "cashier" => %w[accounts deposits withdrawals service_payments receipts clients],
+    "admin" => %w[users accounts transactions loans reports reconciliation accounting invoices audit logins operations roles],
+    "super_admin" => %w[all],
+    "supervisor" => %w[accounts transactions loans reports users],
+    "accountant" => %w[accounting reconciliations reports invoices],
+    "auditor" => %w[audit reports logins operations],
+    "financial_manager" => %w[accounts transactions loans reports reconciliation invoices],
+    "customer_service" => %w[clients accounts tickets cards documents credit_requests digital_banking]
+  }.freeze
 end

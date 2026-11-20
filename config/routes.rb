@@ -129,6 +129,18 @@ Rails.application.routes.draw do
       get "currency_rates", to: "currency_rates#index"
       get "practice/params", to: "practice#params_demo"
 
+      # Login por rol específico (para staff)
+      post "login/admin", to: "users#login_admin", as: :login_admin
+      post "login/manager", to: "users#login_manager", as: :login_manager
+      post "login/cashier", to: "users#login_cashier", as: :login_cashier
+      post "login/customer_service", to: "users#login_customer_service", as: :login_customer_service
+      post "login/customer", to: "users#login_customer", as: :login_customer
+
+      # Gestionar sesiones de usuario
+      get "sessions", to: "users#sessions"
+      delete "sessions/:id", to: "users#terminate_session"
+      delete "sessions", to: "users#terminate_all_sessions"
+
       get "/accounts/:account_id/transactions", to: "transactions#index"
 
       resources :users, only: [ :update ] do

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2026_11_19_171700) do
+ActiveRecord::Schema[8.0].define(version: 2026_11_20_170000) do
   create_table "account_reconciliations", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "created_by_id", null: false
@@ -319,6 +319,22 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_171700) do
     t.index ["user_id"], name: "index_user_preferences_on_user_id", unique: true
   end
 
+  create_table "user_sessions", force: :cascade do |t|
+    t.integer "user_id", null: false
+    t.string "session_token", null: false
+    t.string "ip_address"
+    t.string "user_agent"
+    t.datetime "expires_at"
+    t.datetime "last_activity_at"
+    t.string "device_name"
+    t.integer "status", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["expires_at"], name: "index_user_sessions_on_expires_at"
+    t.index ["session_token"], name: "index_user_sessions_on_session_token", unique: true
+    t.index ["user_id"], name: "index_user_sessions_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "first_name"
     t.string "last_name"
@@ -340,6 +356,10 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_171700) do
     t.boolean "force_pin_change", default: false, null: false
     t.string "document_number"
     t.string "address"
+    t.datetime "last_login_at"
+    t.string "last_login_ip"
+    t.string "remember_token"
+    t.string "active_session_token"
     t.index ["active"], name: "index_users_on_active"
     t.index ["blocked"], name: "index_users_on_blocked"
     t.index ["document_number"], name: "index_users_on_document_number", unique: true
@@ -378,4 +398,5 @@ ActiveRecord::Schema[8.0].define(version: 2026_11_19_171700) do
   add_foreign_key "user_files", "users"
   add_foreign_key "user_files", "users", column: "uploaded_by_user_id"
   add_foreign_key "user_preferences", "users"
+  add_foreign_key "user_sessions", "users"
 end
