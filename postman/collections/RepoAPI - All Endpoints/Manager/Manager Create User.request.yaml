@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/manager/users"
+method: POST
+headers:
+  Authorization: Bearer {{manager_token}}
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: text
+  content: |-
+    {
+      "first_name": "Managed",
+      "last_name": "User",
+      "email": "managed.user+{{$timestamp}}@example.com",
+      "phone": "+51997123456",
+      "date_of_birth": "1990-04-12",
+      "pin": "1234",
+      "role": "customer"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      var j = pm.response.json();
+      if (j.user && j.user.id) pm.environment.set('managed_user_id', j.user.id);
+    language: text/javascript
+order: 5000

@@ -1,0 +1,26 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/register"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "first_name": "User",
+      "last_name": "WithPhone",
+      "email": "user.with.phone+{{$timestamp}}@example.com",
+      "phone": "{{phone}}",
+      "date_of_birth": "1990-04-12",
+      "pin": "{{pin}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('status 201', function () { pm.response.to.have.status(201); });
+      var j = pm.response.json();
+      if (j.token) pm.environment.set('token', j.token);
+      if (j.user && j.user.id) pm.environment.set('user_id', j.user.id);
+      if (j.account && j.account.account_number) pm.environment.set('account_number', j.account.account_number);
+    language: text/javascript
+order: 1000

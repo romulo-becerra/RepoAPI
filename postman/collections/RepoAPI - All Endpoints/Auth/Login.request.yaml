@@ -1,0 +1,22 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/login"
+method: POST
+headers:
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: text
+  content: |-
+    {
+      "account_number": "{{account_number}}",
+      "pin": "{{pin}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      var j = pm.response.json();
+      if (j.token) pm.environment.set('token', j.token);
+      if (j.user && j.user.id) pm.environment.set('user_id', j.user.id);
+      if (j.account && j.account.id) pm.environment.set('account_id', j.account.id);
+    language: text/javascript
+order: 2000

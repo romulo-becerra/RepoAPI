@@ -168,7 +168,9 @@ Body:
 }
 
 ### GET /api/v1/users/:id/profile
-Retorna perfil con role.
+Retorna el perfil del usuario autenticado con `role` y `date_of_birth` (`YYYY-MM-DD` o `null`).
+
+Las respuestas de registro, login, perfil y actualización también incluyen `date_of_birth` dentro del objeto `user`.
 
 ### GET /api/v1/users/:id/address
 Consulta direccion del usuario.
@@ -423,9 +425,23 @@ Body:
   "last_name": "Perez",
   "email": "mario.perez@example.com",
   "phone": "+51998111222",
+  "date_of_birth": "1990-04-12",
   "pin": "1234",
   "role": "customer"
 }
+```
+
+### PUT/PATCH /api/v1/manager/users/:id
+Actualiza datos de un usuario. Solo Admin puede ejecutar esta operación; se acepta
+`date_of_birth` en formato `YYYY-MM-DD`. El listado y detalle de usuarios manager
+también devuelven `date_of_birth`.
+
+Ejemplo cURL:
+```bash
+curl -X PATCH http://localhost:3001/api/v1/manager/users/5 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"date_of_birth":"1992-06-15"}'
 
 ### PATCH /api/v1/manager/users/:id/block
 Bloquea un usuario activo (no permite bloquear al propio usuario gerente ni a usuarios desactivados).

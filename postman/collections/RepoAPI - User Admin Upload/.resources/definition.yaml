@@ -1,0 +1,2 @@
+$kind: collection
+description: Collection for user profile (phone/address), manager user CRUD, and file upload APIs.

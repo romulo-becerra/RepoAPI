@@ -64,6 +64,9 @@ const el = {
   baseUrl: document.getElementById('baseUrl'),
   statusSummary: document.getElementById('statusSummary'),
   statusRole: document.getElementById('statusRole'),
+  headerUserName: document.getElementById('headerUserName'),
+  headerUserId: document.getElementById('headerUserId'),
+  headerAccountNumber: document.getElementById('headerAccountNumber'),
   responseStatus: document.getElementById('responseStatus'),
   responseBox: document.getElementById('responseBox'),
   balanceValue: document.getElementById('balanceValue'),
@@ -155,6 +158,12 @@ const el = {
   adminInstallmentsPaidCount: document.getElementById('adminInstallmentsPaidCount'),
   adminInstallmentsPendingCount: document.getElementById('adminInstallmentsPendingCount'),
   adminUserFilesRows: document.getElementById('adminUserFilesRows'),
+  contactForm: document.getElementById('contactForm'),
+  contactName: document.getElementById('contactName'),
+  contactPhone: document.getElementById('contactPhone'),
+  contactsStatus: document.getElementById('contactsStatus'),
+  contactsList: document.getElementById('contactsList'),
+  contactsCount: document.getElementById('contactsCount'),
   userFilesRows: document.getElementById('userFilesRows'),
   userFileInput: document.getElementById('userFileInput'),
   adminAuditLog: document.getElementById('adminAuditLog'),
@@ -190,10 +199,21 @@ const el = {
   profileLastName: document.getElementById('profileLastName'),
   profileEmail: document.getElementById('profileEmail'),
   profilePhone: document.getElementById('profilePhone'),
+  profileDateOfBirth: document.getElementById('profileDateOfBirth'),
+  basicAuthEmail: document.getElementById('basicAuthEmail'),
+  basicAuthPassword: document.getElementById('basicAuthPassword'),
+  basicAuthPasswordConfirmation: document.getElementById('basicAuthPasswordConfirmation'),
+  apiKeysPanel: document.getElementById('apiKeysPanel'),
+  apiKeyName: document.getElementById('apiKeyName'),
+  apiKeySecretResult: document.getElementById('apiKeySecretResult'),
+  apiKeySecretValue: document.getElementById('apiKeySecretValue'),
+  apiKeysRows: document.getElementById('apiKeysRows'),
   logoutBtn: document.getElementById('logoutBtn'),
   accountMaintenanceSection: document.getElementById('accountMaintenanceSection'),
   showProfileSectionBtn: document.getElementById('showProfileSectionBtn'),
   showSecuritySectionBtn: document.getElementById('showSecuritySectionBtn'),
+  showBasicAuthSectionBtn: document.getElementById('showBasicAuthSectionBtn'),
+  showApiKeysSectionBtn: document.getElementById('showApiKeysSectionBtn'),
   hideAccountSectionBtn: document.getElementById('hideAccountSectionBtn'),
   adminLoanRateHint: document.getElementById('adminLoanRateHint'),
   adminLoanPreviewModal: document.getElementById('adminLoanPreviewModal'),
@@ -736,6 +756,9 @@ function clearSession(keepBaseUrl = true) {
 function updateHeader() {
   el.statusSummary.textContent = state.token ? 'Autenticado' : 'Sin autenticar';
   el.statusRole.textContent = `Rol: ${state.role || '-'}`;
+  el.headerUserName.textContent = state.token ? state.fullName || '-' : '-';
+  el.headerUserId.textContent = state.token ? state.userId || '-' : '-';
+  el.headerAccountNumber.textContent = state.token ? state.accountNumber || '-' : '-';
   el.accountNumberValue.textContent = state.accountNumber || '-';
   el.userNameValue.textContent = state.fullName || '-';
   renderPermissions();
@@ -743,7 +766,7 @@ function updateHeader() {
 }
 
 function toggleAccountMaintenance(mode) {
-  const show = mode === 'profile' || mode === 'security';
+  const show = mode === 'profile' || mode === 'security' || mode === 'basic-auth' || mode === 'api-keys';
   el.accountMaintenanceSection.classList.toggle('hidden', !show);
 
   if (mode === 'profile') {
@@ -752,6 +775,15 @@ function toggleAccountMaintenance(mode) {
 
   if (mode === 'security') {
     document.getElementById('currentPin').focus();
+  }
+
+  if (mode === 'basic-auth') {
+    el.basicAuthPassword.focus();
+  }
+
+  if (mode === 'api-keys') {
+    refreshApiKeys().catch((error) => renderResponse(422, { errors: error.message }));
+    el.apiKeyName.focus();
   }
 }
 
@@ -1781,7 +1813,7 @@ function buildAuthHeader(authType) {
   return state.token ? { Authorization: `Bearer ${state.token}` } : {};
 }
 
-async function apiCall(path, method, body, authType = 'user') {
+async function apiCall(path, method, body, authType = 'user', hideApiKeySecret = false) {
   const headers = {
     Accept: 'application/json',
     ...buildAuthHeader(authType)
@@ -1802,7 +1834,10 @@ async function apiCall(path, method, body, authType = 'user') {
     payload = { raw: text };
   }
 
-  renderResponse(response.status, payload);
+  const responsePayload = hideApiKeySecret && payload.api_key
+    ? { ...payload, api_key: { ...payload.api_key, secret: '[secreto mostrado una sola vez]' } }
+    : payload;
+  renderResponse(response.status, responsePayload);
   if (!response.ok) {
     throw new Error(payload.errors || payload.error || 'Operacion fallida');
   }
@@ -1942,6 +1977,52 @@ async function refreshProfileData() {
   el.profileLastName.value = user.last_name || '';
   el.profileEmail.value = user.email || '';
   el.profilePhone.value = user.phone || '';
+  el.profileDateOfBirth.value = user.date_of_birth || '';
+  el.basicAuthEmail.value = user.email || '';
+}
+
+async function refreshApiKeys() {
+  if (!state.token || !state.userId) {
+    return;
+  }
+
+  const payload = await apiCall(`/api/v1/users/${state.userId}/api_keys`, 'GET');
+  const apiKeys = payload.api_keys || [];
+  el.apiKeysRows.replaceChildren();
+
+  if (apiKeys.length === 0) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 5;
+    cell.textContent = 'Sin API keys';
+    row.appendChild(cell);
+    el.apiKeysRows.appendChild(row);
+    return;
+  }
+
+  apiKeys.forEach((apiKey) => {
+    const row = document.createElement('tr');
+    [apiKey.name, apiKey.prefix, formatDateTime(apiKey.created_at), apiKey.last_used_at ? formatDateTime(apiKey.last_used_at) : 'Nunca'].forEach((value) => {
+      const cell = document.createElement('td');
+      cell.textContent = value;
+      row.appendChild(cell);
+    });
+
+    const actionCell = document.createElement('td');
+    if (apiKey.revoked_at) {
+      actionCell.textContent = 'Revocada';
+    } else {
+      const revokeButton = document.createElement('button');
+      revokeButton.type = 'button';
+      revokeButton.className = 'btn ghost mini';
+      revokeButton.dataset.apiKeyId = apiKey.id;
+      revokeButton.textContent = 'Revocar';
+      row.dataset.apiKeyActive = 'true';
+      actionCell.appendChild(revokeButton);
+    }
+    row.appendChild(actionCell);
+    el.apiKeysRows.appendChild(row);
+  });
 }
 
 async function refreshUserFiles() {
@@ -1963,6 +2044,65 @@ async function refreshUserFiles() {
         `<tr><td>${file.id}</td><td>${file.original_filename}</td><td>${file.content_type}</td><td>${formatFileSize(file.file_size)}</td><td>${file.created_at || '-'}</td></tr>`
     )
     .join('');
+}
+
+function renderContacts(contacts) {
+  el.contactsCount.textContent = String(contacts.length);
+  el.contactsList.replaceChildren();
+  if (contacts.length === 0) {
+    const emptyState = document.createElement('p');
+    emptyState.className = 'contacts-empty';
+    emptyState.textContent = 'Todavia no tienes contactos.';
+    el.contactsList.append(emptyState);
+    return;
+  }
+
+  contacts.forEach((contact) => {
+    const row = document.createElement('article');
+    row.className = 'contact-row';
+
+    const details = document.createElement('div');
+    const name = document.createElement('h3');
+    name.textContent = contact.name;
+    const phone = document.createElement('p');
+    phone.textContent = contact.phone;
+    details.append(name, phone);
+
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'btn alt';
+    deleteButton.type = 'button';
+    deleteButton.textContent = 'Eliminar';
+    deleteButton.setAttribute('aria-label', `Eliminar contacto ${contact.name}`);
+    deleteButton.addEventListener('click', async () => {
+      const confirmed = await openActionModal({
+        title: 'Eliminar contacto',
+        message: `Se eliminara ${contact.name} de tus contactos. Deseas continuar?`,
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        tone: 'danger',
+        showCancel: true
+      });
+      if (!confirmed) return;
+
+      try {
+        await apiCall(`/api/v1/contacts/${contact.id}`, 'DELETE');
+        el.contactsStatus.textContent = 'Contacto eliminado.';
+        await refreshContacts();
+      } catch (error) {
+        el.contactsStatus.textContent = error.message || 'No se pudo eliminar el contacto.';
+      }
+    });
+
+    row.append(details, deleteButton);
+    el.contactsList.append(row);
+  });
+}
+
+async function refreshContacts() {
+  if (!hasManagerAccess()) return;
+
+  const payload = await apiCall('/api/v1/contacts', 'GET');
+  renderContacts(payload.contacts || []);
 }
 
 async function refreshAdminFilesForSelectedUser() {
@@ -2370,6 +2510,7 @@ async function refreshCashierClients() {
 }
 
 function bindEvents() {
+<<<<<<< HEAD
   el.viewCashierBtn?.addEventListener('click', () => setView('cashier'));
   el.viewCustomerServiceBtn?.addEventListener('click', () => setView('customer_service'));
   el.viewClientBtn?.addEventListener('click', () => setView('client'));
@@ -2598,6 +2739,23 @@ function bindEvents() {
   document.getElementById('cashRefreshReportBtn')?.addEventListener('click', refreshCashierDashboard);
 
 
+=======
+  el.contactForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const name = el.contactName.value.trim();
+    const phone = el.contactPhone.value.trim();
+
+    try {
+      await apiCall('/api/v1/contacts', 'POST', { contact: { name, phone } });
+      el.contactForm.reset();
+      el.contactsStatus.textContent = 'Contacto agregado.';
+      await refreshContacts();
+    } catch (error) {
+      el.contactsStatus.textContent = error.message || 'No se pudo agregar el contacto.';
+    }
+  });
+
+>>>>>>> 947e293b3a3d075ed2ce53981334da79824bf72f
   if (hasCustomModal()) {
     el.actionModalConfirmBtn.addEventListener('click', () => resolveActionModal(true));
     el.actionModalCancelBtn.addEventListener('click', () => resolveActionModal(false));
@@ -3005,6 +3163,8 @@ function bindEvents() {
 
   el.showProfileSectionBtn.addEventListener('click', () => toggleAccountMaintenance('profile'));
   el.showSecuritySectionBtn.addEventListener('click', () => toggleAccountMaintenance('security'));
+  el.showBasicAuthSectionBtn.addEventListener('click', () => toggleAccountMaintenance('basic-auth'));
+  el.showApiKeysSectionBtn.addEventListener('click', () => toggleAccountMaintenance('api-keys'));
   el.hideAccountSectionBtn.addEventListener('click', () => toggleAccountMaintenance('hide'));
 
   document.getElementById('updateProfileForm').addEventListener('submit', async (event) => {
@@ -3020,7 +3180,8 @@ function bindEvents() {
     const payload = {
       first_name: el.profileFirstName.value.trim(),
       last_name: el.profileLastName.value.trim(),
-      email: el.profileEmail.value.trim()
+      email: el.profileEmail.value.trim(),
+      date_of_birth: el.profileDateOfBirth.value
     };
 
     const phone = el.profilePhone.value.trim();
@@ -3061,6 +3222,85 @@ function bindEvents() {
     }
   });
 
+  document.getElementById('basicAuthPasswordForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!state.token || !state.userId) {
+      renderResponse(401, { errors: 'Debes iniciar sesion para configurar Basic Auth.' });
+      return;
+    }
+
+    const password = el.basicAuthPassword.value;
+    const confirmation = el.basicAuthPasswordConfirmation.value;
+    const passwordLength = Array.from(password).length;
+    const passwordBytes = new TextEncoder().encode(password).length;
+
+    if (password !== confirmation) {
+      renderResponse(422, { errors: 'Las contraseñas Basic no coinciden.' });
+      el.basicAuthPasswordConfirmation.focus();
+      return;
+    }
+
+    if (passwordLength < 12 || passwordBytes > 72) {
+      renderResponse(422, { errors: 'La contraseña Basic debe tener al menos 12 caracteres y no más de 72 bytes.' });
+      el.basicAuthPassword.focus();
+      return;
+    }
+
+    if (!await confirmMutationAction('Se creara o reemplazara tu contraseña Basic Auth. Deseas continuar?', 'basicAuthPasswordForm')) {
+      return;
+    }
+
+    try {
+      await apiCall(`/api/v1/users/${state.userId}/basic_auth_password`, 'PUT', {
+        basic_auth_password: password
+      });
+      clearFormFields(document.getElementById('basicAuthPasswordForm'));
+    } catch (error) {
+      await handleMutationError(error);
+    }
+  });
+
+  document.getElementById('apiKeyCreateForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const name = el.apiKeyName.value.trim();
+    if (!name) {
+      renderResponse(422, { errors: 'Indica un nombre para identificar la API key.' });
+      return;
+    }
+    if (!await confirmMutationAction('Se creara una API key que solo se mostrara una vez. Deseas continuar?', 'apiKeyCreateForm')) {
+      return;
+    }
+
+    try {
+      const payload = await apiCall(`/api/v1/users/${state.userId}/api_keys`, 'POST', { name }, 'user', true);
+      el.apiKeySecretValue.textContent = payload.api_key.secret;
+      el.apiKeySecretResult.classList.remove('hidden');
+      clearFormFields(document.getElementById('apiKeyCreateForm'));
+      await refreshApiKeys();
+    } catch (error) {
+      await handleMutationError(error);
+    }
+  });
+
+  el.apiKeysRows.addEventListener('click', async (event) => {
+    const revokeButton = event.target.closest('button[data-api-key-id]');
+    if (!revokeButton) {
+      return;
+    }
+
+    const apiKeyId = revokeButton.dataset.apiKeyId;
+    if (!await confirmMutationAction('Esta API key dejará de funcionar y no se puede reactivar. ¿Deseas revocarla?', 'apiKeyCreateForm', 'danger')) {
+      return;
+    }
+
+    try {
+      await apiCall(`/api/v1/users/${state.userId}/api_keys/${apiKeyId}`, 'DELETE');
+      await refreshApiKeys();
+    } catch (error) {
+      await handleMutationError(error);
+    }
+  });
+
   document.getElementById('adminCreateUserForm').addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!hasAdminAccess()) {
@@ -3079,8 +3319,12 @@ function bindEvents() {
       role: document.getElementById('adminRole').value
     };
     const phone = document.getElementById('adminPhone').value.trim();
+    const dateOfBirth = document.getElementById('adminDateOfBirth').value;
     if (phone) {
       payload.phone = phone;
+    }
+    if (dateOfBirth) {
+      payload.date_of_birth = dateOfBirth;
     }
 
     try {
@@ -3944,6 +4188,7 @@ async function init() {
     await refreshUserFiles();
     if (hasManagerAccess()) {
       await refreshAdminDashboard();
+      await refreshContacts();
       await loadOperations();
       await loadLoginReport();
       if (state.adminInspectAccountLookup) {

@@ -1,0 +1,6 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/manager/reports/overview"
+method: GET
+headers:
+  Authorization: Bearer {{manager_token}}
+order: 1000

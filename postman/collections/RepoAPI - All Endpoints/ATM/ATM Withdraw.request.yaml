@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/atm/accounts/{{account_id}}/withdraw"
+method: POST
+headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: text
+  content: |-
+    {
+      "pin": "{{pin}}",
+      "amount": 150,
+      "description": "Retiro ATM"
+    }
+order: 2000

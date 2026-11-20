@@ -1,0 +1,14 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/accounts/{{account_id}}/deposit"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{token}}
+body:
+  type: text
+  content: |-
+    {
+      "amount": 1000,
+      "description": "Deposito cuenta"
+    }
+order: 1000

@@ -3,10 +3,110 @@
 Este documento describe los endpoints disponibles en la API del proyecto, incluyendo método HTTP, ruta, headers, body/params, y si requieren Authorization.
 
 ## Notas generales
+- El explorador web de APIs, con filtros y ejemplos cURL, está disponible en [`/angelfire/endpoints.html`](public/angelfire/endpoints.html) cuando la aplicación está en ejecución.
+- La misma página incluye la pestaña **Esquemas request/response** con el contrato de cada endpoint (parámetros, body y respuestas), los componentes reutilizables y la descarga del documento OpenAPI 3.1 en JSON (`angelfire-openapi.json`). Los esquemas se mantienen en [public/angelfire/schemas.js](public/angelfire/schemas.js).
+- El catálogo funcional ampliado está en [FINANCIAL_APIS.md](FINANCIAL_APIS.md).
+- La fecha de nacimiento se envía como `date_of_birth` con formato `YYYY-MM-DD`.
 - La API base es: http://localhost:3001
 - Los endpoints están bajo el prefijo /api/v1
+- JWT continúa siendo compatible. Como alternativa, los endpoints protegidos aceptan Basic Auth con el correo y una contraseña Basic independiente del PIN.
+- Para habilitar Basic Auth, configura la contraseña con `PUT /api/v1/users/:id/basic_auth_password` usando el JWT actual y el body `{"basic_auth_password":"una-contraseña-de-al-menos-12-caracteres"}`. Solo el usuario autenticado puede configurar su propia contraseña.
+- Luego envía `Authorization: Basic <base64(correo:contraseña)>`. Usa Basic Auth solo sobre HTTPS, salvo en pruebas locales con datos de prueba.
+- Ejemplo PowerShell local: `curl.exe -u "usuario@correo.com:contraseña" "http://localhost:3001/api/v1/users/ID/profile"`.
+- Para usuarios existentes, un admin también puede establecer o cambiar la contraseña Basic con `PUT /api/v1/manager/users/:id/basic_auth_password` y body `{"basic_auth_password":"una-contraseña-de-al-menos-12-caracteres"}`. Requiere JWT de admin. Los managers sin rol admin no pueden usar esta operación.
+- Para crear usuarios desde la API administrativa, usa `POST /api/v1/manager/users` con los datos habituales y, opcionalmente, `basic_auth_password`. Sin ese campo, el usuario podrá iniciar sesión con cuenta y PIN y luego configurar su propia contraseña Basic mediante su JWT.
+- El registro público existente (`POST /api/v1/register`) no cambia: crea la cuenta y devuelve un JWT; el usuario puede usar ese token para configurar su contraseña Basic. La contraseña Basic nunca se devuelve en respuestas.
+- Los usuarios autenticados pueden administrar varias API keys propias: `GET` y `POST /api/v1/users/:user_id/api_keys`, y `DELETE /api/v1/users/:user_id/api_keys/:id`. La creación requiere `{"name":"nombre descriptivo"}` y muestra el secreto completo una sola vez. La lista muestra únicamente nombre, prefijo y fechas; el secreto no puede recuperarse.
+- Para autenticar solicitudes con API key, envíala en `X-API-Key: <secreto>`. Las claves revocadas se rechazan. JWT (`Authorization: Bearer ...`) y Basic Auth (`Authorization: Basic ...`) continúan disponibles.
 - La autenticación se realiza mediante JWT en el header Authorization: Bearer <token>
 - El sistema usa la siguiente matriz: customer, cashier, customer_service, manager, admin y roles especializados.
+
+## Uso de API keys
+
+La API key se puede usar en cualquier endpoint que indique **Authorization: Sí requerida**. La autenticación global aplica a cuentas, transacciones, destinatarios, contactos, servicios protegidos, préstamos, operaciones ATM, perfil y archivos de usuario, y endpoints de administración. Los permisos del rol y las reglas de acceso a los recursos siguen aplicándose; una API key no concede permisos adicionales y actúa con la identidad del usuario propietario.
+
+No requieren API key los endpoints públicos: `GET /`, `GET /up`, `POST /api/v1/register`, `POST /api/v1/login`, `GET /api/v1/currency_rates` y `GET /api/v1/services`.
+
+### Endpoint de práctica: parámetros de consulta y API key
+
+`GET /api/v1/practice/params` es un endpoint protegido para practicar parámetros de consulta (`name` y `topic`) junto con autenticación por API key:
+
+```bash
+curl "http://localhost:3001/api/v1/practice/params?name=Ana&topic=api-keys" \
+  -H "X-API-Key: API_KEY_SECRET"
+```
+
+Respuesta de ejemplo:
+
+```json
+{
+  "message": "Solicitud autenticada correctamente",
+  "params": {
+    "name": "Ana",
+    "topic": "api-keys"
+  }
+}
+```
+
+La API key se envía únicamente en el header `X-API-Key`; no se acepta como parámetro de URL. Evita poner secretos en query params porque pueden quedar registrados en logs, historial del navegador o herramientas intermedias. Este endpoint acepta también los métodos habituales de autenticación de las rutas protegidas (JWT y Basic Auth).
+
+### Crear una API key
+
+Primero autentícate con el JWT obtenido al iniciar sesión (o con Basic Auth) y crea una clave para tu propio usuario:
+
+```bash
+curl -X POST http://localhost:3001/api/v1/users/USER_ID/api_keys \
+  -H "Authorization: Bearer JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Integracion local"}'
+```
+
+La respuesta incluye `api_key.secret`. Guárdalo en un lugar seguro: el secreto completo solo se muestra al crear la clave.
+
+### Usar la API key en endpoints protegidos
+
+Envía el secreto en el header `X-API-Key`; no es necesario enviar también el header `Authorization`.
+
+Consultar el perfil del usuario asociado a la clave:
+
+```bash
+curl http://localhost:3001/api/v1/users/USER_ID/profile \
+  -H "X-API-Key: API_KEY_SECRET"
+```
+
+Consultar cuentas:
+
+```bash
+curl http://localhost:3001/api/v1/accounts \
+  -H "X-API-Key: API_KEY_SECRET"
+```
+
+Crear una transacción, si el rol y las reglas de acceso del usuario permiten la operación:
+
+```bash
+curl -X POST http://localhost:3001/api/v1/accounts/ACCOUNT_ID/transactions \
+  -H "X-API-Key: API_KEY_SECRET" \
+  -H "Content-Type: application/json" \
+  -d '{"amount":100,"transaction_type":"deposit"}'
+```
+
+Una API key inválida o revocada devuelve `401 Unauthorized`; una clave de un usuario bloqueado o desactivado devuelve `403 Forbidden`.
+
+### Listar y revocar claves
+
+Estas operaciones requieren autenticación y solo permiten administrar las claves del usuario autenticado. Puedes usar una API key activa o JWT/Basic Auth:
+
+```bash
+curl http://localhost:3001/api/v1/users/USER_ID/api_keys \
+  -H "X-API-Key: API_KEY_SECRET"
+```
+
+```bash
+curl -X DELETE http://localhost:3001/api/v1/users/USER_ID/api_keys/API_KEY_ID \
+  -H "X-API-Key: API_KEY_SECRET"
+```
+
+Al revocar la clave usada en la solicitud, esta deja de servir para las solicitudes posteriores. Para automatizaciones, guarda la clave en un gestor de secretos o variable de entorno y usa HTTPS fuera del entorno local.
 
 ## Matriz de permisos por rol
 
@@ -57,6 +157,8 @@ curl http://localhost:3001/
   "first_name": "Juan",
   "last_name": "Perez",
   "email": "juan.perez@example.com",
+  "phone": "+59170000000",
+  "date_of_birth": "1990-04-12",
   "pin": "1234"
 }
 ```
@@ -66,7 +168,7 @@ Ejemplo:
 ```bash
 curl -X POST http://localhost:3001/api/v1/register \
   -H "Content-Type: application/json" \
-  -d '{"first_name":"Juan","last_name":"Perez","email":"juan.perez@example.com","pin":"1234"}'
+  -d '{"first_name":"Juan","last_name":"Perez","email":"juan.perez@example.com","phone":"+59170000000","date_of_birth":"1990-04-12","pin":"1234"}'
 ```
 
 ---
@@ -109,7 +211,9 @@ curl -X POST http://localhost:3001/api/v1/login \
 {
   "first_name": "Cody",
   "last_name": "Facilito",
-  "email": "ayuda@codigofacilito.com"
+  "email": "ayuda@codigofacilito.com",
+  "phone": "+59170000000",
+  "date_of_birth": "1992-06-15"
 }
 ```
 - Params:
@@ -120,8 +224,28 @@ Ejemplo:
 curl -X PUT http://localhost:3001/api/v1/users/1 \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <token>" \
-  -d '{"first_name":"Cody","last_name":"Facilito","email":"ayuda@codigofacilito.com"}'
+  -d '{"first_name":"Cody","last_name":"Facilito","email":"ayuda@codigofacilito.com","phone":"+59170000000","date_of_birth":"1992-06-15"}'
 ```
+
+---
+
+### Fecha de nacimiento en los endpoints de usuario
+
+El campo se llama `date_of_birth`, usa formato `YYYY-MM-DD` y es opcional. Se admite
+al registrar o actualizar el perfil propio y al crear/actualizar usuarios desde la
+API de administración. Las respuestas de registro, login, perfil y administración
+incluyen el campo dentro del objeto `user`.
+
+Ejemplo cURL para un administrador (reemplaza `TOKEN` por el JWT obtenido al iniciar sesión):
+```bash
+curl -X PATCH http://localhost:3001/api/v1/manager/users/5 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"date_of_birth":"1992-06-15"}'
+```
+
+El perfil propio se puede consultar en `GET /api/v1/users/:id/profile`; esa respuesta
+también contiene `date_of_birth`.
 
 ---
 
@@ -349,6 +473,7 @@ curl http://localhost:3001/api/v1/services \
 
   - Para el catálogo financiero completo (incluye manager, préstamos, ATM, archivos y novedades recientes), ver [FINANCIAL_APIS.md](FINANCIAL_APIS.md).
   - Para catálogo interactivo con ejemplos completos request/response, ver [public/angelfire/endpoints.html](public/angelfire/endpoints.html).
+  - Para los esquemas tipados de request/response y el contrato OpenAPI 3.1 descargable, abrir la pestaña **Esquemas request/response** de esa misma página o revisar [public/angelfire/schemas.js](public/angelfire/schemas.js).
 
 ---
 

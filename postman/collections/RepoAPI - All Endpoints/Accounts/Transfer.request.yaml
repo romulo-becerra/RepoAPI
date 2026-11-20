@@ -1,0 +1,16 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/accounts/{{account_id}}/transfer"
+method: POST
+headers:
+  Authorization: Bearer {{token}}
+  Content-Type: application/json
+  Accept: application/json
+body:
+  type: text
+  content: |-
+    {
+      "recipient_account_number": "00000000",
+      "amount": 50,
+      "description": "Transferencia de prueba"
+    }
+order: 8000
