@@ -1,7 +1,7 @@
 $kind: collection
 description: Coleccion unificada con todos los endpoints definidos en config/routes.rb.
 variables:
-  baseUrl: http://localhost:3001
+  baseUrl: https://repoapi-75op.onrender.com/
   token: ""
   manager_token: ""
   user_id: ""
