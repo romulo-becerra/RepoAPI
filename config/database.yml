@@ -16,5 +16,5 @@ test:
   database: repoapi_test
 
 production:
-  url: <%= ENV["DATABASE_URL"].to_json %>
+  url: <%= ENV.fetch("DATABASE_URL") { raise "Set DATABASE_URL to the Render Postgres internal URL" }.to_json %>
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>

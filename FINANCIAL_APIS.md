@@ -46,7 +46,7 @@ Bootstrap de `super_admin` en producción (`db:seed`):
   docker compose run --rm -e RAILS_ENV=test api bundle exec rspec
   ```
 
-- En Render, crea una base Render Postgres y configura `DATABASE_URL` del servicio web con su URL interna.
+- En Render, crea una base Render Postgres y copia su **Internal Database URL** en `DATABASE_URL` del servicio web (Dashboard → base Postgres → Connect; luego servicio web → Environment). `DATABASE_URL` no es la URL pública `https://...onrender.com`.
 - Al iniciar, el contenedor ejecuta `db:migrate` y `db:seed`. El seed no copia datos desde SQLite.
 - La tarea `db:import_sqlite` copia todas las tablas de aplicación desde `SQLITE_SOURCE` a PostgreSQL; requiere haber ejecutado `db:migrate` y una base destino vacía.
 - La importación conserva IDs, ordena tablas por claves foráneas, comprueba los conteos y revierte toda la operación si falla.
