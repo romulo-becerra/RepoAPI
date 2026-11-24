@@ -8,7 +8,7 @@ ENV BUNDLE_PATH=/usr/local/bundle \
 
 WORKDIR /app
 
-RUN apt-get update -qq && apt-get install -y --no-install-recommends build-essential libsqlite3-dev libyaml-dev && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -qq && apt-get install -y --no-install-recommends build-essential libsqlite3-dev libpq-dev libyaml-dev && rm -rf /var/lib/apt/lists/*
 
 COPY Gemfile Gemfile.lock* ./
 RUN bundle install

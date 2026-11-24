@@ -54,6 +54,25 @@ RSpec.describe 'Super admin access', type: :request do
     expect(JSON.parse(response.body).dig('user', 'role')).to eq('super_admin')
   end
 
+  it 'returns hourly transaction counts for the manager dashboard' do
+    transaction_time = Time.current.change(hour: 14)
+    Transaction.create!(
+      account: super_admin.accounts.find_by!(default: true),
+      transaction_type: :deposit,
+      amount: 10,
+      status: :completed,
+      created_at: transaction_time,
+      updated_at: transaction_time
+    )
+
+    get '/api/v1/manager/reports/dashboard', headers: auth(super_admin), as: :json
+
+    expect(response).to have_http_status(:ok), response.body
+    hourly_transactions = JSON.parse(response.body).fetch('hourly_transactions')
+    expect(hourly_transactions.keys).to eq((0..23).map(&:to_s))
+    expect(hourly_transactions.fetch('14')).to eq(1)
+  end
+
   it 'allows a super admin, but not a regular admin, to create another super admin' do
     post '/api/v1/manager/users',
          params: {

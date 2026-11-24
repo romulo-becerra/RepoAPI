@@ -34,6 +34,33 @@ Bootstrap de `super_admin` en producción (`db:seed`):
 - Si falta una variable, el seed falla claramente en vez de crear credenciales predeterminadas.
 - El registro público siempre crea usuarios `customer`; no concede privilegios administrativos.
 
+## Base de datos de producción
+
+- Desarrollo y pruebas usan SQLite; producción usa PostgreSQL mediante `DATABASE_URL`.
+- En Render, crea una base Render Postgres y configura `DATABASE_URL` del servicio web con su URL interna.
+- Al iniciar, el contenedor ejecuta `db:migrate` y `db:seed`. El seed no copia datos desde SQLite.
+- La tarea `db:import_sqlite` copia todas las tablas de aplicación desde `SQLITE_SOURCE` a PostgreSQL; requiere haber ejecutado `db:migrate` y una base destino vacía.
+- La importación conserva IDs, ordena tablas por claves foráneas, comprueba los conteos y revierte toda la operación si falla.
+- Ejecuta la importación antes de iniciar el servicio web o `db:seed`; la tarea rechaza destinos con datos y nunca los borra.
+- Haz una copia de seguridad de SQLite y verifica conteos de usuarios, cuentas, transacciones y saldos antes de cambiar tráfico.
+- No despliegues esperando conservar datos SQLite efímeros. No hay una base SQLite de producción en el repositorio; las bases locales de desarrollo y pruebas son distintas.
+
+Importación de la base local de desarrollo a una base Render Postgres vacía:
+
+1. Crea PostgreSQL en Render y obtén su URL externa. No la guardes en el repositorio ni la compartas.
+2. Antes de desplegar la aplicación contra esa base, configura localmente `DATABASE_URL` con la URL externa.
+3. Desde PowerShell, en la raíz del proyecto, ejecuta:
+
+```powershell
+$env:RAILS_ENV = "production"
+$env:SQLITE_SOURCE = "/source-storage/development.sqlite3"
+docker build -t repoapi-migration .
+docker run --rm --mount "type=bind,source=$($PWD.Path)\storage,target=/source-storage,readonly" -e RAILS_ENV -e DATABASE_URL -e SQLITE_SOURCE repoapi-migration sh -c "bundle exec rails db:migrate && bundle exec rails db:import_sqlite"
+```
+
+4. Revisa los conteos de cada tabla que imprime la tarea. Luego configura el servicio de Render con la URL interna de PostgreSQL y despliega.
+5. Si la base importada ya tiene usuarios, `db:seed` no crea ni promueve un `super_admin`.
+
 ## Matriz actual de roles
 
 - customer: servicios propios, transferencias, pagos, préstamos, comprobantes y soporte.

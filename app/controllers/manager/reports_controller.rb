@@ -43,6 +43,14 @@ module Manager
       today = Time.current.beginning_of_day..Time.current.end_of_day
       completed = Transaction.where(status: :completed)
       users_today = LoginEvent.where(created_at: today).distinct.count(:user_id)
+      hourly_transactions = completed.where(created_at: today)
+      hourly_group =
+        if ActiveRecord::Base.connection.adapter_name == "SQLite"
+          "CAST(strftime('%H', created_at) AS INTEGER)"
+        else
+          "EXTRACT(HOUR FROM created_at)"
+        end
+      hourly_counts = hourly_transactions.group(hourly_group).count.transform_keys(&:to_i)
 
       render json: {
         total_customers: User.customer.count,
@@ -55,9 +63,7 @@ module Manager
         overdue_loans: LoanInstallment.where(status: %i[pending partial]).where("due_date < ?", Date.current).distinct.count(:loan_id),
         users_connected: users_today,
         security_alerts: LoginEvent.where(created_at: today, status: :failure).count + User.where.not(locked_until: nil).where("locked_until > ?", Time.current).count,
-        hourly_transactions: (0..23).index_with { |hour|
-          completed.where(created_at: today).where("CAST(strftime('%H', created_at) AS INTEGER) = ?", hour).count
-        },
+        hourly_transactions: (0..23).index_with { |hour| hourly_counts.fetch(hour, 0) },
         monthly_growth: (0..5).reverse_each.index_with { |months_ago|
           month = months_ago.months.ago
           start_range = month.beginning_of_month..month.end_of_month
