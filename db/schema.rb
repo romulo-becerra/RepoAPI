@@ -11,6 +11,9 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[8.0].define(version: 2026_11_20_170000) do
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "pg_catalog.plpgsql"
+
   create_table "account_reconciliations", force: :cascade do |t|
     t.integer "account_id", null: false
     t.integer "created_by_id", null: false

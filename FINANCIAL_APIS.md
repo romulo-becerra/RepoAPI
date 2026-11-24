@@ -34,9 +34,18 @@ Bootstrap de `super_admin` en producción (`db:seed`):
 - Si falta una variable, el seed falla claramente en vez de crear credenciales predeterminadas.
 - El registro público siempre crea usuarios `customer`; no concede privilegios administrativos.
 
-## Base de datos de producción
+## Base de datos
 
-- Desarrollo y pruebas usan SQLite; producción usa PostgreSQL mediante `DATABASE_URL`.
+- Desarrollo, pruebas y producción usan PostgreSQL. SQLite queda disponible solo para importar una base antigua.
+- Docker Compose ejecuta PostgreSQL local persistente y conecta la API al servicio `postgres`.
+- Las pruebas de CI usan PostgreSQL independiente; no apuntan a la base de desarrollo.
+- En Docker, ejecuta RSpec con `RAILS_ENV=test` explícito para no usar la base de desarrollo:
+
+  ```sh
+  docker compose run --rm -e RAILS_ENV=test api bundle exec rails db:test:prepare
+  docker compose run --rm -e RAILS_ENV=test api bundle exec rspec
+  ```
+
 - En Render, crea una base Render Postgres y configura `DATABASE_URL` del servicio web con su URL interna.
 - Al iniciar, el contenedor ejecuta `db:migrate` y `db:seed`. El seed no copia datos desde SQLite.
 - La tarea `db:import_sqlite` copia todas las tablas de aplicación desde `SQLITE_SOURCE` a PostgreSQL; requiere haber ejecutado `db:migrate` y una base destino vacía.
@@ -45,7 +54,15 @@ Bootstrap de `super_admin` en producción (`db:seed`):
 - Haz una copia de seguridad de SQLite y verifica conteos de usuarios, cuentas, transacciones y saldos antes de cambiar tráfico.
 - No despliegues esperando conservar datos SQLite efímeros. No hay una base SQLite de producción en el repositorio; las bases locales de desarrollo y pruebas son distintas.
 
-Importación de la base local de desarrollo a una base Render Postgres vacía:
+## Despliegue en Render
+
+- Usa el runtime Docker y el `Dockerfile` del repositorio. El contenedor ejecuta `db:migrate`, `db:seed` y luego inicia Rails en `0.0.0.0:$PORT`.
+- Configura `DATABASE_URL` con la URL interna de Render Postgres y `SECRET_KEY_BASE` con un valor generado una sola vez (por ejemplo, con `bundle exec rails secret`). Mantén `SECRET_KEY_BASE` estable entre despliegues y guárdalo solo en Environment de Render.
+- Si la base está vacía, configura también `ANGELFIRE_ADMIN_EMAIL`, `ANGELFIRE_ADMIN_PIN` (4 dígitos) y `ANGELFIRE_ADMIN_ACCOUNT_NUMBER` (único); `db:seed` los necesita para crear el primer superadmin. Para importar usuarios existentes, importa primero y no ejecutes seeds sobre una base vacía.
+- Configura el health check path como `/up`. Render proporciona `PORT`; no agregues `BASE_URL` para esta API, porque Rails no la consume.
+- Active Storage está configurado con almacenamiento local. En Render los archivos locales no son persistentes entre reemplazos del servicio; configura almacenamiento de objetos o un disco persistente antes de depender de conservar archivos subidos.
+
+Importación de una base SQLite a una base PostgreSQL vacía:
 
 1. Crea PostgreSQL en Render y obtén su URL externa. No la guardes en el repositorio ni la compartas.
 2. Antes de desplegar la aplicación contra esa base, configura localmente `DATABASE_URL` con la URL externa.
@@ -53,9 +70,10 @@ Importación de la base local de desarrollo a una base Render Postgres vacía:
 
 ```powershell
 $env:RAILS_ENV = "production"
+$env:SECRET_KEY_BASE = "<mismo valor estable configurado en Render>"
 $env:SQLITE_SOURCE = "/source-storage/development.sqlite3"
 docker build -t repoapi-migration .
-docker run --rm --mount "type=bind,source=$($PWD.Path)\storage,target=/source-storage,readonly" -e RAILS_ENV -e DATABASE_URL -e SQLITE_SOURCE repoapi-migration sh -c "bundle exec rails db:migrate && bundle exec rails db:import_sqlite"
+docker run --rm --mount "type=bind,source=$($PWD.Path)\storage,target=/source-storage,readonly" -e RAILS_ENV -e SECRET_KEY_BASE -e DATABASE_URL -e SQLITE_SOURCE repoapi-migration sh -c "bundle exec rails db:migrate && bundle exec rails db:import_sqlite"
 ```
 
 4. Revisa los conteos de cada tabla que imprime la tarea. Luego configura el servicio de Render con la URL interna de PostgreSQL y despliega.

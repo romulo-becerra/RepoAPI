@@ -1,19 +1,41 @@
 services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: repoapi_development
+      POSTGRES_USER: ${POSTGRES_USER:-repoapi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-repoapi_local_dev}
+    ports:
+      - "${POSTGRES_HOST_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-repoapi} -d repoapi_development"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   api:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: bankfacilito-api
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - "3001:3000"
     environment:
       RAILS_ENV: development
       PORT: 3000
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-repoapi}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-repoapi_local_dev}
     command: ["sh", "-c", "rm -f /app/tmp/pids/server.pid && bundle exec rails db:migrate && bundle exec rails server -b 0.0.0.0 -p 3000"]
     volumes:
       - .:/app
-      - bundle:/usr/local/bundle
     restart: unless-stopped
 
 volumes:
-  bundle:
+  postgres_data:
