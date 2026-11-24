@@ -519,14 +519,14 @@
             <h2>Operaciones de personal autorizado</h2>
             <p class="field-help">Selecciona una operacion y recien se mostrara su formulario.</p>
             <div class="row-actions admin-op-selector">
-              <button class="btn ghost" type="button" data-admin-op="create-user" data-roles="admin" data-testid="admin-op-create-user">Crear usuario (admin)</button>
+              <button class="btn ghost" type="button" data-admin-op="create-user" data-roles="admin" data-testid="admin-op-create-user">Crear usuario</button>
               <button class="btn ghost" type="button" data-admin-op="create-loan" data-roles="admin,manager" data-testid="admin-op-create-loan">Originar prestamo (admin)</button>
               <button class="btn ghost" type="button" data-admin-op="account-ops" data-roles="admin,manager,cashier" data-testid="admin-op-account-ops">Operar cuenta de usuario</button>
             </div>
 
             <div class="admin-op-forms">
               <form id="adminCreateUserForm" class="panel admin-op-card hidden" data-roles="admin" data-admin-op-card="create-user">
-                <h2>Crear usuario (admin)</h2>
+                <h2>Crear usuario</h2>
                 <p class="field-help">Requeridos: nombre, apellido, email, PIN y rol.</p>
                 <input id="adminFirstName" placeholder="Nombre *" required data-testid="admin-first-name" />
                 <input id="adminLastName" placeholder="Apellido *" required data-testid="admin-last-name" />
@@ -537,6 +537,7 @@
                 <select id="adminRole" data-testid="admin-role">
                   <option value="customer">customer</option>
                   <option value="cashier">cashier</option>
+                  <option value="customer_service">customer_service</option>
                   <option value="manager">manager</option>
                   <option value="admin">admin</option>
                   <option value="super_admin" data-roles="super_admin">super_admin</option>
