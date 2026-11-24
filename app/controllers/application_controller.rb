@@ -25,7 +25,7 @@ class ApplicationController < ActionController::API
   end
 
   def require_admin!
-    return if current_user&.admin?
+    return if current_user&.admin? || current_user&.super_admin?
 
     render json: { errors: "Acceso restringido a rol Admin" }, status: :forbidden
   end

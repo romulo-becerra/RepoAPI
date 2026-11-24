@@ -309,7 +309,7 @@ function setSession(payload, isAdminIntent = false) {
   state.activeView =
     state.role === 'cashier' ? 'cashier'
       : state.role === 'customer_service' ? 'customer_service'
-        : ['admin', 'manager'].includes(state.role) ? 'admin'
+        : ['admin', 'super_admin', 'manager'].includes(state.role) ? 'admin'
           : 'client';
 
   if (state.role !== 'customer') {
@@ -430,14 +430,14 @@ function showCredentials(show) {
 
 async function performLogin(isAdminIntent = false) {
   const accountNumber = el.loginAccountNumber.value.trim();
-  const pin = el.loginPin.value.trim() || '1234';
+  const pin = el.loginPin.value.trim();
 
   const payload = await apiCall('/api/v1/login', 'POST', {
     account_number: accountNumber,
     pin
   });
 
-  if (isAdminIntent && payload.user && !['admin', 'manager'].includes(payload.user.role)) {
+  if (isAdminIntent && payload.user && !['admin', 'super_admin', 'manager'].includes(payload.user.role)) {
     renderResponse(403, { errors: 'Este usuario no tiene rol Admin o Manager.' });
     return;
   }

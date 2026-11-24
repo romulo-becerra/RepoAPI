@@ -60,6 +60,10 @@ module Manager
       attributes = manager_user_params
       role = attributes[:role].presence || "customer"
       return render json: { errors: "Rol no valido" }, status: :unprocessable_entity unless User.roles.key?(role)
+      if role == "super_admin" && !current_user.super_admin?
+        return render json: { errors: "Solo un super_admin puede crear otro super_admin" }, status: :forbidden
+      end
+
       if attributes[:basic_auth_password].present? &&
          !User.valid_basic_auth_password?(attributes[:basic_auth_password])
         return render json: { errors: "La contraseña Basic debe tener al menos 12 caracteres y no más de 72 bytes" },

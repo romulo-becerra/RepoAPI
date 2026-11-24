@@ -73,16 +73,16 @@ class User < ApplicationRecord
   end
 
   def staff?
-    admin? || manager? || cashier? || customer_service?
+    admin? || super_admin? || manager? || cashier? || customer_service?
   end
 
   def management?
-    admin? || manager?
+    admin? || super_admin? || manager?
   end
 
   # Roles que pueden acceder al sistema de gestión (panel admin/gerente)
   def management_roles?
-    admin? || manager? || financial_manager? || accountant? || auditor? || supervisor?
+    admin? || super_admin? || manager? || financial_manager? || accountant? || auditor? || supervisor?
   end
 
   # Roles operativos (caja, atención al cliente)

@@ -678,12 +678,13 @@ function hasSessionToken() {
 }
 
 // Role matrix:
+//   super_admin -> full control (user lifecycle, roles, reports, counter operations)
 //   admin   -> full control (user lifecycle, roles, reports, counter operations)
 //   manager -> management (inquiries, loan origination, reports, counter operations)
 //   cashier -> counter operations only (deposit/withdraw/loan payment/service payment)
 //   customer -> self service (withdraw, service payment, loan payment, transfer)
-const MANAGEMENT_ROLES = ['admin', 'manager'];
-const STAFF_ROLES = ['admin', 'manager', 'cashier', 'customer_service'];
+const MANAGEMENT_ROLES = ['admin', 'super_admin', 'manager'];
+const STAFF_ROLES = ['admin', 'super_admin', 'manager', 'cashier', 'customer_service'];
 const ADMIN_OPERATIONS = {
   'create-user': 'admin',
   'create-loan': 'manager',
@@ -695,7 +696,7 @@ function hasManagerAccess() {
 }
 
 function hasAdminAccess() {
-  return state.role === 'admin' && hasSessionToken();
+  return ['admin', 'super_admin'].includes(state.role) && hasSessionToken();
 }
 
 function hasStaffAccess() {
@@ -734,7 +735,7 @@ function applyRolePermissions() {
       .split(',')
       .map((value) => value.trim())
       .filter(Boolean);
-    node.classList.toggle('hidden', allowed.length > 0 && !allowed.includes(role));
+    node.classList.toggle('hidden', allowed.length > 0 && !allowed.includes(role) && role !== 'super_admin');
   });
 
   if (el.viewAdminBtn && !hasStaffAccess() && state.activeView === 'admin') {
@@ -824,7 +825,7 @@ function resolvePreferredView() {
       : state.role === 'customer_service' ? 'customer_service'
         : hasStaffAccess() ? 'admin'
           : 'client';
-  if (stored === 'admin' && !['admin', 'manager'].includes(state.role)) {
+  if (stored === 'admin' && !['admin', 'super_admin', 'manager'].includes(state.role)) {
     return 'client';
   }
   if (stored === 'cashier' && state.role !== 'cashier') {
@@ -845,7 +846,7 @@ function setView(view) {
     renderResponse(403, { errors: 'La vista Atención al Cliente requiere el rol correspondiente.' });
     return;
   }
-  if (view === 'admin' && !['admin', 'manager'].includes(state.role)) {
+  if (view === 'admin' && !['admin', 'super_admin', 'manager'].includes(state.role)) {
     renderResponse(403, { errors: 'La vista administrativa requiere rol Admin o Manager.' });
     return;
   }
