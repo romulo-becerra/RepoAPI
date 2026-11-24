@@ -1,8 +1,19 @@
 const storageKey = 'angelfire-dashboard-state';
 const BALANCE_AUTO_REFRESH_MS = 15000;
 
+function defaultApiBaseUrl() {
+  const currentUrl = new URL(window.location.origin);
+  const localHosts = ['localhost', '127.0.0.1', '[::1]'];
+
+  if (localHosts.includes(currentUrl.hostname) && currentUrl.port === '8000') {
+    return `${currentUrl.protocol}//${currentUrl.hostname}:3001`;
+  }
+
+  return currentUrl.origin;
+}
+
 const defaultState = {
-  baseUrl: 'http://localhost:3001',
+  baseUrl: defaultApiBaseUrl(),
   token: '',
   managerToken: '',
   userId: '',
@@ -633,10 +644,29 @@ async function ensureAdminInstallmentsStatusTotals() {
 function loadState() {
   try {
     const raw = localStorage.getItem(storageKey);
-    return { ...defaultState, ...(raw ? JSON.parse(raw) : {}) };
+    const loadedState = { ...defaultState, ...(raw ? JSON.parse(raw) : {}) };
+    loadedState.baseUrl = resolveApiBaseUrl(loadedState.baseUrl);
+    return loadedState;
   } catch (_error) {
     return { ...defaultState };
   }
+}
+
+function resolveApiBaseUrl(baseUrl) {
+  const currentUrl = new URL(window.location.origin);
+  const defaultUrl = new URL(defaultState.baseUrl, currentUrl.origin);
+  const targetUrl = new URL(baseUrl || defaultUrl.origin, defaultUrl.origin);
+  const localHosts = ['localhost', '127.0.0.1', '[::1]'];
+
+  if (!localHosts.includes(currentUrl.hostname) && localHosts.includes(targetUrl.hostname)) {
+    return currentUrl.origin;
+  }
+
+  if (!baseUrl || baseUrl.startsWith('/')) {
+    return defaultUrl.origin;
+  }
+
+  return targetUrl.origin;
 }
 
 function persistState() {
@@ -648,12 +678,13 @@ function hasSessionToken() {
 }
 
 // Role matrix:
+//   super_admin -> full control (user lifecycle, roles, reports, counter operations)
 //   admin   -> full control (user lifecycle, roles, reports, counter operations)
 //   manager -> management (inquiries, loan origination, reports, counter operations)
 //   cashier -> counter operations only (deposit/withdraw/loan payment/service payment)
 //   customer -> self service (withdraw, service payment, loan payment, transfer)
-const MANAGEMENT_ROLES = ['admin', 'manager'];
-const STAFF_ROLES = ['admin', 'manager', 'cashier', 'customer_service'];
+const MANAGEMENT_ROLES = ['admin', 'super_admin', 'manager'];
+const STAFF_ROLES = ['admin', 'super_admin', 'manager', 'cashier', 'customer_service'];
 const ADMIN_OPERATIONS = {
   'create-user': 'admin',
   'create-loan': 'manager',
@@ -665,7 +696,7 @@ function hasManagerAccess() {
 }
 
 function hasAdminAccess() {
-  return state.role === 'admin' && hasSessionToken();
+  return ['admin', 'super_admin'].includes(state.role) && hasSessionToken();
 }
 
 function hasStaffAccess() {
@@ -704,7 +735,7 @@ function applyRolePermissions() {
       .split(',')
       .map((value) => value.trim())
       .filter(Boolean);
-    node.classList.toggle('hidden', allowed.length > 0 && !allowed.includes(role));
+    node.classList.toggle('hidden', allowed.length > 0 && !allowed.includes(role) && role !== 'super_admin');
   });
 
   if (el.viewAdminBtn && !hasStaffAccess() && state.activeView === 'admin') {
@@ -794,7 +825,7 @@ function resolvePreferredView() {
       : state.role === 'customer_service' ? 'customer_service'
         : hasStaffAccess() ? 'admin'
           : 'client';
-  if (stored === 'admin' && !['admin', 'manager'].includes(state.role)) {
+  if (stored === 'admin' && !['admin', 'super_admin', 'manager'].includes(state.role)) {
     return 'client';
   }
   if (stored === 'cashier' && state.role !== 'cashier') {
@@ -815,7 +846,7 @@ function setView(view) {
     renderResponse(403, { errors: 'La vista Atención al Cliente requiere el rol correspondiente.' });
     return;
   }
-  if (view === 'admin' && !['admin', 'manager'].includes(state.role)) {
+  if (view === 'admin' && !['admin', 'super_admin', 'manager'].includes(state.role)) {
     renderResponse(403, { errors: 'La vista administrativa requiere rol Admin o Manager.' });
     return;
   }

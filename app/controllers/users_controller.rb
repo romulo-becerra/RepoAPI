@@ -1,5 +1,16 @@
 class UsersController < ApplicationController
-  skip_before_action :authenticate_request, only: [ :index, :register, :login, :password_reset_request, :password_reset ]
+  skip_before_action :authenticate_request, only: [
+    :index,
+    :register,
+    :login,
+    :login_admin,
+    :login_manager,
+    :login_cashier,
+    :login_customer_service,
+    :login_customer,
+    :password_reset_request,
+    :password_reset
+  ]
   before_action :require_admin!, only: [ :force_password_change ]
   before_action :set_current_user_session, only: [ :logout, :sessions, :terminate_session, :terminate_all_sessions ]
 
@@ -61,7 +72,8 @@ class UsersController < ApplicationController
     end
 
     # Validar rol si se especificó
-    if expected_role.present? && user.role != expected_role
+    role_matches = user.role == expected_role || (expected_role == "admin" && user.super_admin?)
+    if expected_role.present? && !role_matches
       record_login_event(user, identifier, :failure)
       return render json: {
         errors: "Este usuario no tiene el rol #{expected_role}",
@@ -337,7 +349,7 @@ class UsersController < ApplicationController
       "/cashier"
     when "customer_service"
       "/customer_service"
-    when "manager", "admin", "supervisor", "financial_manager", "accountant", "auditor"
+    when "manager", "admin", "super_admin", "supervisor", "financial_manager", "accountant", "auditor"
       "/manager/reports/dashboard"
     else
       "/"

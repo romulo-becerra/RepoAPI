@@ -1,7 +1,18 @@
 const storageKey = 'angelfire-dashboard-state';
 
+function defaultApiBaseUrl() {
+  const currentUrl = new URL(window.location.origin);
+  const localHosts = ['localhost', '127.0.0.1', '[::1]'];
+
+  if (localHosts.includes(currentUrl.hostname) && currentUrl.port === '8000') {
+    return `${currentUrl.protocol}//${currentUrl.hostname}:3001`;
+  }
+
+  return currentUrl.origin;
+}
+
 const defaultState = {
-  baseUrl: 'http://localhost:3001',
+  baseUrl: defaultApiBaseUrl(),
   token: '',
   managerToken: '',
   userId: '',
@@ -214,10 +225,29 @@ async function loadCurrencyRates(force = false) {
 function loadState() {
   try {
     const raw = localStorage.getItem(storageKey);
-    return { ...defaultState, ...(raw ? JSON.parse(raw) : {}) };
+    const loadedState = { ...defaultState, ...(raw ? JSON.parse(raw) : {}) };
+    loadedState.baseUrl = resolveApiBaseUrl(loadedState.baseUrl);
+    return loadedState;
   } catch (_error) {
     return { ...defaultState };
   }
+}
+
+function resolveApiBaseUrl(baseUrl) {
+  const currentUrl = new URL(window.location.origin);
+  const defaultUrl = new URL(defaultState.baseUrl, currentUrl.origin);
+  const targetUrl = new URL(baseUrl || defaultUrl.origin, defaultUrl.origin);
+  const localHosts = ['localhost', '127.0.0.1', '[::1]'];
+
+  if (!localHosts.includes(currentUrl.hostname) && localHosts.includes(targetUrl.hostname)) {
+    return currentUrl.origin;
+  }
+
+  if (!baseUrl || baseUrl.startsWith('/')) {
+    return defaultUrl.origin;
+  }
+
+  return targetUrl.origin;
 }
 
 function persistState() {
@@ -279,7 +309,7 @@ function setSession(payload, isAdminIntent = false) {
   state.activeView =
     state.role === 'cashier' ? 'cashier'
       : state.role === 'customer_service' ? 'customer_service'
-        : ['admin', 'manager'].includes(state.role) ? 'admin'
+        : ['admin', 'super_admin', 'manager'].includes(state.role) ? 'admin'
           : 'client';
 
   if (state.role !== 'customer') {
@@ -400,14 +430,14 @@ function showCredentials(show) {
 
 async function performLogin(isAdminIntent = false) {
   const accountNumber = el.loginAccountNumber.value.trim();
-  const pin = el.loginPin.value.trim() || '1234';
+  const pin = el.loginPin.value.trim();
 
   const payload = await apiCall('/api/v1/login', 'POST', {
     account_number: accountNumber,
     pin
   });
 
-  if (isAdminIntent && payload.user && !['admin', 'manager'].includes(payload.user.role)) {
+  if (isAdminIntent && payload.user && !['admin', 'super_admin', 'manager'].includes(payload.user.role)) {
     renderResponse(403, { errors: 'Este usuario no tiene rol Admin o Manager.' });
     return;
   }

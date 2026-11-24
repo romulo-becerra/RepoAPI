@@ -28,10 +28,11 @@ Caracteristicas:
 - Manejo de sesion y rol desde la misma UI.
 - Selectores data-testid para futura automatizacion con Playwright.
 
-Admin semilla (db:seed):
-- Email: admin@angelfire.local
-- Cuenta sugerida: 9000000001
-- PIN: vacio (UI usa fallback 1234) o 1234
+Bootstrap de `super_admin` en producción (`db:seed`):
+- Solo crea el primer usuario cuando la base de datos no contiene usuarios.
+- Requiere `ANGELFIRE_ADMIN_EMAIL`, `ANGELFIRE_ADMIN_PIN` (4 dígitos) y `ANGELFIRE_ADMIN_ACCOUNT_NUMBER` configurados como variables de entorno.
+- Si falta una variable, el seed falla claramente en vez de crear credenciales predeterminadas.
+- El registro público siempre crea usuarios `customer`; no concede privilegios administrativos.
 
 ## Matriz actual de roles
 
@@ -40,7 +41,8 @@ Admin semilla (db:seed):
 - customer_service: clientes, acceso, cuentas, soporte y reclamos.
 - manager: gestión, reportes, préstamos y conciliaciones.
 - admin: administración completa.
-- accountant, auditor, supervisor, financial_manager y super_admin: roles especializados disponibles en el modelo y catálogo de roles.
+- super_admin: acceso total; solo otro super_admin puede crear este rol.
+- accountant, auditor, supervisor y financial_manager: roles especializados disponibles en el modelo y catálogo de roles.
 
 ## Endpoints nuevos por módulo
 

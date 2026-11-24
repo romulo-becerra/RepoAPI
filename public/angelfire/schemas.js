@@ -114,7 +114,7 @@
       email: str('Correo electronico.', { format: 'email' }),
       phone: nullableStr('Telefono en formato +59170000000.'),
       date_of_birth: nullableDate('Fecha de nacimiento (YYYY-MM-DD).'),
-      role: enm([ 'customer', 'manager', 'cashier', 'admin' ], 'Rol del usuario.')
+      role: enm([ 'customer', 'manager', 'cashier', 'admin', 'super_admin' ], 'Rol del usuario.')
     }, { required: [ 'id', 'first_name', 'last_name', 'email', 'role' ] }),
 
     RegisterRequest: obj({
@@ -810,7 +810,7 @@
       email: str('Correo electronico.', { format: 'email' }),
       phone: nullableStr('Telefono.'),
       date_of_birth: nullableDate('Fecha de nacimiento.'),
-      role: enm([ 'customer', 'manager', 'cashier', 'admin' ], 'Rol del usuario.'),
+      role: enm([ 'customer', 'manager', 'cashier', 'admin', 'super_admin' ], 'Rol del usuario.'),
       active: bool('Usuario activo.'),
       blocked: bool('Usuario bloqueado.'),
       status: enm([ 'active', 'blocked', 'deactivated' ], 'Estado legible del usuario.'),
@@ -826,7 +826,7 @@
       email: str('Correo electronico.', { format: 'email' }),
       phone: nullableStr('Telefono.'),
       date_of_birth: nullableDate('Fecha de nacimiento.'),
-      role: enm([ 'customer', 'manager', 'cashier', 'admin' ], 'Rol del usuario.'),
+      role: enm([ 'customer', 'manager', 'cashier', 'admin', 'super_admin' ], 'Rol del usuario.'),
       active: bool('Usuario activo.'),
       blocked: bool('Usuario bloqueado.'),
       deleted: bool('Siempre false: los usuarios se eliminan fisicamente.'),
@@ -867,7 +867,7 @@
       last_name: str('Apellidos (obligatorio).'),
       email: str('Correo unico (obligatorio).', { format: 'email' }),
       pin: str('PIN de 4 digitos (obligatorio).', { pattern: '^\\d{4}$' }),
-      role: enm([ 'customer', 'manager', 'cashier', 'admin' ], 'Rol; por defecto customer.'),
+      role: enm([ 'customer', 'manager', 'cashier', 'admin', 'super_admin' ], 'Rol; por defecto customer.'),
       phone: str('Telefono.'),
       date_of_birth: date('Fecha de nacimiento.'),
       account_number: str('Numero de cuenta inicial (opcional).')

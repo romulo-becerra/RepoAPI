@@ -20,9 +20,13 @@
   service.save!
 end
 
-# Default manager/admin user
-admin_result = AdminSeedService.ensure!
-admin_user = admin_result[:user]
-admin_account = admin_result[:account]
-
-puts "[seeds] Admin user ready: #{admin_user.email} / PIN #{AdminSeedService::DEFAULT_PIN} / account #{admin_account.account_number}"
+if Rails.env.production?
+  bootstrap_result = SuperAdminBootstrapService.ensure!
+  message = bootstrap_result ? "Super admin bootstrapped." : "Bootstrap skipped; users already exist."
+  puts "[seeds] #{message}"
+else
+  admin_result = AdminSeedService.ensure!
+  admin_user = admin_result[:user]
+  admin_account = admin_result[:account]
+  puts "[seeds] Development admin ready for account #{admin_account.account_number}."
+end
