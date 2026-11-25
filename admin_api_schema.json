@@ -338,7 +338,7 @@
           },
           "balance": {
             "type": "number",
-            "description": "Saldo inicial (1000 por defecto)."
+            "description": "Saldo inicial (0 por defecto)."
           },
           "clabe": {
             "type": "string",

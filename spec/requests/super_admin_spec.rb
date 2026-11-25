@@ -27,7 +27,7 @@ RSpec.describe 'Super admin access', type: :request do
     expect(response).to have_http_status(:created), response.body
   end
 
-  it 'allows a super admin to create a customer service user' do
+  it 'allows an admin to create a customer service user' do
     post '/api/v1/manager/users',
          params: {
            first_name: 'Service',
@@ -36,11 +36,13 @@ RSpec.describe 'Super admin access', type: :request do
            pin: '5678',
            role: 'customer_service'
          },
-         headers: auth(super_admin),
+         headers: auth(admin).merge('HTTP_HOST' => 'localhost'),
          as: :json
 
     expect(response).to have_http_status(:created), response.body
-    expect(User.find_by!(email: 'service.agent@example.com').customer_service?).to be(true)
+    created_user = User.find_by!(email: 'service.agent@example.com')
+    expect(created_user.customer_service?).to be(true)
+    expect(created_user.accounts.find_by!(default: true).balance).to eq(0)
   end
 
   it 'authenticates a super admin on the admin-specific login endpoint' do

@@ -114,7 +114,7 @@
       email: str('Correo electronico.', { format: 'email' }),
       phone: nullableStr('Telefono en formato +59170000000.'),
       date_of_birth: nullableDate('Fecha de nacimiento (YYYY-MM-DD).'),
-      role: enm([ 'customer', 'manager', 'cashier', 'admin', 'super_admin' ], 'Rol del usuario.')
+      role: enm([ 'customer', 'manager', 'cashier', 'customer_service', 'admin', 'super_admin' ], 'Rol del usuario.')
     }, { required: [ 'id', 'first_name', 'last_name', 'email', 'role' ] }),
 
     RegisterRequest: obj({
@@ -129,7 +129,7 @@
 
     RegisterAccount: obj({
       account_number: str('Numero de cuenta generado.'),
-      balance: dec('Saldo inicial (1000 por defecto).'),
+      balance: dec('Saldo inicial (0 por defecto).'),
       clabe: str('CLABE generada.')
     }, { required: [ 'account_number', 'balance', 'clabe' ] }),
 
@@ -810,7 +810,7 @@
       email: str('Correo electronico.', { format: 'email' }),
       phone: nullableStr('Telefono.'),
       date_of_birth: nullableDate('Fecha de nacimiento.'),
-      role: enm([ 'customer', 'manager', 'cashier', 'admin', 'super_admin' ], 'Rol del usuario.'),
+      role: enm([ 'customer', 'manager', 'cashier', 'customer_service', 'admin', 'super_admin' ], 'Rol del usuario.'),
       active: bool('Usuario activo.'),
       blocked: bool('Usuario bloqueado.'),
       status: enm([ 'active', 'blocked', 'deactivated' ], 'Estado legible del usuario.'),
@@ -826,7 +826,7 @@
       email: str('Correo electronico.', { format: 'email' }),
       phone: nullableStr('Telefono.'),
       date_of_birth: nullableDate('Fecha de nacimiento.'),
-      role: enm([ 'customer', 'manager', 'cashier', 'admin', 'super_admin' ], 'Rol del usuario.'),
+      role: enm([ 'customer', 'manager', 'cashier', 'customer_service', 'admin', 'super_admin' ], 'Rol del usuario.'),
       active: bool('Usuario activo.'),
       blocked: bool('Usuario bloqueado.'),
       deleted: bool('Siempre false: los usuarios se eliminan fisicamente.'),
@@ -867,7 +867,7 @@
       last_name: str('Apellidos (obligatorio).'),
       email: str('Correo unico (obligatorio).', { format: 'email' }),
       pin: str('PIN de 4 digitos (obligatorio).', { pattern: '^\\d{4}$' }),
-      role: enm([ 'customer', 'manager', 'cashier', 'admin', 'super_admin' ], 'Rol; por defecto customer.'),
+      role: enm([ 'customer', 'manager', 'cashier', 'customer_service', 'admin', 'super_admin' ], 'Rol; por defecto customer.'),
       phone: str('Telefono.'),
       date_of_birth: date('Fecha de nacimiento.'),
       account_number: str('Numero de cuenta inicial (opcional).')
@@ -1005,7 +1005,7 @@
     },
 
     'POST /api/v1/register': {
-      note: 'Crea el usuario, su cuenta por defecto (saldo inicial 1000) y la direccion si se envia. Devuelve un JWT.',
+      note: 'Crea el usuario, su cuenta por defecto (saldo inicial 0) y la direccion si se envia. Devuelve un JWT.',
       request: { schema: ref('RegisterRequest') },
       responses: {
         '201': { description: 'Usuario registrado.', schema: ref('RegisterResponse') },
