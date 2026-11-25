@@ -1,0 +1,112 @@
+- generic [active] [ref=f16e1]:
+  - banner [ref=f16e2]:
+    - navigation [ref=f16e3]:
+      - generic [ref=f16e4]:
+        - generic [ref=f16e5]: AngelFire
+        - list [ref=f16e6]:
+          - listitem [ref=f16e7]:
+            - link "Sobre nosotros" [ref=f16e8] [cursor=pointer]:
+              - /url: "#about"
+          - listitem [ref=f16e9]:
+            - link "Características" [ref=f16e10] [cursor=pointer]:
+              - /url: "#features"
+          - listitem [ref=f16e11]:
+            - link "Contacto" [ref=f16e12] [cursor=pointer]:
+              - /url: "#contact"
+          - listitem [ref=f16e13]:
+            - link "AutoPlay" [ref=f16e14] [cursor=pointer]:
+              - /url: https://sdetqa.vercel.app/autoplay
+      - generic [ref=f16e15]:
+        - generic [ref=f16e16]:
+          - generic [ref=f16e17]: Idioma
+          - combobox "Idioma" [ref=f16e18]:
+            - option "Español" [selected]
+            - option "English"
+            - option "Português"
+        - link "Acceder" [ref=f16e19] [cursor=pointer]:
+          - /url: /angelfire/login.html?show=1
+  - main [ref=f16e20]:
+    - generic [ref=f16e21]:
+      - generic [ref=f16e22]:
+        - generic [ref=f16e23]: Plataforma financiera digital
+        - heading "Confianza y seguridad para tus finanzas" [level=1] [ref=f16e24]
+        - paragraph [ref=f16e25]: Operaciones seguras, experiencia digital ágil y soporte dedicado para mover tu dinero con total tranquilidad.
+        - generic [ref=f16e26]:
+          - link "Ingresar a mi cuenta" [ref=f16e27] [cursor=pointer]:
+            - /url: /angelfire/login.html?show=1
+          - link "Conoce más" [ref=f16e28] [cursor=pointer]:
+            - /url: "#about"
+        - list [ref=f16e29]:
+          - listitem [ref=f16e30]: ✓Transferencias en tiempo real
+          - listitem [ref=f16e31]: ✓Autenticación segura
+          - listitem [ref=f16e32]: ✓Soporte 24/7
+      - generic "Resumen financiero" [ref=f16e33]:
+        - generic [ref=f16e34]:
+          - generic [ref=f16e35]: Resumen
+          - generic [ref=f16e36]: +12.4%
+        - generic [ref=f16e37]:
+          - paragraph [ref=f16e38]: Saldo disponible
+          - heading "$24,850.00" [level=2] [ref=f16e39]
+        - generic [ref=f16e40]:
+          - generic [ref=f16e41]:
+            - generic [ref=f16e42]: Ingresos
+            - strong [ref=f16e43]: $8,420
+          - generic [ref=f16e44]:
+            - generic [ref=f16e45]: Gastos
+            - strong [ref=f16e46]: $2,180
+        - generic [ref=f16e47]:
+          - generic [ref=f16e48]:
+            - generic [ref=f16e50]:
+              - strong [ref=f16e51]: Pago recibido
+              - generic [ref=f16e52]: Hace 2 horas
+            - generic [ref=f16e53]: +$1,240
+          - generic [ref=f16e54]:
+            - generic [ref=f16e56]:
+              - strong [ref=f16e57]: Transferencia
+              - generic [ref=f16e58]: Hoy
+            - generic [ref=f16e59]: "-$340"
+    - region "Indicadores de confianza" [ref=f16e60]:
+      - generic [ref=f16e61]:
+        - strong [ref=f16e62]: 1.2M+
+        - generic [ref=f16e63]: movimientos seguros
+      - generic [ref=f16e64]:
+        - strong [ref=f16e65]: 99.97%
+        - generic [ref=f16e66]: disponibilidad
+      - generic [ref=f16e67]:
+        - strong [ref=f16e68]: 24/7
+        - generic [ref=f16e69]: atención humana
+      - generic [ref=f16e70]:
+        - strong [ref=f16e71]: 256-bit
+        - generic [ref=f16e72]: encriptación
+    - generic [ref=f16e73]:
+      - generic [ref=f16e74]:
+        - generic [ref=f16e75]: Sobre AngelFire
+        - heading "Diseñado para personas y equipos que quieren control total" [level=2] [ref=f16e76]
+      - paragraph [ref=f16e77]: AngelFire es una plataforma financiera de ejemplo pensada para demostrar APIs y flujos de usuario seguros, con una experiencia moderna, clara y confiable en cada operación.
+    - generic [ref=f16e78]:
+      - generic [ref=f16e79]:
+        - generic [ref=f16e80]: ¿Por qué elegirnos?
+        - heading "Todo lo necesario para operar con tranquilidad" [level=2] [ref=f16e81]
+      - generic [ref=f16e82]:
+        - article [ref=f16e83]:
+          - generic [ref=f16e84]: ⚡
+          - heading "Rendimiento" [level=3] [ref=f16e85]
+          - paragraph [ref=f16e86]: Acceso ágil a tus cuentas, transferencias y consultas con una interfaz enfocada en velocidad.
+        - article [ref=f16e87]:
+          - generic [ref=f16e88]: 🔒
+          - heading "Seguridad" [level=3] [ref=f16e89]
+          - paragraph [ref=f16e90]: Protección por capas, validaciones y flujos de autenticación diseñados para reducir riesgos.
+        - article [ref=f16e91]:
+          - generic [ref=f16e92]: 📊
+          - heading "Visibilidad" [level=3] [ref=f16e93]
+          - paragraph [ref=f16e94]: Monitorea tus movimientos, saldos y resultados con resúmenes claros y fáciles de entender.
+    - generic [ref=f16e95]:
+      - generic [ref=f16e96]:
+        - generic [ref=f16e97]: Empieza hoy
+        - heading "Haz crecer tus finanzas con una experiencia más segura" [level=2] [ref=f16e98]
+      - link "Abrir plataforma" [ref=f16e99] [cursor=pointer]:
+        - /url: /angelfire/login.html?show=1
+  - contentinfo [ref=f16e100]:
+    - generic [ref=f16e101]:
+      - paragraph [ref=f16e102]: © AngelFire — Demo financiera
+      - paragraph [ref=f16e103]: "Soporte: galeon0001@gmail.com"

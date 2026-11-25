@@ -1,0 +1,84 @@
+- generic [ref=f35e2]:
+  - complementary [ref=f35e3]:
+    - generic [ref=f35e4]: AngelFire
+    - paragraph [ref=f35e5]: Core Banking Console
+    - generic [ref=f35e6]:
+      - heading "Current session" [level=2] [ref=f35e7]
+      - paragraph [ref=f35e8]: Authenticated
+      - paragraph [ref=f35e9]: "Role: customer_service"
+    - generic [ref=f35e10]:
+      - heading "Section permissions" [level=2] [ref=f35e11]
+      - list [ref=f35e12]:
+        - listitem [ref=f35e13]:
+          - text: Autogestión cliente
+          - generic [ref=f35e14]: Enabled
+        - listitem [ref=f35e15]:
+          - text: Operaciones administrativas
+          - generic [ref=f35e16]: Blocked
+        - listitem [ref=f35e17]:
+          - text: Caja operativa
+          - generic [ref=f35e18]: Blocked
+        - listitem [ref=f35e19]:
+          - text: Customer service
+          - generic [ref=f35e20]: Enabled
+        - listitem [ref=f35e21]:
+          - text: Usuarios
+          - generic [ref=f35e22]: Blocked
+  - main [ref=f35e23]:
+    - generic [ref=f35e24]:
+      - generic [ref=f35e25]:
+        - paragraph [ref=f35e26]: Financial platform
+        - heading "Operations dashboard" [level=1] [ref=f35e27]
+        - generic [ref=f35e28]:
+          - button "Update details" [ref=f35e29] [cursor=pointer]
+          - button "Change PIN" [ref=f35e30] [cursor=pointer]
+          - button "Hide section" [ref=f35e31] [cursor=pointer]
+      - generic [ref=f35e32]:
+        - generic [ref=f35e33]:
+          - text: Base URL
+          - textbox "Base URL" [ref=f35e34]: http://localhost:3001
+        - button "Save" [ref=f35e35] [cursor=pointer]
+        - button "Sign out" [ref=f35e36] [cursor=pointer]
+      - generic [ref=f35e37]:
+        - generic [ref=f35e38]: Language
+        - combobox "Idioma" [ref=f35e39]:
+          - option "Español"
+          - option "English" [selected]
+          - option "Português"
+    - generic [ref=f35e40]:
+      - heading "System views" [level=2] [ref=f35e41]
+      - button "Customer service view" [ref=f35e43] [cursor=pointer]
+    - generic [ref=f35e44]:
+      - generic [ref=f35e45]:
+        - article [ref=f35e46]:
+          - paragraph [ref=f35e47]: Clientes encontrados
+          - heading "0" [level=3] [ref=f35e48]
+        - article [ref=f35e49]:
+          - paragraph [ref=f35e50]: Casos abiertos
+          - heading "0" [level=3] [ref=f35e51]
+      - generic [ref=f35e52]:
+        - heading "Customer service" [level=2] [ref=f35e54]
+        - generic [ref=f35e55]:
+          - textbox "CI, nombre, teléfono, correo o cuenta" [ref=f35e56]
+          - button "Buscar cliente" [ref=f35e57] [cursor=pointer]
+        - paragraph [ref=f35e58]: Sin cliente seleccionado.
+      - generic [ref=f35e59]:
+        - generic [ref=f35e60]:
+          - heading "Cases and complaints" [level=2] [ref=f35e61]
+          - button "Refresh" [ref=f35e62] [cursor=pointer]
+        - table [ref=f35e63]:
+          - rowgroup [ref=f35e64]:
+            - row [ref=f35e65]:
+              - columnheader "ID" [ref=f35e66]
+              - columnheader "User" [ref=f35e67]
+              - columnheader "Subject" [ref=f35e68]
+              - columnheader "Status" [ref=f35e69]
+              - columnheader "Prioridad" [ref=f35e70]
+          - rowgroup [ref=f35e71]:
+            - row [ref=f35e72]:
+              - cell "Sin casos" [ref=f35e73]
+    - generic [ref=f35e74]:
+      - generic [ref=f35e75]:
+        - heading "API response" [level=2] [ref=f35e76]
+        - generic [ref=f35e77]: "Status: -"
+      - generic [ref=f35e78]: Listo para operar.

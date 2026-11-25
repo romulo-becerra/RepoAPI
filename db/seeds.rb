@@ -20,28 +20,13 @@
   service.save!
 end
 
-# Default manager/admin user
-admin_email = ENV.fetch('ANGELFIRE_ADMIN_EMAIL', 'admin@angelfire.local')
-admin_pin = ENV.fetch('ANGELFIRE_ADMIN_PIN', '1234')
-desired_account_number = ENV.fetch('ANGELFIRE_ADMIN_ACCOUNT_NUMBER', '9000000001')
-
-admin_user = User.find_or_initialize_by(email: admin_email)
-admin_user.first_name = 'Admin'
-admin_user.last_name = 'AngelFire'
-admin_user.role = :manager
-admin_user.pin = admin_pin if admin_user.new_record?
-admin_user.pin = admin_pin if admin_user.persisted? && admin_user.pin_digest.blank?
-admin_user.save!
-
-admin_account = admin_user.accounts.find_by(default: true) || admin_user.accounts.first
-unless admin_account
-  admin_account = admin_user.accounts.create!(default: true, balance: 100_000)
-end
-
-if Account.where.not(id: admin_account.id).exists?(account_number: desired_account_number)
-  puts "[seeds] Admin account number '#{desired_account_number}' already in use."
+if Rails.env.production?
+  bootstrap_result = SuperAdminBootstrapService.ensure!
+  message = bootstrap_result ? "Super admin bootstrapped." : "Bootstrap skipped; users already exist."
+  puts "[seeds] #{message}"
 else
-  admin_account.update!(account_number: desired_account_number)
+  admin_result = AdminSeedService.ensure!
+  admin_user = admin_result[:user]
+  admin_account = admin_result[:account]
+  puts "[seeds] Development admin ready for account #{admin_account.account_number}."
 end
-
-puts "[seeds] Admin user ready: #{admin_email} / PIN #{admin_pin} / account #{admin_account.account_number}"

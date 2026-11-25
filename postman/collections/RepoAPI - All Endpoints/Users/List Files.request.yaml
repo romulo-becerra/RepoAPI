@@ -1,0 +1,7 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/users/{{user_id}}/files"
+method: GET
+headers:
+  Authorization: Bearer {{token}}
+  Accept: application/json
+order: 7000

@@ -1,0 +1,9 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/recipients/search?q=test"
+method: GET
+headers:
+  Authorization: Bearer {{token}}
+  Accept: application/json
+queryParams:
+  q: test
+order: 4000

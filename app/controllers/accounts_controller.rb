@@ -1,4 +1,22 @@
 class AccountsController < ApplicationController
+  def reverse
+    return render json: { errors: "Acceso restringido a personal autorizado" }, status: :forbidden unless current_user.management?
+
+    account = current_user.accounts.find_by(id: params[:id])
+    return render json: { errors: "Cuenta no encontrada" }, status: :not_found unless account
+
+    transaction = account.transactions.find_by(id: params[:transaction_id])
+    return render json: { errors: "Transacción no encontrada" }, status: :not_found unless transaction
+
+    TransactionService.new.reverse!(
+      transaction,
+      reason: params[:reason],
+      performed_by_user_id: current_user.id
+    )
+    render json: { message: "Transacción revertida correctamente", transaction_id: transaction.id }, status: :ok
+  rescue InvalidTransactionError, InsufficientFundsError => e
+    render json: { errors: e.message }, status: :unprocessable_entity
+  end
   def index
     @accounts = current_user.accounts
   end
@@ -45,7 +63,10 @@ class AccountsController < ApplicationController
     @source_account = current_user.accounts.find_by(id: params[:id])
     return render json: { errors: "Cuenta de origen no encontrada" }, status: :not_found unless @source_account
 
-    recipient_account = Account.find(params[:recipient_account_id])
+    recipient_lookup = (params[:recipient_account_id].presence || params[:recipient_account_number]).to_s.strip
+    recipient_account = Account.find_by(id: recipient_lookup) || Account.find_by(account_number: recipient_lookup)
+    return render json: { errors: "Cuenta receptora no encontrada o no valida" }, status: :not_found unless recipient_account&.account_type_user?
+
     @amount = params[:amount].to_d
     description = params[:description]
 
@@ -93,6 +114,8 @@ class AccountsController < ApplicationController
   end
 
   def deposit
+    return render json: { errors: "Los clientes no pueden depositar por este canal" }, status: :forbidden unless current_user.staff?
+
     account = current_user.accounts.find_by(id: params[:id])
     return render json: { errors: "Cuenta no encontrada" }, status: :not_found unless account
 
@@ -100,7 +123,7 @@ class AccountsController < ApplicationController
       account,
       params[:amount],
       params[:description].presence || "Deposito en cuenta",
-      performed_by_role: :user,
+      performed_by_role: current_user.role,
       performed_by_user_id: current_user.id,
       performed_by_name: current_user.to_s
     )
@@ -125,10 +148,11 @@ class AccountsController < ApplicationController
       account,
       params[:amount],
       params[:description].presence || "Retiro en cuenta",
-      performed_by_role: :user,
+      performed_by_role: current_user.role,
       performed_by_user_id: current_user.id,
       performed_by_name: current_user.to_s
     )
+    create_receipt(transaction, "withdraw", params[:description].presence || "Retiro")
 
     render json: {
       message: "Retiro aplicado correctamente",
@@ -146,19 +170,36 @@ class AccountsController < ApplicationController
 
   private
 
+  def create_receipt(transaction, operation, description)
+    Receipt.create!(
+      account: transaction.account,
+      financial_transaction: transaction,
+      created_by: current_user,
+      receipt_number: "RC-#{Time.current.strftime('%Y%m%d')}-#{SecureRandom.hex(5).upcase}",
+      operation: operation,
+      amount: transaction.amount,
+      description: description
+    )
+  end
+
   def account_params
     params.require(:account).permit(:user_id, :account_number, :account_type, :CLABE)
   end
 
   def perform_transfer(source_account, recipient_account, amount, description)
-    source_account.transfer!(
+    transactions = ActiveRecord::Base.transaction do
+      source_account.transfer!(
       recipient_account,
       amount,
       description,
-      performed_by_role: :user,
+      performed_by_role: current_user.role,
       performed_by_user_id: current_user.id,
       performed_by_name: current_user.to_s
     )
+    source_account.transactions.order(created_at: :desc).limit(2)
+    end
+    origin_transaction = transactions.first
+    create_receipt(origin_transaction, recipient_account.account_type_service? ? "service_payment" : "transfer", description.presence || "Transferencia")
     @recipient_account = recipient_account
     render :transfer, status: :ok
   rescue AccountNotFoundError => e

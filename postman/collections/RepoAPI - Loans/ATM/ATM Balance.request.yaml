@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/atm/accounts/{{account_id}}/balance?pin={{pin}}"
+method: GET
+headers:
+  Authorization: Bearer {{token}}
+queryParams:
+  pin: "{{pin}}"
+order: 3000

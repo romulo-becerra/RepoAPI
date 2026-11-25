@@ -1,6 +1,7 @@
 module Manager
   class UsersController < ApplicationController
     before_action :require_manager!
+    before_action :require_admin!, only: %i[create update destroy block unblock deactivate basic_auth_password]
 
     def index
       per_page = [params[:per_page].to_i, 1].max
@@ -29,21 +30,99 @@ module Manager
     end
 
     def show
-      user = User.includes(:user_address, :accounts).find_by(id: params[:id])
+      lookup = params[:id].to_s.strip
+      user = User.includes(:user_address, :accounts).find_by(id: lookup)
+      user ||= Account.includes(:user).find_by(account_number: lookup)&.user
       return render json: { errors: "Usuario no encontrado" }, status: :not_found unless user
+      user = User.includes(:user_address, :accounts).find_by(id: user.id)
 
       render json: { user: serialize_user_detail(user) }, status: :ok
     end
 
+    def search
+      query = params[:q].to_s.strip
+      return render json: { users: [] }, status: :ok if query.blank?
+
+      users = User.includes(:user_address, :accounts)
+                  .joins("LEFT JOIN accounts ON accounts.user_id = users.id")
+                  .where(
+                    "CAST(users.id AS TEXT) LIKE :query OR users.first_name LIKE :query OR users.last_name LIKE :query OR users.email LIKE :query OR users.phone LIKE :query OR accounts.account_number LIKE :query",
+                    query: "%#{query}%"
+                  )
+                  .distinct
+                  .order(created_at: :desc)
+                  .limit(20)
+
+      render json: { users: users.map { |user| serialize_user_detail(user) } }, status: :ok
+    end
+
     def create
-      user = User.new(manager_user_params)
-      user.role = manager_user_params[:role].presence || :customer
+      attributes = manager_user_params
+      role = attributes[:role].presence || "customer"
+      return render json: { errors: "Rol no valido" }, status: :unprocessable_entity unless User.roles.key?(role)
+      if role == "super_admin" && !current_user.super_admin?
+        return render json: { errors: "Solo un super_admin puede crear otro super_admin" }, status: :forbidden
+      end
+
+      if attributes[:basic_auth_password].present? &&
+         !User.valid_basic_auth_password?(attributes[:basic_auth_password])
+        return render json: { errors: "La contraseña Basic debe tener al menos 12 caracteres y no más de 72 bytes" },
+                      status: :unprocessable_entity
+      end
+
+      if attributes[:account_number].present? && Account.exists?(account_number: attributes[:account_number].to_s.strip)
+        return render json: { errors: "Numero de cuenta ya existe" }, status: :unprocessable_entity
+      end
+
+      user = User.new(attributes.except(:role, :account_number))
+      user.default_account_number = attributes[:account_number].to_s.strip if attributes[:account_number].present?
+      user.role = role
 
       if user.save
         render json: {
           message: "Usuario creado por gerente",
           user: serialize_user(user.reload)
         }, status: :created
+      else
+        render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+      end
+    end
+
+    def basic_auth_password
+      user = User.find_by(id: params[:id])
+      return render json: { errors: "Usuario no encontrado" }, status: :not_found unless user
+
+      password = params[:basic_auth_password]
+      unless User.valid_basic_auth_password?(password)
+        return render json: { errors: "La contraseña Basic debe tener al menos 12 caracteres y no más de 72 bytes" },
+                      status: :unprocessable_entity
+      end
+
+      user.basic_auth_password = password
+      if user.save
+        render json: { message: "Contraseña Basic actualizada correctamente", user_id: user.id }, status: :ok
+      else
+        render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
+      end
+    end
+
+    def update
+      user = User.find_by(id: params[:id])
+      return render json: { errors: "Usuario no encontrado" }, status: :not_found unless user
+
+      permitted = params.permit(:first_name, :last_name, :email, :phone, :date_of_birth, :pin)
+      if permitted[:email].present?
+        existing = User.where.not(id: user.id).find_by(email: permitted[:email].strip)
+        return render json: { errors: "Correo electronico ya existe" }, status: :unprocessable_entity if existing
+      end
+
+      user.assign_attributes(permitted.to_h)
+      if user.valid?
+        user.save!
+        render json: {
+          message: "Usuario actualizado correctamente",
+          user: serialize_user(user.reload)
+        }, status: :ok
       else
         render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
       end
@@ -105,7 +184,7 @@ module Manager
     private
 
     def manager_user_params
-      params.permit(:first_name, :last_name, :email, :phone, :pin, :role)
+      params.permit(:first_name, :last_name, :email, :phone, :date_of_birth, :pin, :role, :account_number, :basic_auth_password)
     end
 
     def serialize_user(user)
@@ -117,6 +196,7 @@ module Manager
         last_name: user.last_name,
         email: user.email,
         phone: user.phone,
+        date_of_birth: user.date_of_birth,
         role: user.role,
         active: user.active,
         blocked: user.blocked,
@@ -143,6 +223,7 @@ module Manager
         last_name: user.last_name,
         email: user.email,
         phone: user.phone,
+        date_of_birth: user.date_of_birth,
         role: user.role,
         active: user.active,
         blocked: user.blocked,

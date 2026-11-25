@@ -1,0 +1,8 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/manager/reports/loans?status=active"
+method: GET
+headers:
+  Authorization: Bearer {{manager_token}}
+queryParams:
+  status: active
+order: 2000

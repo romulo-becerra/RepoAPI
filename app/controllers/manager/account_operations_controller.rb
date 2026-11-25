@@ -1,6 +1,6 @@
 module Manager
   class AccountOperationsController < ApplicationController
-    before_action :require_manager!
+    before_action :require_operations_staff!
     before_action :set_account
 
     def summary
@@ -34,13 +34,14 @@ module Manager
         @account,
         params[:amount],
         params[:description].presence || "Deposito aplicado por gerente",
-        performed_by_role: :manager,
+        performed_by_role: current_user.role,
         performed_by_user_id: current_user.id,
         performed_by_name: current_user.to_s
       )
+      create_receipt(transaction, "deposit", "Depósito en efectivo")
 
       render json: {
-        message: "Deposito aplicado por gerente",
+        message: "Deposito aplicado por #{current_user.role}",
         account_id: @account.id,
         user_id: @account.user_id,
         balance: @account.reload.balance,
@@ -57,13 +58,14 @@ module Manager
         @account,
         params[:amount],
         params[:description].presence || "Retiro aplicado por gerente",
-        performed_by_role: :manager,
+        performed_by_role: current_user.role,
         performed_by_user_id: current_user.id,
         performed_by_name: current_user.to_s
       )
+      create_receipt(transaction, "withdraw", "Retiro en efectivo")
 
       render json: {
-        message: "Retiro aplicado por gerente",
+        message: "Retiro aplicado por #{current_user.role}",
         account_id: @account.id,
         user_id: @account.user_id,
         balance: @account.reload.balance,
@@ -77,6 +79,36 @@ module Manager
       render json: { errors: e.message }, status: :unprocessable_entity
     end
 
+    def pay_service
+      service = Service.includes(:account).find_by(id: params[:service_id])
+      return render json: { errors: "Servicio no encontrado" }, status: :not_found unless service
+
+      transaction = TransactionService.new.transfer!(
+        @account,
+        service.account,
+        params[:amount],
+        params[:description].presence || "Pago de servicio aplicado por #{current_user.role}",
+        performed_by_role: current_user.role,
+        performed_by_user_id: current_user.id,
+        performed_by_name: current_user.to_s
+      )
+      create_receipt(transaction, "service_payment", "Pago de servicio")
+
+      render json: {
+        message: "Pago de servicio aplicado",
+        account_id: @account.id,
+        user_id: @account.user_id,
+        balance: @account.reload.balance,
+        transaction_id: transaction.id,
+        transaction_type: transaction.transaction_type,
+        amount: transaction.amount.to_f
+      }, status: :ok
+    rescue InsufficientFundsError => error
+      render json: { errors: error.message }, status: :payment_required
+    rescue InvalidAmountError, InvalidTransactionError => error
+      render json: { errors: error.message }, status: :unprocessable_entity
+    end
+
     def pay_loan
       loan = @account.loans.find_by(id: params[:loan_id])
       return render json: { errors: "Préstamo no encontrado para la cuenta" }, status: :not_found unless loan
@@ -85,13 +117,15 @@ module Manager
         loan,
         amount: params[:amount],
         paid_on: params[:paid_on],
-        performed_by_role: :manager,
+        performed_by_role: current_user.role,
         performed_by_user_id: current_user.id,
         performed_by_name: current_user.to_s
       )
+      loan_transaction = @account.transactions.order(created_at: :desc).find_by(transaction_type: :loan_payment)
+      create_receipt(loan_transaction, "loan_payment", "Pago de préstamo") if loan_transaction
 
       render json: {
-        message: "Pago de préstamo aplicado por gerente",
+        message: "Pago de préstamo aplicado por #{current_user.role}",
         account_id: @account.id,
         user_id: @account.user_id,
         account_balance: @account.reload.balance,
@@ -108,7 +142,52 @@ module Manager
       render json: { errors: e.message }, status: :unprocessable_entity
     end
 
+    def update_limits
+      withdraw_limit = params[:daily_withdraw_limit].presence
+      transfer_limit = params[:daily_transfer_limit].presence
+
+      @account.update!(
+        daily_withdraw_limit: withdraw_limit,
+        daily_transfer_limit: transfer_limit
+      )
+      AuditLog.record!(
+        action: "update_account_limits",
+        auditable: @account,
+        new_values: @account.attributes.slice("daily_withdraw_limit", "daily_transfer_limit")
+      )
+
+      render json: {
+        account_id: @account.id,
+        daily_withdraw_limit: @account.daily_withdraw_limit&.to_f,
+        daily_transfer_limit: @account.daily_transfer_limit&.to_f
+      }, status: :ok
+    end
+
+    def update_status
+      status = params[:status].to_s
+      return render json: { errors: "Estado no válido" }, status: :unprocessable_entity unless %w[active frozen closed].include?(status)
+
+      @account.status = status
+      @account.save!
+      AuditLog.record!(action: "update_account_status", auditable: @account, reason: params[:reason])
+
+      render json: { account_id: @account.id, status: @account.status }, status: :ok
+    end
+
     private
+
+    def create_receipt(transaction, operation, description)
+      receipt_number = "RC-#{Time.current.strftime('%Y%m%d')}-#{SecureRandom.hex(5).upcase}"
+      Receipt.create!(
+        account: transaction.account,
+        financial_transaction: transaction,
+        created_by: current_user,
+        receipt_number: receipt_number,
+        operation: operation,
+        amount: transaction.amount,
+        description: params[:description].presence || description
+      )
+    end
 
     def set_account
       lookup = params[:account_id].to_s.strip

@@ -31,15 +31,23 @@
           <h2>Permisos por seccion</h2>
           <ul class="permission-list">
             <li>
-              Cliente
+              Autogestión cliente
               <span id="permClient" class="perm-badge" data-testid="perm-client">Bloqueado</span>
             </li>
             <li>
-              Admin Dashboard
+              Operaciones administrativas
               <span id="permAdmin" class="perm-badge" data-testid="perm-admin">Bloqueado</span>
             </li>
             <li>
-              Manager Users
+              Caja operativa
+              <span id="permCashier" class="perm-badge" data-testid="perm-cashier">Bloqueado</span>
+            </li>
+            <li>
+              Atención al cliente
+              <span id="permCustomerService" class="perm-badge" data-testid="perm-customer-service">Bloqueado</span>
+            </li>
+            <li>
+              Usuarios
               <span id="permManagerUsers" class="perm-badge" data-testid="perm-manager-users">Bloqueado</span>
             </li>
           </ul>
@@ -51,9 +59,16 @@
           <div>
             <p class="eyebrow">Plataforma financiera</p>
             <h1>Panel Operativo</h1>
+            <div class="session-identity" aria-label="Información de la sesión">
+              <span><strong>Usuario:</strong> <span id="headerUserName" data-testid="header-user-name">-</span></span>
+              <span><strong>ID:</strong> <span id="headerUserId" data-testid="header-user-id">-</span></span>
+              <span><strong>Cuenta:</strong> <span id="headerAccountNumber" data-testid="header-account-number">-</span></span>
+            </div>
             <div class="header-links">
               <button class="btn ghost mini" id="showProfileSectionBtn" type="button" data-testid="show-profile-section">Actualizar datos</button>
               <button class="btn ghost mini" id="showSecuritySectionBtn" type="button" data-testid="show-security-section">Cambiar PIN</button>
+              <button class="btn ghost mini" id="showBasicAuthSectionBtn" type="button" data-testid="show-basic-auth-section">Credenciales Basic</button>
+              <button class="btn ghost mini" id="showApiKeysSectionBtn" type="button" data-testid="show-api-keys-section">API keys</button>
               <button class="btn ghost mini" id="hideAccountSectionBtn" type="button" data-testid="hide-account-section">Ocultar seccion</button>
             </div>
           </div>
@@ -69,9 +84,36 @@
         <section class="view-switch panel">
           <h2>Vistas del sistema</h2>
           <div class="row-actions">
-            <button id="viewClientBtn" class="btn" type="button" data-testid="view-client-btn">Vista cliente</button>
-            <button id="viewAdminBtn" class="btn ghost" type="button" data-testid="view-admin-btn">Vista admin</button>
+            <button id="viewClientBtn" class="btn" type="button" data-roles="customer" data-testid="view-client-btn">Vista cliente</button>
+            <button id="viewCashierBtn" class="btn ghost hidden" type="button" data-roles="cashier" data-testid="view-cashier-btn">Vista cajero</button>
+            <button id="viewCustomerServiceBtn" class="btn ghost hidden" type="button" data-roles="customer_service" data-testid="view-customer-service-btn">Vista atención al cliente</button>
+            <button id="viewAdminBtn" class="btn ghost hidden" type="button" data-roles="admin,manager" data-testid="view-admin-btn">Vista admin</button>
           </div>
+        </section>
+
+        <section class="panel table-panel" data-roles="customer,manager,cashier,admin">
+          <div class="table-header">
+            <h2>Archivos del usuario</h2>
+            <button id="refreshFilesBtn" class="btn ghost" type="button" data-testid="refresh-files">Actualizar archivos</button>
+          </div>
+          <form id="uploadFileForm" class="row-actions" enctype="multipart/form-data">
+            <input id="userFileInput" type="file" accept=".txt,.csv,.json,image/png,image/jpeg,image/jpg,image/gif,image/webp,text/plain,text/csv,application/json" required data-testid="user-file-input" />
+            <button class="btn" type="submit" data-testid="upload-file-submit">Subir archivo</button>
+          </form>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Archivo</th>
+                <th>Tipo</th>
+                <th>Tamaño</th>
+                <th>Fecha</th>
+              </tr>
+            </thead>
+            <tbody id="userFilesRows" data-testid="user-files-rows">
+              <tr><td colspan="5">Sin archivos</td></tr>
+            </tbody>
+          </table>
         </section>
 
         <section id="clientView">
@@ -100,13 +142,58 @@
             </article>
           </section>
 
+          <section class="kpi-grid" data-roles="customer">
+            <article class="kpi"><p>Saldo consolidado</p><h3 id="customerPortalBalance">S/ 0.00</h3></article>
+            <article class="kpi"><p>Disponible</p><h3 id="customerPortalAvailable">S/ 0.00</h3></article>
+            <article class="kpi"><p>Ingresos del mes</p><h3 id="customerPortalIncome">S/ 0.00</h3></article>
+            <article class="kpi"><p>Gastos del mes</p><h3 id="customerPortalExpenses">S/ 0.00</h3></article>
+          </section>
+
+          <section class="operations-grid" data-roles="customer">
+            <form id="customerCreditRequestForm" class="panel">
+              <h2>Solicitar crédito</h2>
+              <input id="customerCreditAccountId" type="number" min="1" placeholder="ID de cuenta" required />
+              <input id="customerCreditAmount" type="number" min="1" step="0.01" placeholder="Monto" required />
+              <input id="customerCreditMonths" type="number" min="1" placeholder="Plazo en meses" required />
+              <textarea id="customerCreditReason" rows="2" placeholder="Motivo"></textarea>
+              <button class="btn" type="submit">Enviar solicitud</button>
+            </form>
+
+            <form id="customerSupportForm" class="panel">
+              <h2>Soporte</h2>
+              <input id="customerTicketSubject" placeholder="Asunto" required />
+              <textarea id="customerTicketDescription" rows="3" placeholder="Describe el problema" required></textarea>
+              <button class="btn" type="submit">Crear ticket</button>
+            </form>
+
+            <form id="customerPreferencesForm" class="panel">
+              <h2>Preferencias</h2>
+              <label for="customerTheme">Tema</label>
+              <select id="customerTheme">
+                <option value="light" data-i18n-value="Claro">Claro</option>
+                <option value="dark" data-i18n-value="Oscuro">Oscuro</option>
+              </select>
+              <button class="btn" type="submit">Guardar</button>
+            </form>
+          </section>
+
+          <section class="panel table-panel" data-roles="customer">
+            <div class="table-header">
+              <h2>Notificaciones</h2>
+              <button id="customerRefreshNotificationsBtn" class="btn ghost" type="button">Actualizar</button>
+            </div>
+            <ul id="customerNotificationsRows" class="audit-list">
+              <li>Sin notificaciones</li>
+            </ul>
+          </section>
+
           <section class="operations-grid">
-            <form id="depositForm" class="panel">
+            <form id="depositForm" class="panel" data-roles="admin,manager,cashier">
               <h2>Deposito</h2>
               <label for="depositAmount">Monto</label>
               <input id="depositAmount" type="number" min="1" value="100" placeholder="Ej: 100" required data-testid="deposit-amount" />
               <label for="depositDescription">Detalle</label>
-              <input id="depositDescription" value="Deposito AngelFire" placeholder="Motivo del deposito" data-testid="deposit-description" />
+              <input id="depositDescription" value="Deposito AngelFire" placeholder="Motivo del deposito" data-i18n-value data-testid="deposit-description" />
               <button class="btn" type="submit" data-testid="deposit-submit">Aplicar deposito</button>
             </form>
 
@@ -115,7 +202,7 @@
               <label for="withdrawAmount">Monto</label>
               <input id="withdrawAmount" type="number" min="1" value="50" placeholder="Ej: 50" required data-testid="withdraw-amount" />
               <label for="withdrawDescription">Detalle</label>
-              <input id="withdrawDescription" value="Retiro AngelFire" placeholder="Motivo del retiro" data-testid="withdraw-description" />
+              <input id="withdrawDescription" value="Retiro AngelFire" placeholder="Motivo del retiro" data-i18n-value data-testid="withdraw-description" />
               <button class="btn" type="submit" data-testid="withdraw-submit">Aplicar retiro</button>
             </form>
 
@@ -126,8 +213,20 @@
               <label for="serviceAmount">Monto</label>
               <input id="serviceAmount" type="number" min="1" value="80" placeholder="Ej: 80" required data-testid="service-amount" />
               <label for="serviceDescription">Detalle</label>
-              <input id="serviceDescription" value="Pago de servicio AngelFire" placeholder="Motivo del pago" data-testid="service-description" />
+              <input id="serviceDescription" value="Pago de servicio AngelFire" placeholder="Motivo del pago" data-i18n-value data-testid="service-description" />
               <button class="btn" type="submit" data-testid="pay-service-submit">Pagar servicio</button>
+            </form>
+
+            <form id="transferForm" class="panel" data-roles="customer">
+              <h2>Transferencia</h2>
+              <label for="transferRecipient">Cuenta destino</label>
+              <input id="transferRecipient" placeholder="Numero de cuenta o account ID" required data-testid="transfer-recipient" />
+              <label for="transferAmount">Monto</label>
+              <input id="transferAmount" type="number" min="1" step="0.01" value="25" required data-testid="transfer-amount" />
+              <label for="transferDescription">Detalle</label>
+              <input id="transferDescription" value="Transferencia AngelFire" placeholder="Motivo de la transferencia" data-i18n-value data-testid="transfer-description" />
+              <p class="field-help" id="transferStatus" data-testid="transfer-status">Ingresa la cuenta destino para transferir saldo.</p>
+              <button class="btn" type="submit" data-testid="transfer-submit">Transferir</button>
             </form>
           </section>
 
@@ -211,6 +310,7 @@
               <input id="profileLastName" placeholder="Last name" data-testid="profile-last-name" />
               <input id="profileEmail" type="email" placeholder="email@example.com" data-testid="profile-email" />
               <input id="profilePhone" placeholder="+51999111222" data-testid="profile-phone" />
+              <input id="profileDateOfBirth" type="date" aria-label="Fecha de nacimiento" data-testid="profile-date-of-birth" />
               <button class="btn" type="submit" data-testid="profile-update-submit">Guardar datos</button>
             </form>
 
@@ -220,31 +320,42 @@
               <input id="newPin" type="password" placeholder="Nuevo PIN" required data-testid="new-pin" />
               <button class="btn" type="submit" data-testid="change-pin-submit">Cambiar PIN</button>
             </form>
-          </section>
 
-          <section class="panel table-panel">
-            <div class="table-header">
-              <h2>Archivos del usuario</h2>
-              <button id="refreshFilesBtn" class="btn ghost" type="button" data-testid="refresh-files">Actualizar archivos</button>
-            </div>
-            <form id="uploadFileForm" class="row-actions" enctype="multipart/form-data">
-              <input id="userFileInput" type="file" accept=".txt,.csv,.json,image/png,image/jpeg,image/jpg,image/gif,image/webp,text/plain,text/csv,application/json" required data-testid="user-file-input" />
-              <button class="btn" type="submit" data-testid="upload-file-submit">Subir archivo</button>
+            <form id="basicAuthPasswordForm" class="panel">
+              <h2>Usuario y contraseña de autenticación Basic</h2>
+              <p class="field-help">Tu correo actual es el usuario para Basic Auth. Para cambiarlo, usa Actualizar datos. Esta contraseña es independiente de tu PIN.</p>
+              <input id="basicAuthEmail" type="email" readonly aria-label="Usuario Basic Auth" data-testid="basic-auth-email" />
+              <label for="basicAuthPassword">Nueva contraseña Basic</label>
+              <input id="basicAuthPassword" type="password" autocomplete="new-password" minlength="12" maxlength="72" required data-testid="basic-auth-password" />
+              <label for="basicAuthPasswordConfirmation">Confirmar contraseña Basic</label>
+              <input id="basicAuthPasswordConfirmation" type="password" autocomplete="new-password" minlength="12" maxlength="72" required data-testid="basic-auth-password-confirmation" />
+              <p class="field-help">Debe tener al menos 12 caracteres y no más de 72 bytes. Se puede crear o reemplazar; la contraseña actual no se muestra.</p>
+              <button class="btn" type="submit" data-testid="basic-auth-password-submit">Guardar contraseña Basic</button>
             </form>
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Archivo</th>
-                  <th>Tipo</th>
-                  <th>Tamaño</th>
-                  <th>Fecha</th>
-                </tr>
-              </thead>
-              <tbody id="userFilesRows" data-testid="user-files-rows">
-                <tr><td colspan="5">Sin archivos</td></tr>
-              </tbody>
-            </table>
+
+            <section id="apiKeysPanel" class="panel" aria-labelledby="apiKeysHeading">
+              <h2 id="apiKeysHeading">Mis API keys</h2>
+              <p class="field-help">Puedes crear varias claves. El secreto completo se muestra una sola vez al crearlo; guárdalo en un lugar seguro.</p>
+              <form id="apiKeyCreateForm">
+                <label for="apiKeyName">Nombre para identificar la clave</label>
+                <input id="apiKeyName" maxlength="100" required placeholder="Ej.: integración local" data-testid="api-key-name" />
+                <button class="btn" type="submit" data-testid="api-key-create-submit">Crear API key</button>
+              </form>
+              <div id="apiKeySecretResult" class="api-key-secret hidden" role="status" aria-live="polite" data-testid="api-key-secret-result">
+                <p class="field-help">Copia este secreto ahora. No volverá a mostrarse.</p>
+                <code id="apiKeySecretValue" data-testid="api-key-secret-value"></code>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>Nombre</th><th>Prefijo</th><th>Creada</th><th>Último uso</th><th>Estado / acción</th></tr>
+                  </thead>
+                  <tbody id="apiKeysRows" data-testid="api-keys-rows">
+                    <tr><td colspan="5">Sin API keys</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
           </section>
 
           <section class="panel table-panel">
@@ -295,17 +406,18 @@
                   <th>Ejecutado por</th>
                   <th>Id usuario</th>
                   <th>Fecha</th>
+                  <th>Comprobante</th>
                 </tr>
               </thead>
               <tbody id="txRows" data-testid="tx-rows">
-                <tr><td colspan="8">Sin movimientos</td></tr>
+                <tr><td colspan="9">Sin movimientos</td></tr>
               </tbody>
             </table>
           </section>
         </section>
 
         <section id="adminView" class="hidden">
-          <section class="kpi-grid">
+          <section class="kpi-grid" data-roles="admin,manager">
             <article class="kpi">
               <p>Total usuarios</p>
               <h3 id="adminUsersCount" data-testid="admin-users-count">-</h3>
@@ -322,29 +434,113 @@
               <p>Actividad 30 dias</p>
               <h3 id="adminActivity" data-testid="admin-activity">-</h3>
             </article>
+            <article class="kpi">
+              <p>Total clientes</p>
+              <h3 id="adminDashboardCustomers" data-testid="admin-dashboard-customers">-</h3>
+            </article>
+            <article class="kpi">
+              <p>Total cuentas</p>
+              <h3 id="adminDashboardAccounts" data-testid="admin-dashboard-accounts">-</h3>
+            </article>
+            <article class="kpi">
+              <p>Transacciones hoy</p>
+              <h3 id="adminDashboardTransactions" data-testid="admin-dashboard-transactions">-</h3>
+            </article>
+            <article class="kpi">
+              <p>Ingresos del dia</p>
+              <h3 id="adminDashboardIncome" data-testid="admin-dashboard-income">-</h3>
+            </article>
+            <article class="kpi">
+              <p>Egresos del dia</p>
+              <h3 id="adminDashboardExpenses" data-testid="admin-dashboard-expenses">-</h3>
+            </article>
+            <article class="kpi">
+              <p>Prestamos vencidos</p>
+              <h3 id="adminDashboardOverdue" data-testid="admin-dashboard-overdue">-</h3>
+            </article>
+            <article class="kpi">
+              <p>Alertas de seguridad</p>
+              <h3 id="adminDashboardSecurity" data-testid="admin-dashboard-security">-</h3>
+            </article>
+          </section>
+
+          <section class="panel table-panel" data-roles="admin,manager">
+            <div class="table-header">
+              <h2>Roles y permisos</h2>
+              <button id="refreshRolesBtn" class="btn ghost" type="button" data-testid="refresh-roles">Actualizar roles</button>
+            </div>
+            <table>
+              <thead>
+                <tr><th>Rol</th><th>Permisos</th></tr>
+              </thead>
+              <tbody id="adminRolesRows" data-testid="admin-roles-rows">
+                <tr><td colspan="2">Sin roles cargados</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel table-panel" data-roles="admin,manager,accountant">
+            <div class="table-header">
+              <h2>Contabilidad financiera</h2>
+              <button id="refreshAccountingBtn" class="btn ghost" type="button" data-testid="refresh-accounting">Actualizar contabilidad</button>
+            </div>
+            <div class="kpi-grid">
+              <article class="kpi"><p>Balance general</p><h3 id="accountingBalanceGeneral">-</h3></article>
+              <article class="kpi"><p>Ingresos</p><h3 id="accountingIncome">-</h3></article>
+              <article class="kpi"><p>Egresos</p><h3 id="accountingExpenses">-</h3></article>
+              <article class="kpi"><p>Entradas de caja</p><h3 id="accountingCashIn">-</h3></article>
+            </div>
+            <table>
+              <thead><tr><th>ID</th><th>Fecha</th><th>Tipo</th><th>Monto</th></tr></thead>
+              <tbody id="accountingDailyRows" data-testid="accounting-daily-rows">
+                <tr><td colspan="4">Sin movimientos contables</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel contacts-panel" data-roles="admin,manager" aria-labelledby="contactsTitle">
+            <h2 id="contactsTitle">Mis contactos (<span id="contactsCount">0</span>)</h2>
+            <form id="contactForm" class="contacts-add-form">
+              <label for="contactName">Nombre
+                <input id="contactName" name="name" placeholder="Nombre del contacto" maxlength="100" required data-testid="contact-name" />
+              </label>
+              <label for="contactPhone">Telefono
+                <input id="contactPhone" name="phone" type="tel" inputmode="tel" placeholder="Numero de telefono" pattern="[+]?[0-9]{4,15}" required data-testid="contact-phone" />
+              </label>
+              <button class="btn" type="submit" data-testid="contact-add">Agregar contacto</button>
+            </form>
+            <p id="contactsStatus" class="field-help" role="status" aria-live="polite"></p>
+            <div id="contactsList" class="contacts-list" data-testid="contacts-list">
+              <p class="contacts-empty">Todavia no tienes contactos.</p>
+            </div>
           </section>
 
           <section class="panel admin-ops-panel">
-            <h2>Operaciones admin para cliente/customer</h2>
+            <h2>Operaciones de personal autorizado</h2>
             <p class="field-help">Selecciona una operacion y recien se mostrara su formulario.</p>
             <div class="row-actions admin-op-selector">
-              <button class="btn ghost" type="button" data-admin-op="create-user" data-testid="admin-op-create-user">Crear usuario (admin)</button>
-              <button class="btn ghost" type="button" data-admin-op="create-loan" data-testid="admin-op-create-loan">Originar prestamo (admin)</button>
-              <button class="btn ghost" type="button" data-admin-op="account-ops" data-testid="admin-op-account-ops">Operar cuenta de usuario</button>
+              <button class="btn ghost" type="button" data-admin-op="create-user" data-roles="admin" data-testid="admin-op-create-user">Crear usuario</button>
+              <button class="btn ghost" type="button" data-admin-op="create-loan" data-roles="admin,manager" data-testid="admin-op-create-loan">Originar prestamo (admin)</button>
+              <button class="btn ghost" type="button" data-admin-op="account-ops" data-roles="admin,manager,cashier" data-testid="admin-op-account-ops">Operar cuenta de usuario</button>
             </div>
 
             <div class="admin-op-forms">
-              <form id="adminCreateUserForm" class="panel admin-op-card hidden" data-admin-op-card="create-user">
-                <h2>Crear usuario (admin)</h2>
+              <form id="adminCreateUserForm" class="panel admin-op-card hidden" data-roles="admin" data-admin-op-card="create-user">
+                <h2>Crear usuario</h2>
                 <p class="field-help">Requeridos: nombre, apellido, email, PIN y rol.</p>
                 <input id="adminFirstName" placeholder="Nombre *" required data-testid="admin-first-name" />
                 <input id="adminLastName" placeholder="Apellido *" required data-testid="admin-last-name" />
                 <input id="adminEmail" type="email" placeholder="correo@dominio.com *" required data-testid="admin-email" />
                 <input id="adminPhone" placeholder="Telefono (opcional)" data-testid="admin-phone" />
+                <input id="adminDateOfBirth" type="date" aria-label="Fecha de nacimiento" data-testid="admin-date-of-birth" />
                 <input id="adminPin" placeholder="PIN *" required data-testid="admin-pin" />
                 <select id="adminRole" data-testid="admin-role">
                   <option value="customer">customer</option>
+                  <option value="cashier">cashier</option>
+                  <option value="customer_service">Atención al cliente</option>
                   <option value="manager">manager</option>
+                  <option value="admin">admin</option>
+                  <option value="super_admin" data-roles="super_admin">super_admin</option>
                 </select>
                 <div class="row-actions">
                   <button class="btn" type="submit" data-testid="admin-create-user-submit">Crear usuario</button>
@@ -352,65 +548,103 @@
                 </div>
               </form>
 
-              <form id="adminCreateLoanForm" class="panel admin-op-card hidden" data-admin-op-card="create-loan">
+              <form id="adminCreateLoanForm" class="panel admin-op-card hidden" data-roles="admin,manager" data-admin-op-card="create-loan">
                 <h2>Originar prestamo (admin)</h2>
                 <p class="field-help">Requeridos: account ID o numero de cuenta, monto, plazo y primera fecha de pago.</p>
-                <input id="adminLoanAccountId" placeholder="Account ID o numero de cuenta objetivo *" required data-testid="admin-loan-account-id" />
-                <input id="adminLoanAmount" type="number" min="1" step="0.01" placeholder="Monto del prestamo *" required data-testid="admin-loan-amount" />
-                <input id="adminLoanTermMonths" type="number" min="1" placeholder="Plazo en meses *" required data-testid="admin-loan-term-months" />
-                <input id="adminLoanFirstDueDate" type="date" required data-testid="admin-loan-first-due-date" />
                 <div class="row-actions">
-                  <button class="btn ghost" id="adminPreviewLoanBtn" type="button" data-testid="admin-preview-loan">Previsualizar plan</button>
-                  <button class="btn" id="adminCreateLoanBtn" type="button" data-testid="admin-create-loan">Aplicar prestamo</button>
+                  <input id="adminLoanAccountId" placeholder="Account ID o numero de cuenta objetivo *" required data-testid="admin-loan-account-id" />
+                  <button class="btn ghost" id="adminValidateLoanAccountBtn" type="button" data-testid="admin-validate-loan-account">Buscar cuenta</button>
+                </div>
+                <p id="adminLoanAccountValidation" class="field-help validation-error hidden" data-testid="admin-loan-account-validation"></p>
+                <p id="adminLoanAccountInfo" class="field-help" data-testid="admin-loan-account-info">Sin cuenta validada.</p>
+                <input id="adminLoanAmount" type="number" min="1" step="0.01" placeholder="Monto del prestamo *" required data-testid="admin-loan-amount" disabled />
+                <input id="adminLoanTermMonths" type="number" min="1" placeholder="Plazo en meses *" required data-testid="admin-loan-term-months" disabled />
+                <input id="adminLoanFirstDueDate" type="date" required data-testid="admin-loan-first-due-date" disabled />
+                <div class="row-actions">
+                  <button class="btn ghost" id="adminPreviewLoanBtn" type="button" data-testid="admin-preview-loan" disabled>Previsualizar plan</button>
+                  <button class="btn" id="adminCreateLoanBtn" type="button" data-testid="admin-create-loan" disabled>Aplicar prestamo</button>
                   <button class="btn ghost cancel-op" id="adminCancelCreateLoanBtn" type="button" data-testid="admin-cancel-create-loan">Cancelar operacion</button>
                 </div>
                 <p id="adminLoanRateHint" data-testid="admin-loan-rate-hint">Interes anual: -</p>
               </form>
 
-              <form id="adminAccountOpsForm" class="panel admin-op-card hidden" data-admin-op-card="account-ops">
+              <form id="adminAccountOpsForm" class="panel admin-op-card hidden" data-roles="admin,manager,cashier" data-admin-op-card="account-ops">
                 <h2>Operar cuenta de usuario</h2>
                 <p class="field-help">Requeridos: account ID o numero de cuenta y monto. Para pagar prestamo tambien se requiere loan ID.</p>
-                <input id="adminTargetAccountId" placeholder="Account ID o numero de cuenta objetivo *" required data-testid="admin-target-account-id" />
-                <input id="adminTargetLoanId" placeholder="Loan ID (solo para pagar prestamo)" data-testid="admin-target-loan-id" />
-                <input id="adminTargetAmount" type="number" min="0.01" step="0.01" placeholder="Monto *" required data-testid="admin-target-amount" />
-                <input id="adminTargetDescription" placeholder="Descripcion (opcional)" data-testid="admin-target-description" />
                 <div class="row-actions">
-                  <button class="btn" id="adminDepositTargetBtn" type="button" data-testid="admin-deposit-target">Depositar</button>
-                  <button class="btn alt" id="adminWithdrawTargetBtn" type="button" data-testid="admin-withdraw-target">Retirar</button>
-                  <button class="btn ghost" id="adminPayLoanTargetBtn" type="button" data-testid="admin-payloan-target">Pagar prestamo</button>
+                  <input id="adminTargetAccountId" placeholder="Account ID o numero de cuenta objetivo *" required data-testid="admin-target-account-id" />
+                  <button class="btn ghost" id="adminValidateTargetAccountBtn" type="button" data-testid="admin-validate-target-account">Buscar cuenta</button>
+                </div>
+                <p id="adminTargetAccountValidation" class="field-help validation-error hidden" data-testid="admin-target-account-validation"></p>
+                <p id="adminTargetAccountInfo" class="field-help" data-testid="admin-target-account-info">Sin cuenta validada.</p>
+                <input id="adminTargetLoanId" placeholder="Loan ID (solo para pagar prestamo)" data-testid="admin-target-loan-id" disabled />
+                <input id="adminTargetAmount" type="number" min="0.01" step="0.01" placeholder="Monto *" required data-testid="admin-target-amount" disabled />
+                <input id="adminTargetDescription" placeholder="Descripcion (opcional)" data-testid="admin-target-description" disabled />
+                <label for="adminTargetServiceId">Servicio (solo para pagar servicio)</label>
+                <select id="adminTargetServiceId" data-testid="admin-target-service-id" disabled></select>
+                <div class="row-actions">
+                  <button class="btn" id="adminDepositTargetBtn" type="button" disabled data-testid="admin-deposit-target">Depositar</button>
+                  <button class="btn alt" id="adminWithdrawTargetBtn" type="button" disabled data-testid="admin-withdraw-target">Retirar</button>
+                  <button class="btn ghost" id="adminPayLoanTargetBtn" type="button" disabled data-testid="admin-payloan-target">Pagar prestamo</button>
+                  <button class="btn ghost" id="adminPayServiceTargetBtn" type="button" disabled data-testid="admin-pay-service-target">Pagar servicio</button>
                   <button class="btn ghost cancel-op" id="adminCancelAccountOpsBtn" type="button" data-testid="admin-cancel-account-ops">Cancelar operacion</button>
                 </div>
               </form>
             </div>
           </section>
 
-          <section class="operations-grid admin-ops-grid">
-
-            <form id="adminDeleteUserForm" class="panel">
-              <h2>Eliminar usuario</h2>
-              <p class="field-help">Requerido: User ID.</p>
-              <input id="adminDeleteUserId" placeholder="User ID *" required data-testid="admin-delete-user-id" />
-              <button class="btn alt" type="submit" data-testid="admin-delete-user-submit">Eliminar usuario</button>
-            </form>
-
-            <form id="adminUserStateForm" class="panel">
-              <h2>Estado de usuario</h2>
-              <p class="field-help">Requerido: User ID para bloquear o desbloquear.</p>
-              <input id="adminUserStateId" placeholder="User ID *" required data-testid="admin-user-state-id" />
-              <div class="row-actions">
-                <button class="btn alt" id="adminBlockUserBtn" type="button" data-testid="admin-block-user-btn">Bloquear</button>
-                <button class="btn" id="adminUnblockUserBtn" type="button" data-testid="admin-unblock-user-btn">Desbloquear</button>
-              </div>
-            </form>
-
-            <section class="panel">
-              <h2>Acciones admin</h2>
-              <p>Refresca reportes y lista de usuarios del sistema.</p>
+          <section class="panel admin-client-management" data-roles="admin,manager">
+            <div class="table-header">
+              <h2>Gestión de clientes y usuarios</h2>
               <button id="refreshAdminDashboard" class="btn ghost" type="button" data-testid="refresh-admin-dashboard">Actualizar panel admin</button>
-            </section>
+            </div>
+            <form id="adminClientLookupForm" class="row-actions">
+              <input id="adminClientLookupQuery" placeholder="ID, cuenta, nombre, correo o teléfono" required data-testid="admin-client-lookup-query" />
+              <button class="btn" type="submit" data-testid="admin-client-lookup-submit">Buscar usuario</button>
+            </form>
+            <p id="adminClientLookupValidation" class="field-help validation-error hidden" data-testid="admin-client-lookup-validation"></p>
+
+            <div id="adminClientLookupResults" class="admin-client-results hidden" data-testid="admin-client-lookup-results"></div>
+
+            <article id="adminClientProfile" class="admin-client-profile hidden" data-testid="admin-client-profile">
+              <div class="admin-client-profile-header">
+                <div>
+                  <p class="eyebrow">Cliente seleccionado</p>
+                  <h3 id="adminClientName">-</h3>
+                  <p id="adminClientMeta" class="field-help">-</p>
+                </div>
+                <span id="adminClientStatus" class="perm-badge">-</span>
+              </div>
+
+              <div class="admin-client-grid">
+                <section>
+                  <h4>Datos personales</h4>
+                  <form id="adminClientEditForm" class="admin-client-edit-form">
+                    <input id="adminClientFirstName" placeholder="Nombre" data-testid="admin-client-first-name" />
+                    <input id="adminClientLastName" placeholder="Apellido" data-testid="admin-client-last-name" />
+                    <input id="adminClientEmail" type="email" placeholder="Correo" data-testid="admin-client-email" />
+                    <input id="adminClientPhone" placeholder="Teléfono" data-testid="admin-client-phone" />
+                    <button class="btn" type="submit" data-testid="admin-client-save">Guardar datos</button>
+                  </form>
+                </section>
+
+                <section>
+                  <h4>Cuentas asociadas</h4>
+                  <div id="adminClientAccounts" class="admin-client-accounts"></div>
+                </section>
+              </div>
+
+              <div class="row-actions admin-client-actions" data-roles="admin">
+                <button id="adminClientBlockBtn" class="btn alt" type="button" data-testid="admin-client-block">Bloquear</button>
+                <button id="adminClientUnblockBtn" class="btn" type="button" data-testid="admin-client-unblock">Desbloquear</button>
+                <button id="adminClientDeactivateBtn" class="btn ghost" type="button" data-testid="admin-client-deactivate">Desactivar</button>
+                <button id="adminClientForcePasswordBtn" class="btn ghost" type="button" data-testid="admin-client-force-password">Forzar cambio de PIN</button>
+                <button id="adminClientDeleteBtn" class="btn alt" type="button" data-testid="admin-client-delete">Eliminar usuario</button>
+              </div>
+            </article>
           </section>
 
-          <section class="panel table-panel">
+          <section class="panel table-panel" data-roles="admin,manager">
             <div class="table-header">
               <h2>Consulta de cuenta y prestamo</h2>
             </div>
@@ -465,7 +699,7 @@
             </div>
           </section>
 
-          <section class="panel table-panel">
+          <section class="panel table-panel" data-roles="admin,manager">
             <div class="table-header">
               <h2>Archivos del usuario (admin)</h2>
               <button id="refreshAdminFilesBtn" class="btn ghost" type="button" data-testid="refresh-admin-files">Actualizar archivos</button>
@@ -486,7 +720,7 @@
             </table>
           </section>
 
-          <section class="panel table-panel">
+          <section class="panel table-panel" data-roles="admin,manager">
             <div class="table-header">
               <h2>Usuarios del sistema</h2>
               <div class="pager-controls">
@@ -520,7 +754,134 @@
             </table>
           </section>
 
-          <section class="panel table-panel">
+          <section class="panel table-panel" data-roles="admin,manager">
+            <div class="table-header">
+              <h2>Bitacora de operaciones</h2>
+              <button id="refreshOpsBtn" class="btn ghost" type="button" data-testid="refresh-operations">Actualizar</button>
+            </div>
+            <p class="field-help">Consulta depositos, debitos y pagos por dia, semana o mes desde la fecha indicada.</p>
+            <div class="row-actions">
+              <label>Periodo
+                <select id="opsPeriod" data-testid="ops-period">
+                  <option value="day">Dia</option>
+                  <option value="week">Semana</option>
+                  <option value="month">Mes</option>
+                </select>
+              </label>
+              <label>Fecha de consulta
+                <input id="opsDate" type="date" data-testid="ops-date" />
+              </label>
+              <label>Tipo de operacion
+                <select id="opsType" data-testid="ops-type">
+                  <option value="all">Todas</option>
+                  <option value="deposit">Depositos</option>
+                  <option value="withdraw">Retiros</option>
+                  <option value="transfer">Transferencias</option>
+                  <option value="loan_payment">Pago de prestamo</option>
+                  <option value="service_payment">Pago de servicios</option>
+                  <option value="atm_deposit">Deposito ATM</option>
+                  <option value="atm_withdrawal">Retiro ATM</option>
+                  <option value="debit">Debitos (todas las salidas)</option>
+                </select>
+              </label>
+              <label>Ejecutado por
+                <select id="opsActor" data-testid="ops-actor">
+                  <option value="all">Todos</option>
+                  <option value="manager">Admin</option>
+                  <option value="user">Usuario</option>
+                </select>
+              </label>
+            </div>
+            <div class="row-actions">
+              <label>Ver
+                <select id="opsPerPage" data-testid="ops-per-page">
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                </select>
+              </label>
+              <button id="opsPrevPageBtn" class="btn ghost mini" type="button" data-testid="ops-prev-page">Anterior</button>
+              <span id="opsPageInfo" data-testid="ops-page-info">1 / 1</span>
+              <button id="opsNextPageBtn" class="btn ghost mini" type="button" data-testid="ops-next-page">Siguiente</button>
+              <button id="opsDownloadBtn" class="btn" type="button" data-testid="ops-download">Descargar archivo</button>
+            </div>
+            <p id="opsSummary" data-testid="ops-summary">Sin operaciones registradas.</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th>Monto</th>
+                  <th>Descripcion</th>
+                  <th>Usuario</th>
+                  <th>Cuenta</th>
+                  <th>Ejecutado por</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="opsRows" data-testid="ops-rows">
+                <tr><td colspan="8">Sin operaciones</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel table-panel" data-roles="admin,manager">
+            <div class="table-header">
+              <h2>Reporte de inicios de sesion</h2>
+              <button id="refreshLoginsBtn" class="btn ghost" type="button" data-testid="refresh-logins">Actualizar</button>
+            </div>
+            <p class="field-help">Consulta los accesos exitosos, fallidos o bloqueados por dia, semana o mes.</p>
+            <div class="row-actions">
+              <label>Periodo
+                <select id="loginsPeriod" data-testid="logins-period">
+                  <option value="day">Dia</option>
+                  <option value="week">Semana</option>
+                  <option value="month">Mes</option>
+                </select>
+              </label>
+              <label>Fecha de consulta
+                <input id="loginsDate" type="date" data-testid="logins-date" />
+              </label>
+              <label>Resultado
+                <select id="loginsStatus" data-testid="logins-status">
+                  <option value="all">Todos</option>
+                  <option value="success">Exitoso</option>
+                  <option value="failure">Fallido</option>
+                  <option value="blocked">Bloqueado</option>
+                </select>
+              </label>
+            </div>
+            <div class="row-actions">
+              <label>Ver
+                <select id="loginsPerPage" data-testid="logins-per-page">
+                  <option value="10">10</option>
+                  <option value="20">20</option>
+                  <option value="50">50</option>
+                </select>
+              </label>
+              <button id="loginsPrevPageBtn" class="btn ghost mini" type="button" data-testid="logins-prev-page">Anterior</button>
+              <span id="loginsPageInfo" data-testid="logins-page-info">1 / 1</span>
+              <button id="loginsNextPageBtn" class="btn ghost mini" type="button" data-testid="logins-next-page">Siguiente</button>
+              <button id="loginsDownloadBtn" class="btn" type="button" data-testid="logins-download">Descargar archivo</button>
+            </div>
+            <p id="loginsSummary" data-testid="logins-summary">Sin inicios de sesion registrados.</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Resultado</th>
+                  <th>ID usuario</th>
+                  <th>Nombre</th>
+                  <th>Numero de cuenta</th>
+                </tr>
+              </thead>
+              <tbody id="loginsRows" data-testid="logins-rows">
+                <tr><td colspan="5">Sin accesos registrados</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          <section class="panel table-panel" data-roles="admin,manager">
             <div class="table-header">
               <h2>Bitacora de operaciones admin</h2>
             </div>
@@ -529,6 +890,163 @@
             </ul>
           </section>
 
+        </section>
+
+        <section id="customerServiceView" class="hidden" data-roles="customer_service">
+          <section class="kpi-grid">
+            <article class="kpi"><p>Clientes encontrados</p><h3 id="customerServiceFoundCount">0</h3></article>
+            <article class="kpi"><p>Casos abiertos</p><h3 id="customerServiceOpenTickets">0</h3></article>
+          </section>
+
+          <section class="panel admin-client-management">
+            <div class="table-header"><h2>Atención al cliente</h2></div>
+            <form id="customerServiceRegisterForm" class="operations-grid">
+              <div class="panel">
+                <h3>Registrar nuevo cliente</h3>
+                <input id="customerServiceRegisterFirstName" placeholder="Nombre" required />
+                <input id="customerServiceRegisterLastName" placeholder="Apellido" required />
+                <input id="customerServiceRegisterEmail" type="email" placeholder="Correo" required />
+                <input id="customerServiceRegisterPhone" placeholder="Teléfono" />
+                <input id="customerServiceRegisterDocument" placeholder="CI / Pasaporte" />
+                <input id="customerServiceRegisterAddress" placeholder="Dirección" />
+                <input id="customerServiceRegisterPin" type="password" inputmode="numeric" minlength="4" maxlength="4" placeholder="PIN inicial" required />
+                <button class="btn" type="submit">Registrar cliente</button>
+              </div>
+            </form>
+
+            <form id="customerServiceSearchForm" class="row-actions">
+              <input id="customerServiceSearchQuery" placeholder="CI, nombre, teléfono, correo o cuenta" required />
+              <button class="btn" type="submit">Buscar cliente</button>
+            </form>
+            <p id="customerServiceMessage" class="field-help">Sin cliente seleccionado.</p>
+
+            <div id="customerServiceResults" class="admin-client-results"></div>
+            <article id="customerServiceProfile" class="admin-client-profile hidden">
+              <div class="admin-client-profile-header">
+                <div><p class="eyebrow">Cliente seleccionado</p><h3 id="customerServiceName">-</h3><p id="customerServiceMeta" class="field-help">-</p></div>
+                <span id="customerServiceStatus" class="perm-badge">-</span>
+              </div>
+
+              <div class="admin-client-grid">
+                <form id="customerServiceUpdateForm" class="admin-client-edit-form">
+                  <h4>Actualizar datos personales</h4>
+                  <input id="customerServiceFirstName" placeholder="Nombre" />
+                  <input id="customerServiceLastName" placeholder="Apellido" />
+                  <input id="customerServiceEmail" type="email" placeholder="Correo" />
+                  <input id="customerServicePhone" placeholder="Teléfono" />
+                  <input id="customerServiceDocument" placeholder="Documento" />
+                  <input id="customerServiceAddress" placeholder="Dirección" />
+                  <button class="btn" type="submit">Guardar datos</button>
+                </form>
+
+                <form id="customerServiceAccessForm" class="admin-client-edit-form">
+                  <h4>Acceso y cuentas</h4>
+                  <input id="customerServiceResetPin" type="password" inputmode="numeric" minlength="4" maxlength="4" placeholder="Nuevo PIN" />
+                  <button id="customerServiceResetPinBtn" class="btn ghost" type="button">Restablecer PIN</button>
+                  <button id="customerServiceUnblockBtn" class="btn ghost" type="button">Desbloquear usuario</button>
+                  <button id="customerServiceDeactivateBtn" class="btn ghost" type="button">Inactivar usuario</button>
+                  <button id="customerServiceReactivateBtn" class="btn ghost" type="button">Reactivar usuario</button>
+                  <select id="customerServiceAccountCategory">
+                    <option value="savings">Ahorro</option>
+                    <option value="checking">Corriente</option>
+                  </select>
+                  <button id="customerServiceOpenAccountBtn" class="btn" type="button">Crear cuenta</button>
+                </form>
+              </div>
+
+              <div>
+                <h4>Cuentas</h4>
+                <div id="customerServiceAccounts" class="admin-client-accounts"></div>
+              </div>
+            </article>
+          </section>
+
+          <section class="panel table-panel">
+            <div class="table-header"><h2>Casos y reclamos</h2><button id="customerServiceRefreshTicketsBtn" class="btn ghost" type="button">Actualizar</button></div>
+            <form id="customerServiceCreateTicketForm" class="row-actions">
+              <input id="customerServiceTicketUserId" type="number" min="1" placeholder="ID de usuario" required />
+              <input id="customerServiceTicketSubject" placeholder="Asunto" required />
+              <input id="customerServiceTicketDescription" placeholder="Descripción" required />
+              <select id="customerServiceTicketPriority">
+                <option value="normal">Normal</option>
+                <option value="high">Alta</option>
+                <option value="urgent">Urgente</option>
+              </select>
+              <button class="btn" type="submit">Crear caso</button>
+            </form>
+            <table>
+              <thead><tr><th>ID</th><th>Usuario</th><th>Asunto</th><th>Estado</th><th>Prioridad</th></tr></thead>
+              <tbody id="customerServiceTicketsRows"><tr><td colspan="5">Sin casos</td></tr></tbody>
+            </table>
+          </section>
+        </section>
+
+        <section id="cashierView" class="hidden" data-roles="cashier">
+          <section class="kpi-grid">
+            <article class="kpi"><p>Saldo inicial caja</p><h3 id="cashierOpeningBalance">S/ 0.00</h3></article>
+            <article class="kpi"><p>Saldo sistema</p><h3 id="cashierSystemBalance">S/ 0.00</h3></article>
+            <article class="kpi"><p>Operaciones hoy</p><h3 id="cashierOperationCount">0</h3></article>
+            <article class="kpi"><p>Hora apertura</p><h3 id="cashierOpenedAt">-</h3></article>
+          </section>
+
+          <section class="operations-grid">
+            <form id="cashOpenForm" class="panel">
+              <h2>Apertura de caja</h2>
+              <input id="cashOpeningBalance" type="number" min="0" step="0.01" placeholder="Monto inicial" required />
+              <button class="btn" type="submit">Abrir caja</button>
+            </form>
+            <form id="cashReconciliationForm" class="panel">
+              <h2>Arqueo de caja</h2>
+              <input id="cashPhysicalBalance" type="number" min="0" step="0.01" placeholder="Dinero físico" required />
+              <button class="btn" type="submit">Arquear</button>
+              <p id="cashReconciliationResult" class="field-help">Sin arqueo.</p>
+            </form>
+            <form id="cashCloseForm" class="panel">
+              <h2>Cierre de caja</h2>
+              <input id="cashClosePhysicalBalance" type="number" min="0" step="0.01" placeholder="Dinero físico" required />
+              <textarea id="cashCloseNotes" rows="2" placeholder="Observaciones"></textarea>
+              <button class="btn alt" type="submit">Cerrar caja</button>
+            </form>
+          </section>
+
+          <section class="panel table-panel">
+            <div class="table-header">
+              <h2>Clientes</h2>
+              <button id="cashRefreshClientsBtn" class="btn ghost" type="button">Actualizar</button>
+            </div>
+            <form id="cashClientSearchForm" class="row-actions">
+              <input id="cashClientSearch" placeholder="CI, nombre, teléfono o correo" />
+              <button class="btn" type="submit">Buscar</button>
+            </form>
+            <table>
+              <thead><tr><th>ID</th><th>Nombre</th><th>Correo</th><th>Teléfono</th><th>Cuentas</th></tr></thead>
+              <tbody id="cashClientRows"><tr><td colspan="5">Sin clientes</td></tr></tbody>
+            </table>
+          </section>
+
+
+          <section class="panel table-panel">
+            <div class="table-header">
+              <h2>Movimientos y comprobantes</h2>
+              <button id="cashRefreshMovementsBtn" class="btn ghost" type="button">Actualizar</button>
+            </div>
+            <table>
+              <thead><tr><th>Fecha</th><th>Tipo</th><th>Monto</th><th>Cuenta</th><th>Estado</th></tr></thead>
+              <tbody id="cashMovementRows"><tr><td colspan="5">Sin movimientos</td></tr></tbody>
+            </table>
+            <table>
+              <thead><tr><th>Comprobante</th><th>Operación</th><th>Monto</th><th>Cuenta</th><th>Acción</th></tr></thead>
+              <tbody id="cashReceiptRows"><tr><td colspan="5">Sin comprobantes</td></tr></tbody>
+            </table>
+          </section>
+
+          <section class="panel table-panel">
+            <div class="table-header">
+              <h2>Reporte diario de caja</h2>
+              <button id="cashRefreshReportBtn" class="btn ghost" type="button">Actualizar</button>
+            </div>
+            <pre id="cashDailyReport">Sin datos.</pre>
+          </section>
         </section>
 
         <section class="panel response-panel">
@@ -588,6 +1106,7 @@
         </div>
       </div>
     </div>
-    <script src="app.js?v=20260711-2"></script>
+    <script src="i18n.js?v=20261002-1"></script>
+    <script src="app.js?v=20261123-2"></script>
   </body>
 </html>

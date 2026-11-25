@@ -1,0 +1,24 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/login"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "account_number": "{{account_number}}",
+      "pin": "{{pin}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Login status 200', function () { pm.response.to.have.status(200); });
+      var json = pm.response.json();
+      pm.environment.set('token', json.token);
+      if (json.user && json.user.id) { pm.environment.set('user_id', json.user.id); }
+      if (json.user && json.user.role) { pm.environment.set('user_role', json.user.role); }
+      if (json.account && json.account.id) { pm.environment.set('account_id', json.account.id); }
+      if (json.account && json.account.account_number) { pm.environment.set('account_number', json.account.account_number); }
+    language: text/javascript
+order: 2000

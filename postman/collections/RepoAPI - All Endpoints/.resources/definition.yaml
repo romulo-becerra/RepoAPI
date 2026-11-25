@@ -1,0 +1,16 @@
+$kind: collection
+description: Coleccion unificada con todos los endpoints definidos en config/routes.rb.
+variables:
+  baseUrl: https://repoapi-75op.onrender.com/
+  token: ""
+  manager_token: ""
+  user_id: ""
+  account_id: ""
+  account_number: ""
+  recipient_id: ""
+  loan_id: ""
+  service_id: "1"
+  file_id: ""
+  managed_user_id: ""
+  pin: "1234"
+  phone: "+51999123456"

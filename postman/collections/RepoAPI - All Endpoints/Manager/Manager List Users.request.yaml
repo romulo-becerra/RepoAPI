@@ -1,0 +1,7 @@
+$kind: http-request
+url: "{{baseUrl}}/api/v1/manager/users"
+method: GET
+headers:
+  Authorization: Bearer {{manager_token}}
+  Accept: application/json
+order: 4000

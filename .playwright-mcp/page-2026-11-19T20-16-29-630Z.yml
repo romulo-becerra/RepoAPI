@@ -1,0 +1,153 @@
+- generic [ref=f13e2]:
+  - complementary [ref=f13e3]:
+    - generic [ref=f13e4]: AngelFire
+    - paragraph [ref=f13e5]: Core Banking Console
+    - generic [ref=f13e6]:
+      - heading "Sesion actual" [level=2] [ref=f13e7]
+      - paragraph [ref=f13e8]: Autenticado
+      - paragraph [ref=f13e9]: "Rol: cashier"
+    - generic [ref=f13e10]:
+      - heading "Permisos por seccion" [level=2] [ref=f13e11]
+      - list [ref=f13e12]:
+        - listitem [ref=f13e13]:
+          - text: Cliente
+          - generic [ref=f13e14]: Habilitado
+        - listitem [ref=f13e15]:
+          - text: Admin Dashboard
+          - generic [ref=f13e16]: blocked
+        - listitem [ref=f13e17]:
+          - text: Manager Users
+          - generic [ref=f13e18]: blocked
+  - main [ref=f13e19]:
+    - generic [ref=f13e20]:
+      - generic [ref=f13e21]:
+        - paragraph [ref=f13e22]: Plataforma financiera
+        - heading "Panel Operativo" [level=1] [ref=f13e23]
+        - generic [ref=f13e24]:
+          - button "Actualizar datos" [ref=f13e25] [cursor=pointer]
+          - button "Cambiar PIN" [ref=f13e26] [cursor=pointer]
+          - button "Ocultar seccion" [ref=f13e27] [cursor=pointer]
+      - generic [ref=f13e28]:
+        - generic [ref=f13e29]:
+          - text: Base URL
+          - textbox "Base URL" [ref=f13e30]: http://localhost:3001
+        - button "Guardar" [ref=f13e31] [cursor=pointer]
+        - button "Cerrar sesion" [ref=f13e32] [cursor=pointer]
+      - generic [ref=f13e33]:
+        - generic [ref=f13e34]: Idioma
+        - combobox "Idioma" [ref=f13e35]:
+          - option "Español" [selected]
+          - option "English"
+          - option "Português"
+    - generic [ref=f13e36]:
+      - heading "Vistas del sistema" [level=2] [ref=f13e37]
+      - generic [ref=f13e38]:
+        - button "Vista cliente" [ref=f13e39] [cursor=pointer]
+        - button "Vista cajero" [ref=f13e40] [cursor=pointer]
+        - button "Vista admin" [ref=f13e41] [cursor=pointer]
+    - generic [ref=f13e42]:
+      - generic [ref=f13e43]:
+        - article [ref=f13e44]:
+          - paragraph [ref=f13e45]: Saldo inicial caja
+          - heading "S/ 0.00" [level=3] [ref=f13e46]
+        - article [ref=f13e47]:
+          - paragraph [ref=f13e48]: Saldo sistema
+          - heading "S/ 0.00" [level=3] [ref=f13e49]
+        - article [ref=f13e50]:
+          - paragraph [ref=f13e51]: Operaciones hoy
+          - heading "0" [level=3] [ref=f13e52]
+        - article [ref=f13e53]:
+          - paragraph [ref=f13e54]: Hora apertura
+          - heading "-" [level=3] [ref=f13e55]
+      - generic [ref=f13e56]:
+        - generic [ref=f13e57]:
+          - heading "Apertura de caja" [level=2] [ref=f13e58]
+          - spinbutton "Monto inicial" [ref=f13e59]
+          - button "Abrir caja" [ref=f13e60] [cursor=pointer]
+        - generic [ref=f13e61]:
+          - heading "Arqueo de caja" [level=2] [ref=f13e62]
+          - spinbutton "Dinero físico" [ref=f13e63]
+          - button "Arquear" [ref=f13e64] [cursor=pointer]
+          - paragraph [ref=f13e65]: Sin arqueo.
+        - generic [ref=f13e66]:
+          - heading "Cierre de caja" [level=2] [ref=f13e67]
+          - spinbutton "Dinero físico" [ref=f13e68]
+          - textbox "Observaciones" [ref=f13e69]
+          - button "Cerrar caja" [ref=f13e70] [cursor=pointer]
+      - generic [ref=f13e71]:
+        - generic [ref=f13e72]:
+          - heading "Clientes" [level=2] [ref=f13e73]
+          - button "Actualizar" [ref=f13e74] [cursor=pointer]
+        - generic [ref=f13e75]:
+          - textbox "CI, nombre, teléfono o correo" [ref=f13e76]
+          - button "Buscar" [ref=f13e77] [cursor=pointer]
+        - table [ref=f13e78]:
+          - rowgroup [ref=f13e79]:
+            - row [ref=f13e80]:
+              - columnheader "ID" [ref=f13e81]
+              - columnheader "Nombre" [ref=f13e82]
+              - columnheader "Correo" [ref=f13e83]
+              - columnheader "Teléfono" [ref=f13e84]
+              - columnheader "Cuentas" [ref=f13e85]
+          - rowgroup [ref=f13e86]:
+            - row [ref=f13e87]:
+              - cell "Sin clientes" [ref=f13e88]
+      - generic [ref=f13e89]:
+        - generic [ref=f13e90]:
+          - heading "Registrar cliente" [level=2] [ref=f13e91]
+          - textbox "Nombre" [ref=f13e92]
+          - textbox "Apellidos" [ref=f13e93]
+          - textbox "Correo" [ref=f13e94]: "2222086457"
+          - textbox "Teléfono" [ref=f13e95]
+          - textbox "CI / Pasaporte" [ref=f13e96]
+          - textbox "Dirección" [ref=f13e97]
+          - textbox [ref=f13e98]:
+            - /placeholder: Fecha de nacimiento
+          - textbox "PIN 4 dígitos" [ref=f13e99]: Segu
+          - button "Registrar" [ref=f13e100] [cursor=pointer]
+        - generic [ref=f13e101]:
+          - heading "Aperturar cuenta" [level=2] [ref=f13e102]
+          - spinbutton "ID de cliente" [ref=f13e103]
+          - combobox [ref=f13e104]:
+            - option "Ahorro" [selected]
+            - option "Corriente"
+            - option "Empresarial"
+            - option "Inversión"
+            - option "Credito"
+          - button "Crear cuenta" [ref=f13e105] [cursor=pointer]
+      - generic [ref=f13e106]:
+        - generic [ref=f13e107]:
+          - heading "Movimientos y comprobantes" [level=2] [ref=f13e108]
+          - button "Actualizar" [ref=f13e109] [cursor=pointer]
+        - table [ref=f13e110]:
+          - rowgroup [ref=f13e111]:
+            - row [ref=f13e112]:
+              - columnheader "Fecha" [ref=f13e113]
+              - columnheader "Tipo" [ref=f13e114]
+              - columnheader "Monto" [ref=f13e115]
+              - columnheader "Cuenta" [ref=f13e116]
+              - columnheader "Estado" [ref=f13e117]
+          - rowgroup [ref=f13e118]:
+            - row [ref=f13e119]:
+              - cell "Sin movimientos" [ref=f13e120]
+        - table [ref=f13e121]:
+          - rowgroup [ref=f13e122]:
+            - row [ref=f13e123]:
+              - columnheader "Comprobante" [ref=f13e124]
+              - columnheader "Operación" [ref=f13e125]
+              - columnheader "Monto" [ref=f13e126]
+              - columnheader "Cuenta" [ref=f13e127]
+              - columnheader "Acción" [ref=f13e128]
+          - rowgroup [ref=f13e129]:
+            - row [ref=f13e130]:
+              - cell "Sin comprobantes" [ref=f13e131]
+      - generic [ref=f13e132]:
+        - generic [ref=f13e133]:
+          - heading "Reporte diario de caja" [level=2] [ref=f13e134]
+          - button "Actualizar" [ref=f13e135] [cursor=pointer]
+        - generic [ref=f13e136]: Sin datos.
+    - generic [ref=f13e137]:
+      - generic [ref=f13e138]:
+        - heading "Respuesta API" [level=2] [ref=f13e139]
+        - generic [ref=f13e140]: "Status: -"
+      - generic [ref=f13e141]: Listo para operar.

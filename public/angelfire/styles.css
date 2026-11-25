@@ -13,6 +13,16 @@
   --shadow: 0 16px 36px rgba(16, 33, 45, 0.1);
 }
 
+body.dark-theme {
+  --paper: #101923;
+  --panel: #182433;
+  --line: #354757;
+  --ink-900: #edf4f7;
+  --ink-700: #bacbd5;
+  --shadow: 0 16px 36px rgba(0, 0, 0, 0.32);
+  background: linear-gradient(120deg, #071019, #132431);
+}
+
 * {
   box-sizing: border-box;
 }
@@ -27,6 +37,84 @@ body {
 
 body.modal-open {
   overflow: hidden;
+}
+
+a {
+  text-decoration: none;
+  color: #464feb;
+}
+
+tr th,
+tr td {
+  border: 1px solid #e6e6e6;
+}
+
+tr th {
+  background-color: #f5f5f5;
+}
+
+body.dark-theme .main-content,
+body.dark-theme .panel,
+body.dark-theme .kpi,
+body.dark-theme .admin-client-profile,
+body.dark-theme .admin-client-result,
+body.dark-theme .action-modal-card,
+body.dark-theme .table-panel,
+body.dark-theme .operations-grid > .panel {
+  background: var(--panel);
+  color: var(--ink-900);
+}
+
+body.dark-theme .main-content {
+  background: #0f1a24;
+}
+
+body.dark-theme table,
+body.dark-theme th,
+body.dark-theme td,
+body.dark-theme input,
+body.dark-theme select,
+body.dark-theme textarea,
+body.dark-theme pre {
+  background: #17232e;
+  color: var(--ink-900);
+  border-color: var(--line);
+}
+
+body.dark-theme input::placeholder,
+body.dark-theme textarea::placeholder {
+  color: #91a4b2;
+}
+
+body.dark-theme th {
+  background: #20313f;
+}
+
+body.dark-theme .btn,
+body.dark-theme .btn.alt,
+body.dark-theme .btn.active-view {
+  color: #ffffff;
+  border-color: #52bda8;
+  background: linear-gradient(120deg, #08766d, #0c9688);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
+}
+
+body.dark-theme .btn.alt {
+  background: linear-gradient(120deg, #74501d, #b27a27);
+}
+
+body.dark-theme .btn.ghost,
+body.dark-theme .btn.mini.ghost {
+  color: #eef7fa;
+  border: 1px solid #667d8b;
+  background: #263746;
+  text-shadow: none;
+}
+
+body.dark-theme .perm-badge {
+  color: #eff7fa;
+  background: #263746;
+  border-color: #667d8b;
 }
 
 .layout-shell {
@@ -128,6 +216,15 @@ body.modal-open {
 h1 {
   margin: 0.1rem 0 0;
   font-size: 1.55rem;
+}
+
+.session-identity {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 1rem;
+  margin-top: 0.35rem;
+  color: var(--ink-700);
+  font-size: 0.82rem;
 }
 
 .header-links {
@@ -310,6 +407,66 @@ select {
 
 .admin-ops-panel {
   margin-bottom: 0.9rem;
+}
+
+.contacts-panel {
+  margin-bottom: 0.9rem;
+}
+
+.contacts-add-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 0.7rem;
+  align-items: end;
+}
+
+.contacts-add-form label {
+  display: grid;
+  gap: 0.3rem;
+  color: var(--ink-700);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.contacts-add-form input {
+  width: 100%;
+}
+
+.contacts-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.contact-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #f4f7f8;
+}
+
+.contact-row h3,
+.contact-row p,
+.contacts-empty {
+  margin: 0;
+}
+
+.contact-row h3 {
+  font-size: 0.9rem;
+}
+
+.contact-row p {
+  margin-top: 0.2rem;
+  color: var(--ink-700);
+  font-size: 0.82rem;
+}
+
+.contacts-empty {
+  color: var(--ink-700);
+  font-size: 0.85rem;
 }
 
 .admin-op-selector {
@@ -596,6 +753,94 @@ pre {
   line-height: 1.4;
 }
 
+.admin-client-management {
+  gap: 0.85rem;
+}
+
+.admin-client-results {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.65rem;
+}
+
+.admin-client-result {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--ink-900);
+  padding: 0.75rem;
+  display: grid;
+  gap: 0.35rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-client-result span {
+  color: var(--ink-700);
+  font-size: 0.82rem;
+}
+
+.admin-client-profile {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  padding: 1rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.admin-client-profile.hidden {
+  display: none;
+}
+
+.admin-client-profile-header,
+.admin-client-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: start;
+}
+
+.admin-client-profile-header h3,
+.admin-client-profile-header p,
+.admin-client-profile h4 {
+  margin: 0.25rem 0;
+}
+
+.admin-client-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.admin-client-edit-form {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.admin-client-accounts {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.admin-client-account {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.65rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.25rem;
+}
+
+.admin-client-account strong,
+.admin-client-account span:last-child {
+  grid-column: 1 / -1;
+}
+
+.admin-client-actions {
+  justify-content: flex-end;
+  border-top: 1px solid var(--line);
+  padding-top: 0.8rem;
+}
+
 @media (max-width: 760px) {
   .action-modal-card {
     padding: 0.9rem;
@@ -648,6 +893,10 @@ pre {
   .grid-auth,
   .operations-grid,
   .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contacts-add-form {
     grid-template-columns: 1fr;
   }
 

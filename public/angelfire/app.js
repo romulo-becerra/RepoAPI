@@ -1,8 +1,19 @@
 const storageKey = 'angelfire-dashboard-state';
 const BALANCE_AUTO_REFRESH_MS = 15000;
 
+function defaultApiBaseUrl() {
+  const currentUrl = new URL(window.location.origin);
+  const localHosts = ['localhost', '127.0.0.1', '[::1]'];
+
+  if (localHosts.includes(currentUrl.hostname) && currentUrl.port === '8000') {
+    return `${currentUrl.protocol}//${currentUrl.hostname}:3001`;
+  }
+
+  return currentUrl.origin;
+}
+
 const defaultState = {
-  baseUrl: 'http://localhost:3001',
+  baseUrl: defaultApiBaseUrl(),
   token: '',
   managerToken: '',
   userId: '',
@@ -26,7 +37,19 @@ const defaultState = {
   adminInspectUserId: '',
   balanceAutoRefresh: false,
   activeView: 'client',
-  auditLog: []
+  opsPeriod: 'day',
+  opsDate: '',
+  opsType: 'all',
+  opsActor: 'all',
+  opsPage: 1,
+  opsPerPage: 10,
+  loginsPeriod: 'day',
+  loginsDate: '',
+  loginsStatus: 'all',
+  loginsPage: 1,
+  loginsPerPage: 10,
+  auditLog: [],
+  selectedAdminUserId: ''
 };
 
 const state = loadState();
@@ -37,7 +60,13 @@ let adminUsersPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1
 let adminPlanPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
 let adminPreviewScheduleCache = [];
 let adminPreviewPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
+let opsPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
+let opsRequestId = 0;
+let loginsPaginationMeta = { page: 1, per_page: 10, total: 0, total_pages: 1, has_prev: false, has_next: false };
+let loginsRequestId = 0;
+let selectedCustomerServiceUserId = '';
 let adminInstallmentsStatusTotalsCache = {};
+let currentAdminOperation = '';
 let modalDecisionResolver = null;
 let modalCloseTimer = null;
 let balanceAutoRefreshTimer = null;
@@ -46,6 +75,9 @@ const el = {
   baseUrl: document.getElementById('baseUrl'),
   statusSummary: document.getElementById('statusSummary'),
   statusRole: document.getElementById('statusRole'),
+  headerUserName: document.getElementById('headerUserName'),
+  headerUserId: document.getElementById('headerUserId'),
+  headerAccountNumber: document.getElementById('headerAccountNumber'),
   responseStatus: document.getElementById('responseStatus'),
   responseBox: document.getElementById('responseBox'),
   balanceValue: document.getElementById('balanceValue'),
@@ -74,18 +106,56 @@ const el = {
   txRows: document.getElementById('txRows'),
   serviceId: document.getElementById('serviceId'),
   viewClientBtn: document.getElementById('viewClientBtn'),
+  viewCashierBtn: document.getElementById('viewCashierBtn'),
+  viewCustomerServiceBtn: document.getElementById('viewCustomerServiceBtn'),
   viewAdminBtn: document.getElementById('viewAdminBtn'),
   clientView: document.getElementById('clientView'),
   adminView: document.getElementById('adminView'),
+  cashierView: document.getElementById('cashierView'),
+  customerServiceView: document.getElementById('customerServiceView'),
   adminUsersCount: document.getElementById('adminUsersCount'),
   adminActiveLoans: document.getElementById('adminActiveLoans'),
   adminLoansAmount: document.getElementById('adminLoansAmount'),
   adminActivity: document.getElementById('adminActivity'),
+  adminDashboardCustomers: document.getElementById('adminDashboardCustomers'),
+  adminDashboardAccounts: document.getElementById('adminDashboardAccounts'),
+  adminDashboardTransactions: document.getElementById('adminDashboardTransactions'),
+  adminDashboardIncome: document.getElementById('adminDashboardIncome'),
+  adminDashboardExpenses: document.getElementById('adminDashboardExpenses'),
+  adminDashboardOverdue: document.getElementById('adminDashboardOverdue'),
+  adminDashboardSecurity: document.getElementById('adminDashboardSecurity'),
+  adminRolesRows: document.getElementById('adminRolesRows'),
+  refreshRolesBtn: document.getElementById('refreshRolesBtn'),
+  accountingBalanceGeneral: document.getElementById('accountingBalanceGeneral'),
+  accountingIncome: document.getElementById('accountingIncome'),
+  accountingExpenses: document.getElementById('accountingExpenses'),
+  accountingCashIn: document.getElementById('accountingCashIn'),
+  accountingDailyRows: document.getElementById('accountingDailyRows'),
+  refreshAccountingBtn: document.getElementById('refreshAccountingBtn'),
   adminUsersPerPage: document.getElementById('adminUsersPerPage'),
   adminUsersPrevPageBtn: document.getElementById('adminUsersPrevPageBtn'),
   adminUsersNextPageBtn: document.getElementById('adminUsersNextPageBtn'),
   adminUsersPageInfo: document.getElementById('adminUsersPageInfo'),
   adminUsersRows: document.getElementById('adminUsersRows'),
+  adminClientLookupForm: document.getElementById('adminClientLookupForm'),
+  adminClientLookupQuery: document.getElementById('adminClientLookupQuery'),
+  adminClientLookupValidation: document.getElementById('adminClientLookupValidation'),
+  adminClientLookupResults: document.getElementById('adminClientLookupResults'),
+  adminClientProfile: document.getElementById('adminClientProfile'),
+  adminClientName: document.getElementById('adminClientName'),
+  adminClientMeta: document.getElementById('adminClientMeta'),
+  adminClientStatus: document.getElementById('adminClientStatus'),
+  adminClientAccounts: document.getElementById('adminClientAccounts'),
+  adminClientEditForm: document.getElementById('adminClientEditForm'),
+  adminClientFirstName: document.getElementById('adminClientFirstName'),
+  adminClientLastName: document.getElementById('adminClientLastName'),
+  adminClientEmail: document.getElementById('adminClientEmail'),
+  adminClientPhone: document.getElementById('adminClientPhone'),
+  adminClientBlockBtn: document.getElementById('adminClientBlockBtn'),
+  adminClientUnblockBtn: document.getElementById('adminClientUnblockBtn'),
+  adminClientDeactivateBtn: document.getElementById('adminClientDeactivateBtn'),
+  adminClientForcePasswordBtn: document.getElementById('adminClientForcePasswordBtn'),
+  adminClientDeleteBtn: document.getElementById('adminClientDeleteBtn'),
   adminLookupAccountId: document.getElementById('adminLookupAccountId'),
   adminAccountLookupValidation: document.getElementById('adminAccountLookupValidation'),
   adminAccountSummary: document.getElementById('adminAccountSummary'),
@@ -99,20 +169,62 @@ const el = {
   adminInstallmentsPaidCount: document.getElementById('adminInstallmentsPaidCount'),
   adminInstallmentsPendingCount: document.getElementById('adminInstallmentsPendingCount'),
   adminUserFilesRows: document.getElementById('adminUserFilesRows'),
+  contactForm: document.getElementById('contactForm'),
+  contactName: document.getElementById('contactName'),
+  contactPhone: document.getElementById('contactPhone'),
+  contactsStatus: document.getElementById('contactsStatus'),
+  contactsList: document.getElementById('contactsList'),
+  contactsCount: document.getElementById('contactsCount'),
   userFilesRows: document.getElementById('userFilesRows'),
   userFileInput: document.getElementById('userFileInput'),
   adminAuditLog: document.getElementById('adminAuditLog'),
+  opsPeriod: document.getElementById('opsPeriod'),
+  opsDate: document.getElementById('opsDate'),
+  opsType: document.getElementById('opsType'),
+  opsActor: document.getElementById('opsActor'),
+  opsPerPage: document.getElementById('opsPerPage'),
+  opsRows: document.getElementById('opsRows'),
+  opsSummary: document.getElementById('opsSummary'),
+  opsPageInfo: document.getElementById('opsPageInfo'),
+  opsPrevPageBtn: document.getElementById('opsPrevPageBtn'),
+  opsNextPageBtn: document.getElementById('opsNextPageBtn'),
+  opsRefreshBtn: document.getElementById('refreshOpsBtn'),
+  opsDownloadBtn: document.getElementById('opsDownloadBtn'),
+  loginsPeriod: document.getElementById('loginsPeriod'),
+  loginsDate: document.getElementById('loginsDate'),
+  loginsStatus: document.getElementById('loginsStatus'),
+  loginsPerPage: document.getElementById('loginsPerPage'),
+  loginsRows: document.getElementById('loginsRows'),
+  loginsSummary: document.getElementById('loginsSummary'),
+  loginsPageInfo: document.getElementById('loginsPageInfo'),
+  loginsPrevPageBtn: document.getElementById('loginsPrevPageBtn'),
+  loginsNextPageBtn: document.getElementById('loginsNextPageBtn'),
+  loginsRefreshBtn: document.getElementById('refreshLoginsBtn'),
+  loginsDownloadBtn: document.getElementById('loginsDownloadBtn'),
   permClient: document.getElementById('permClient'),
   permAdmin: document.getElementById('permAdmin'),
+  permCashier: document.getElementById('permCashier'),
+  permCustomerService: document.getElementById('permCustomerService'),
   permManagerUsers: document.getElementById('permManagerUsers'),
   profileFirstName: document.getElementById('profileFirstName'),
   profileLastName: document.getElementById('profileLastName'),
   profileEmail: document.getElementById('profileEmail'),
   profilePhone: document.getElementById('profilePhone'),
+  profileDateOfBirth: document.getElementById('profileDateOfBirth'),
+  basicAuthEmail: document.getElementById('basicAuthEmail'),
+  basicAuthPassword: document.getElementById('basicAuthPassword'),
+  basicAuthPasswordConfirmation: document.getElementById('basicAuthPasswordConfirmation'),
+  apiKeysPanel: document.getElementById('apiKeysPanel'),
+  apiKeyName: document.getElementById('apiKeyName'),
+  apiKeySecretResult: document.getElementById('apiKeySecretResult'),
+  apiKeySecretValue: document.getElementById('apiKeySecretValue'),
+  apiKeysRows: document.getElementById('apiKeysRows'),
   logoutBtn: document.getElementById('logoutBtn'),
   accountMaintenanceSection: document.getElementById('accountMaintenanceSection'),
   showProfileSectionBtn: document.getElementById('showProfileSectionBtn'),
   showSecuritySectionBtn: document.getElementById('showSecuritySectionBtn'),
+  showBasicAuthSectionBtn: document.getElementById('showBasicAuthSectionBtn'),
+  showApiKeysSectionBtn: document.getElementById('showApiKeysSectionBtn'),
   hideAccountSectionBtn: document.getElementById('hideAccountSectionBtn'),
   adminLoanRateHint: document.getElementById('adminLoanRateHint'),
   adminLoanPreviewModal: document.getElementById('adminLoanPreviewModal'),
@@ -362,6 +474,117 @@ function setAdminAccountLookupValidation(message) {
   el.adminAccountLookupValidation.classList.remove('hidden');
 }
 
+function setTargetAccountValidation(message) {
+  const targetValidation = document.getElementById('adminTargetAccountValidation');
+  if (!targetValidation) {
+    return;
+  }
+
+  const text = String(message || '').trim();
+  if (!text) {
+    targetValidation.textContent = '';
+    targetValidation.classList.add('hidden');
+    return;
+  }
+
+  targetValidation.textContent = text;
+  targetValidation.classList.remove('hidden');
+}
+
+function setTargetOperationButtonsDisabled(disabled) {
+  const buttonIds = [
+    'adminDepositTargetBtn',
+    'adminWithdrawTargetBtn',
+    'adminPayLoanTargetBtn',
+    'adminPayServiceTargetBtn'
+  ];
+
+  buttonIds.forEach((buttonId) => {
+    const button = document.getElementById(buttonId);
+    if (button) {
+      button.disabled = disabled;
+    }
+  });
+}
+
+function setTargetOperationFieldsDisabled(disabled) {
+  const fieldIds = [
+    'adminTargetLoanId',
+    'adminTargetAmount',
+    'adminTargetDescription',
+    'adminTargetServiceId'
+  ];
+
+  fieldIds.forEach((fieldId) => {
+    const element = document.getElementById(fieldId);
+    if (!element) {
+      return;
+    }
+
+    element.disabled = disabled;
+  });
+}
+
+function setTargetAccountInfo(summary) {
+  const info = document.getElementById('adminTargetAccountInfo');
+  if (!info) {
+    return;
+  }
+
+  if (!summary) {
+    info.textContent = 'Sin cuenta validada.';
+    return;
+  }
+
+  const accountNumber = summary.account_number || summary.accountId || 'N/A';
+  const userName = summary.user_name || 'Cliente sin nombre';
+  const balance = Number(summary.balance || 0);
+  info.textContent = `Cuenta validada: ${accountNumber} - ${userName} | Saldo: S/ ${balance.toFixed(2)}`;
+}
+
+function setLoanAccountInfo(summary) {
+  const info = document.getElementById('adminLoanAccountInfo');
+  if (!info) {
+    return;
+  }
+
+  if (!summary) {
+    info.textContent = 'Sin cuenta validada.';
+    return;
+  }
+
+  const accountNumber = summary.account_number || summary.accountId || 'N/A';
+  const userName = summary.user_name || 'Cliente sin nombre';
+  const balance = Number(summary.balance || 0);
+  info.textContent = `Cuenta validada: ${accountNumber} - ${userName} | Saldo: S/ ${balance.toFixed(2)}`;
+}
+
+async function validateTargetAccountBalanceForAction(actionName, amount) {
+  const lookup = document.getElementById('adminTargetAccountId').value.trim();
+  if (!lookup || !amount || Number(amount) <= 0) {
+    return true;
+  }
+
+  try {
+    const summary = await apiCall(`/api/v1/manager/accounts/${lookup}/summary`, 'GET', null, 'manager');
+    const balance = Number(summary.balance || 0);
+    const requested = Number(amount);
+    if (requested > balance) {
+      const actionLabel = actionName === 'withdraw' ? 'retiro' : actionName === 'pay_loan' ? 'pago de préstamo' : 'pago de servicio';
+      const message = `Saldo insuficiente. La cuenta tiene S/ ${balance.toFixed(2)} y el ${actionLabel} requiere S/ ${requested.toFixed(2)}.`;
+      setTargetAccountValidation(message);
+      renderResponse(422, { errors: message });
+      return false;
+    }
+    setTargetAccountValidation('');
+    return true;
+  } catch (error) {
+    setTargetAccountValidation(normalizeAdminLookupErrorMessage(error.message));
+    renderResponse(422, { errors: error.message });
+    return false;
+  }
+}
+
 function normalizeAdminLookupErrorMessage(message) {
   const text = String(message || '').toLowerCase();
   if (text.includes('not found') || text.includes('no existe') || text.includes('no encontrado')) {
@@ -421,22 +644,105 @@ async function ensureAdminInstallmentsStatusTotals() {
 function loadState() {
   try {
     const raw = localStorage.getItem(storageKey);
-    return { ...defaultState, ...(raw ? JSON.parse(raw) : {}) };
+    const loadedState = { ...defaultState, ...(raw ? JSON.parse(raw) : {}) };
+    loadedState.baseUrl = resolveApiBaseUrl(loadedState.baseUrl);
+    return loadedState;
   } catch (_error) {
     return { ...defaultState };
   }
+}
+
+function resolveApiBaseUrl(baseUrl) {
+  const currentUrl = new URL(window.location.origin);
+  const defaultUrl = new URL(defaultState.baseUrl, currentUrl.origin);
+  const targetUrl = new URL(baseUrl || defaultUrl.origin, defaultUrl.origin);
+  const localHosts = ['localhost', '127.0.0.1', '[::1]'];
+
+  if (!localHosts.includes(currentUrl.hostname) && localHosts.includes(targetUrl.hostname)) {
+    return currentUrl.origin;
+  }
+
+  if (!baseUrl || baseUrl.startsWith('/')) {
+    return defaultUrl.origin;
+  }
+
+  return targetUrl.origin;
 }
 
 function persistState() {
   localStorage.setItem(storageKey, JSON.stringify(state));
 }
 
+function hasSessionToken() {
+  return Boolean(state.managerToken || state.token);
+}
+
+// Role matrix:
+//   super_admin -> full control (user lifecycle, roles, reports, counter operations)
+//   admin   -> full control (user lifecycle, roles, reports, counter operations)
+//   manager -> management (inquiries, loan origination, reports, counter operations)
+//   cashier -> counter operations only (deposit/withdraw/loan payment/service payment)
+//   customer -> self service (withdraw, service payment, loan payment, transfer)
+const MANAGEMENT_ROLES = ['admin', 'super_admin', 'manager'];
+const STAFF_ROLES = ['admin', 'super_admin', 'manager', 'cashier', 'customer_service'];
+const ADMIN_OPERATIONS = {
+  'create-user': 'admin',
+  'create-loan': 'manager',
+  'account-ops': 'cashier'
+};
+
 function hasManagerAccess() {
-  return state.role === 'manager' && Boolean(state.managerToken || state.token);
+  return MANAGEMENT_ROLES.includes(state.role) && hasSessionToken();
+}
+
+function hasAdminAccess() {
+  return ['admin', 'super_admin'].includes(state.role) && hasSessionToken();
+}
+
+function hasStaffAccess() {
+  return STAFF_ROLES.includes(state.role) && hasSessionToken();
 }
 
 function hasClientAccess() {
   return Boolean(state.token);
+}
+
+function isClientRole() {
+  return state.role === 'customer';
+}
+
+function adminOperationAllowed(operationKey) {
+  const requiredRole = ADMIN_OPERATIONS[operationKey];
+  if (!requiredRole) {
+    return false;
+  }
+  if (!hasSessionToken()) {
+    return false;
+  }
+  if (requiredRole === 'admin') {
+    return hasAdminAccess();
+  }
+  if (requiredRole === 'manager') {
+    return hasManagerAccess();
+  }
+  return hasStaffAccess();
+}
+
+function applyRolePermissions() {
+  const role = state.role || '';
+  document.querySelectorAll('[data-roles]').forEach((node) => {
+    const allowed = (node.getAttribute('data-roles') || '')
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean);
+    node.classList.toggle('hidden', allowed.length > 0 && !allowed.includes(role) && role !== 'super_admin');
+  });
+
+  if (el.viewAdminBtn && !hasStaffAccess() && state.activeView === 'admin') {
+    state.activeView = 'client';
+  }
+
+  renderAdminOperationVisibility(currentAdminOperation);
 }
 
 function pushAudit(eventText) {
@@ -464,7 +770,9 @@ function setPermissionBadge(node, enabled) {
 function renderPermissions() {
   setPermissionBadge(el.permClient, hasClientAccess());
   setPermissionBadge(el.permAdmin, hasManagerAccess());
-  setPermissionBadge(el.permManagerUsers, hasManagerAccess());
+  setPermissionBadge(el.permCashier, state.role === 'cashier');
+  setPermissionBadge(el.permCustomerService, state.role === 'customer_service');
+  setPermissionBadge(el.permManagerUsers, hasAdminAccess());
 }
 
 function clearSession(keepBaseUrl = true) {
@@ -479,13 +787,17 @@ function clearSession(keepBaseUrl = true) {
 function updateHeader() {
   el.statusSummary.textContent = state.token ? 'Autenticado' : 'Sin autenticar';
   el.statusRole.textContent = `Rol: ${state.role || '-'}`;
+  el.headerUserName.textContent = state.token ? state.fullName || '-' : '-';
+  el.headerUserId.textContent = state.token ? state.userId || '-' : '-';
+  el.headerAccountNumber.textContent = state.token ? state.accountNumber || '-' : '-';
   el.accountNumberValue.textContent = state.accountNumber || '-';
   el.userNameValue.textContent = state.fullName || '-';
   renderPermissions();
+  applyRolePermissions();
 }
 
 function toggleAccountMaintenance(mode) {
-  const show = mode === 'profile' || mode === 'security';
+  const show = mode === 'profile' || mode === 'security' || mode === 'basic-auth' || mode === 'api-keys';
   el.accountMaintenanceSection.classList.toggle('hidden', !show);
 
   if (mode === 'profile') {
@@ -495,19 +807,63 @@ function toggleAccountMaintenance(mode) {
   if (mode === 'security') {
     document.getElementById('currentPin').focus();
   }
+
+  if (mode === 'basic-auth') {
+    el.basicAuthPassword.focus();
+  }
+
+  if (mode === 'api-keys') {
+    refreshApiKeys().catch((error) => renderResponse(422, { errors: error.message }));
+    el.apiKeyName.focus();
+  }
+}
+
+function resolvePreferredView() {
+  const stored = state.activeView;
+  const fallback =
+    state.role === 'cashier' ? 'cashier'
+      : state.role === 'customer_service' ? 'customer_service'
+        : hasStaffAccess() ? 'admin'
+          : 'client';
+  if (stored === 'admin' && !['admin', 'super_admin', 'manager'].includes(state.role)) {
+    return 'client';
+  }
+  if (stored === 'cashier' && state.role !== 'cashier') {
+    return 'client';
+  }
+  if (stored === 'customer_service' && state.role !== 'customer_service') {
+    return 'client';
+  }
+  return stored || fallback;
 }
 
 function setView(view) {
-  if (view === 'admin' && !hasManagerAccess()) {
-    renderResponse(403, { errors: 'La vista admin requiere autenticacion manager.' });
+  if (view === 'cashier' && state.role !== 'cashier') {
+    renderResponse(403, { errors: 'La vista cajero requiere rol Cashier.' });
     return;
+  }
+  if (view === 'customer_service' && state.role !== 'customer_service') {
+    renderResponse(403, { errors: 'La vista Atención al Cliente requiere el rol correspondiente.' });
+    return;
+  }
+  if (view === 'admin' && !['admin', 'super_admin', 'manager'].includes(state.role)) {
+    renderResponse(403, { errors: 'La vista administrativa requiere rol Admin o Manager.' });
+    return;
+  }
+
+  if (view === 'admin') {
+    applyRolePermissions();
   }
 
   state.activeView = view;
   el.clientView.classList.toggle('hidden', view !== 'client');
   el.adminView.classList.toggle('hidden', view !== 'admin');
+  el.cashierView.classList.toggle('hidden', view !== 'cashier');
+  el.customerServiceView.classList.toggle('hidden', view !== 'customer_service');
   el.viewClientBtn.classList.toggle('active-view', view === 'client');
   el.viewAdminBtn.classList.toggle('active-view', view === 'admin');
+  el.viewCashierBtn.classList.toggle('active-view', view === 'cashier');
+  el.viewCustomerServiceBtn.classList.toggle('active-view', view === 'customer_service');
   syncBalanceAutoRefreshState();
   persistState();
 }
@@ -757,6 +1113,252 @@ function formatPerformedBy(tx) {
   return 'No disponible';
 }
 
+function formatDateTime(value) {
+  if (!value) {
+    return '-';
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return String(value);
+  }
+
+  return parsed.toLocaleString(window.AngelFireI18n?.localeTag() || 'es-BO');
+}
+
+function formatOpsRange(range) {
+  if (!range || !range.from || !range.to) {
+    return '-';
+  }
+
+  return `${formatDateTime(range.from)} - ${formatDateTime(range.to)}`;
+}
+
+function updateOpsPaginationUi() {
+  if (!el.opsPageInfo || !el.opsPrevPageBtn || !el.opsNextPageBtn) {
+    return;
+  }
+
+  el.opsPageInfo.textContent = `${opsPaginationMeta.page} / ${opsPaginationMeta.total_pages}`;
+  el.opsPrevPageBtn.disabled = !opsPaginationMeta.has_prev;
+  el.opsNextPageBtn.disabled = !opsPaginationMeta.has_next;
+}
+
+function currentOpsDate() {
+  return state.opsDate || new Date().toISOString().slice(0, 10);
+}
+
+// Query shared by the listing and the CSV download so both always describe
+// exactly the same set of operations.
+function buildOpsQuery() {
+  return new URLSearchParams({
+    period: state.opsPeriod || 'day',
+    date: currentOpsDate(),
+    operation_type: state.opsType || 'all',
+    performed_by: state.opsActor || 'all',
+    page: String(state.opsPage || 1),
+    per_page: String(state.opsPerPage || 10)
+  }).toString();
+}
+
+function opsRowHtml(operation) {
+  const actor = operation.performed_by_label || operation.performed_by_name || '-';
+  const user = operation.user_name
+    ? `${operation.user_name}${operation.user_id ? ` (ID ${operation.user_id})` : ''}`
+    : '-';
+
+  return `<tr><td>${formatDateTime(operation.created_at)}</td><td>${formatTransactionType(operation.transaction_type)}</td><td>${Number(operation.amount || 0).toFixed(2)}</td><td>${operation.description || '-'}</td><td>${user}</td><td>${operation.account_number || '-'}</td><td>${actor}</td><td>${operation.status || '-'}</td></tr>`;
+}
+
+async function loadOperations() {
+  if (!hasManagerAccess() || !el.opsRows) {
+    return;
+  }
+
+  // Changing the filters can start several requests in a row; only the newest
+  // one is allowed to paint, otherwise a slow earlier response would overwrite
+  // the current selection with stale data.
+  const requestId = opsRequestId + 1;
+  opsRequestId = requestId;
+
+  const payload = await apiCall(`/api/v1/manager/operations?${buildOpsQuery()}`, 'GET', null, 'manager');
+  if (requestId !== opsRequestId) {
+    return;
+  }
+
+  const rows = payload.operations || [];
+
+  opsPaginationMeta = {
+    page: Number(payload.page || 1),
+    per_page: Number(payload.per_page || state.opsPerPage || 10),
+    total: Number(payload.total || rows.length),
+    total_pages: Number(payload.total_pages || 1),
+    has_prev: Boolean(payload.has_prev),
+    has_next: Boolean(payload.has_next)
+  };
+  state.opsPage = opsPaginationMeta.page;
+  state.opsPerPage = opsPaginationMeta.per_page;
+  persistState();
+
+  el.opsRows.innerHTML = rows.length === 0
+    ? '<tr><td colspan="8">Sin operaciones</td></tr>'
+    : rows.map(opsRowHtml).join('');
+
+  if (el.opsSummary) {
+    el.opsSummary.textContent = `Operaciones: ${opsPaginationMeta.total} | Monto total: S/ ${Number(payload.total_amount || 0).toFixed(2)} | Rango: ${formatOpsRange(payload.range)}`;
+  }
+
+  updateOpsPaginationUi();
+  pushAudit(`Consulta bitacora de operaciones periodo=${state.opsPeriod} fecha=${currentOpsDate()} total=${opsPaginationMeta.total}`);
+}
+
+async function downloadOperations() {
+  const response = await fetch(`${state.baseUrl}/api/v1/manager/operations/download?${buildOpsQuery()}`, {
+    method: 'GET',
+    headers: {
+      Accept: 'text/csv',
+      Authorization: `Bearer ${state.managerToken || state.token}`
+    }
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    let payload;
+    try {
+      payload = text ? JSON.parse(text) : {};
+    } catch (_error) {
+      payload = { raw: text };
+    }
+    throw new Error(payload.errors || 'No se pudo descargar la bitacora de operaciones.');
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `operations_${state.opsPeriod || 'day'}_${currentOpsDate()}.csv`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  pushAudit(`Bitacora de operaciones descargada periodo=${state.opsPeriod} fecha=${currentOpsDate()}`);
+}
+
+function currentLoginsDate() {
+  return state.loginsDate || new Date().toISOString().slice(0, 10);
+}
+
+function buildLoginsQuery() {
+  return new URLSearchParams({
+    period: state.loginsPeriod || 'day',
+    date: currentLoginsDate(),
+    status: state.loginsStatus || 'all',
+    page: String(state.loginsPage || 1),
+    per_page: String(state.loginsPerPage || 10)
+  }).toString();
+}
+
+function updateLoginsPaginationUi() {
+  if (!el.loginsPageInfo || !el.loginsPrevPageBtn || !el.loginsNextPageBtn) {
+    return;
+  }
+
+  el.loginsPageInfo.textContent = `${loginsPaginationMeta.page} / ${loginsPaginationMeta.total_pages}`;
+  el.loginsPrevPageBtn.disabled = !loginsPaginationMeta.has_prev;
+  el.loginsNextPageBtn.disabled = !loginsPaginationMeta.has_next;
+}
+
+function loginReportRow(event) {
+  const cells = [
+    formatDateTime(event.created_at),
+    event.status,
+    event.user_id || '-',
+    event.user_name || 'Usuario no identificado',
+    event.account_number || '-'
+  ];
+  const row = document.createElement('tr');
+  cells.forEach((value) => {
+    const cell = document.createElement('td');
+    cell.textContent = value;
+    row.append(cell);
+  });
+  return row;
+}
+
+async function loadLoginReport() {
+  if (!hasManagerAccess() || !el.loginsRows) {
+    return;
+  }
+
+  const requestId = loginsRequestId + 1;
+  loginsRequestId = requestId;
+  const payload = await apiCall(`/api/v1/manager/logins?${buildLoginsQuery()}`, 'GET', null, 'manager');
+  if (requestId !== loginsRequestId) {
+    return;
+  }
+
+  const rows = payload.logins || [];
+  loginsPaginationMeta = {
+    page: Number(payload.page || 1),
+    per_page: Number(payload.per_page || state.loginsPerPage || 10),
+    total: Number(payload.total || 0),
+    total_pages: Number(payload.total_pages || 1),
+    has_prev: Boolean(payload.has_prev),
+    has_next: Boolean(payload.has_next)
+  };
+  state.loginsPage = loginsPaginationMeta.page;
+  state.loginsPerPage = loginsPaginationMeta.per_page;
+  persistState();
+
+  el.loginsRows.replaceChildren();
+  if (rows.length === 0) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 5;
+    cell.textContent = 'Sin inicios de sesion registrados.';
+    row.append(cell);
+    el.loginsRows.append(row);
+  } else {
+    rows.forEach((event) => el.loginsRows.append(loginReportRow(event)));
+  }
+
+  const totals = payload.totals_by_status || {};
+  el.loginsSummary.textContent = `Inicios: ${payload.total || 0} | Exitosos: ${totals.success || 0} | Fallidos: ${totals.failure || 0} | Bloqueados: ${totals.blocked || 0} | Rango: ${formatOpsRange(payload.range)}`;
+  updateLoginsPaginationUi();
+  pushAudit(`Consulta de accesos periodo=${state.loginsPeriod} fecha=${currentLoginsDate()} total=${loginsPaginationMeta.total}`);
+}
+
+async function downloadLoginReport() {
+  const response = await fetch(`${state.baseUrl}/api/v1/manager/logins/download?${buildLoginsQuery()}`, {
+    method: 'GET',
+    headers: {
+      Accept: 'text/csv',
+      Authorization: `Bearer ${state.managerToken || state.token}`
+    }
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    let payload;
+    try {
+      payload = text ? JSON.parse(text) : {};
+    } catch (_error) {
+      payload = { raw: text };
+    }
+    throw new Error(payload.errors || 'No se pudo descargar el reporte de accesos.');
+  }
+
+  const blob = await response.blob();
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `user_logins_${state.loginsPeriod || 'day'}_${currentLoginsDate()}.csv`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
 function updatePendingPaginationUi() {
   const page = pendingPaginationMeta.page || 1;
   const totalPages = pendingPaginationMeta.total_pages || 1;
@@ -826,6 +1428,60 @@ function updateAdminLoanRateHintFromAmount() {
   el.adminLoanRateHint.textContent = `Interes anual estimado: ${rate.toFixed(2)}%`;
 }
 
+async function validateLoanAccountForOperation() {
+  const lookup = document.getElementById('adminLoanAccountId').value.trim();
+  if (!lookup) {
+    setLoanAccountInfo(null);
+    setLoanAccountValidation('Debes indicar un account ID o numero de cuenta valido.');
+    document.getElementById('adminLoanAmount').disabled = true;
+    document.getElementById('adminLoanTermMonths').disabled = true;
+    document.getElementById('adminLoanFirstDueDate').disabled = true;
+    document.getElementById('adminPreviewLoanBtn').disabled = true;
+    document.getElementById('adminCreateLoanBtn').disabled = true;
+    renderResponse(422, { errors: 'Debes indicar account ID o numero de cuenta.' });
+    return false;
+  }
+
+  try {
+    const summary = await apiCall(`/api/v1/manager/accounts/${lookup}/summary`, 'GET', null, 'manager');
+    setLoanAccountInfo(summary);
+    setLoanAccountValidation('');
+    document.getElementById('adminLoanAmount').disabled = false;
+    document.getElementById('adminLoanTermMonths').disabled = false;
+    document.getElementById('adminLoanFirstDueDate').disabled = false;
+    document.getElementById('adminPreviewLoanBtn').disabled = false;
+    document.getElementById('adminCreateLoanBtn').disabled = false;
+    return true;
+  } catch (error) {
+    setLoanAccountInfo(null);
+    setLoanAccountValidation(normalizeAdminLookupErrorMessage(error.message));
+    document.getElementById('adminLoanAmount').disabled = true;
+    document.getElementById('adminLoanTermMonths').disabled = true;
+    document.getElementById('adminLoanFirstDueDate').disabled = true;
+    document.getElementById('adminPreviewLoanBtn').disabled = true;
+    document.getElementById('adminCreateLoanBtn').disabled = true;
+    renderResponse(422, { errors: error.message });
+    return false;
+  }
+}
+
+function setLoanAccountValidation(message) {
+  const validation = document.getElementById('adminLoanAccountValidation');
+  if (!validation) {
+    return;
+  }
+
+  const text = String(message || '').trim();
+  if (!text) {
+    validation.textContent = '';
+    validation.classList.add('hidden');
+    return;
+  }
+
+  validation.textContent = text;
+  validation.classList.remove('hidden');
+}
+
 function getAdminLoanFormValues() {
   return {
     accountId: document.getElementById('adminLoanAccountId').value.trim(),
@@ -873,7 +1529,121 @@ function formatUserStatus(user) {
   return 'activo';
 }
 
+function setAdminClientLookupValidation(message) {
+  if (!el.adminClientLookupValidation) return;
+  el.adminClientLookupValidation.textContent = message || '';
+  el.adminClientLookupValidation.classList.toggle('hidden', !message);
+}
+
+function escapeAdminText(value) {
+  return String(value ?? '').replace(/[&<>"']/g, (character) => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  })[character]);
+}
+
+async function refreshSelectedAdminClient() {
+  if (!state.selectedAdminUserId) return;
+  try {
+    const payload = await apiCall(
+      `/api/v1/manager/users/${state.selectedAdminUserId}`,
+      'GET',
+      null,
+      'manager'
+    );
+    renderAdminClientProfile(payload.user);
+  } catch (error) {
+    setAdminClientLookupValidation(normalizeAdminLookupErrorMessage(error.message));
+  }
+}
+
+function renderAdminClientProfile(user) {
+  if (!user) {
+    el.adminClientProfile.classList.add('hidden');
+    state.selectedAdminUserId = '';
+    persistState();
+    return;
+  }
+
+  state.selectedAdminUserId = String(user.id);
+  persistState();
+  el.adminClientProfile.classList.remove('hidden');
+  el.adminClientName.textContent = `${user.first_name || ''} ${user.last_name || ''}`.trim() || `Usuario #${user.id}`;
+  el.adminClientMeta.textContent = `ID ${user.id} | ${user.email || '-'} | ${user.phone || '-'} | Rol: ${user.role || '-'}`;
+
+  const status = formatUserStatus(user);
+  el.adminClientStatus.textContent = status;
+  el.adminClientStatus.className = `perm-badge ${status === 'activo' ? 'ok' : ''}`;
+
+  el.adminClientFirstName.value = user.first_name || '';
+  el.adminClientLastName.value = user.last_name || '';
+  el.adminClientEmail.value = user.email || '';
+  el.adminClientPhone.value = user.phone || '';
+
+  const accounts = user.accounts || [];
+  el.adminClientAccounts.innerHTML = accounts.length
+    ? accounts.map((account) => `
+      <article class="admin-client-account">
+        <strong>${escapeAdminText(account.account_number || '-')}</strong>
+        <span>${escapeAdminText(account.account_type || '-')}</span>
+        <span>Saldo: ${Number(account.balance || 0).toFixed(2)}</span>
+      </article>
+    `).join('')
+    : '<p class="field-help">Sin cuentas asociadas.</p>';
+
+  const isActive = user.active !== false;
+  const isBlocked = user.blocked === true;
+  el.adminClientBlockBtn.disabled = !isActive || isBlocked;
+  el.adminClientUnblockBtn.disabled = !isActive || !isBlocked;
+  el.adminClientDeactivateBtn.disabled = !isActive;
+  el.adminClientDeleteBtn.disabled = String(user.id) === String(state.userId);
+}
+
+async function searchAdminClients() {
+  const query = el.adminClientLookupQuery.value.trim();
+  if (!query) {
+    setAdminClientLookupValidation('Debes indicar ID, cuenta, nombre, correo o teléfono.');
+    return;
+  }
+
+  setAdminClientLookupValidation('');
+  try {
+    const payload = await apiCall(
+      `/api/v1/manager/users/search?q=${encodeURIComponent(query)}`,
+      'GET',
+      null,
+      'manager'
+    );
+    const users = payload.users || [];
+    el.adminClientLookupResults.classList.toggle('hidden', users.length === 0);
+
+    if (users.length === 0) {
+      el.adminClientLookupResults.innerHTML = '';
+      el.adminClientProfile.classList.add('hidden');
+      setAdminClientLookupValidation('No se encontró ningún usuario.');
+      return;
+    }
+
+    el.adminClientLookupResults.innerHTML = users.map((user) => `
+      <button class="admin-client-result" type="button" data-admin-client-id="${user.id}">
+        <strong>${escapeAdminText(`${user.first_name || ''} ${user.last_name || ''}`.trim() || `Usuario #${user.id}`)}</strong>
+        <span>ID ${user.id} | ${escapeAdminText(user.account_number || '-')} | ${escapeAdminText(user.email || '-')}</span>
+        <span>${escapeAdminText(formatUserStatus(user))} | ${escapeAdminText(user.role || '-')}</span>
+      </button>
+    `).join('');
+  } catch (error) {
+    setAdminClientLookupValidation(normalizeAdminLookupErrorMessage(error.message));
+  }
+}
+
 function renderAdminUserActions(user) {
+  if (!hasAdminAccess()) {
+    return '';
+  }
+
   const isActive = user && user.active !== false;
   const isBlocked = user && user.blocked === true;
   const actions = [];
@@ -890,20 +1660,29 @@ function renderAdminUserActions(user) {
   return actions.join('');
 }
 
-function toggleAdminOperation(operationKey) {
-  const selected = String(operationKey || '').trim();
+function renderAdminOperationVisibility(selected) {
   const opCards = document.querySelectorAll('[data-admin-op-card]');
   const opButtons = document.querySelectorAll('[data-admin-op]');
 
   opCards.forEach((card) => {
     const cardOp = card.getAttribute('data-admin-op-card') || '';
-    card.classList.toggle('hidden', cardOp !== selected);
+    card.classList.toggle('hidden', cardOp !== selected || !adminOperationAllowed(cardOp));
   });
 
   opButtons.forEach((button) => {
     const buttonOp = button.getAttribute('data-admin-op') || '';
     button.classList.toggle('active-view', buttonOp === selected);
   });
+}
+
+function toggleAdminOperation(operationKey) {
+  let selected = String(operationKey || '').trim();
+  if (selected && !adminOperationAllowed(selected)) {
+    selected = '';
+    renderResponse(403, { errors: 'Tu rol no tiene permitida esa operacion.' });
+  }
+  currentAdminOperation = selected;
+  renderAdminOperationVisibility(selected);
 
   if (selected) {
     const selectedCard = document.querySelector(`[data-admin-op-card="${selected}"]`);
@@ -917,8 +1696,8 @@ function toggleAdminOperation(operationKey) {
 }
 
 async function executeAdminUserAction(action, userId, formId = null) {
-  if (!hasManagerAccess()) {
-    renderResponse(403, { errors: 'Operacion restringida a manager.' });
+  if (!hasAdminAccess()) {
+    renderResponse(403, { errors: 'La gestion de usuarios esta restringida al rol Admin.' });
     return;
   }
 
@@ -1065,7 +1844,7 @@ function buildAuthHeader(authType) {
   return state.token ? { Authorization: `Bearer ${state.token}` } : {};
 }
 
-async function apiCall(path, method, body, authType = 'user') {
+async function apiCall(path, method, body, authType = 'user', hideApiKeySecret = false) {
   const headers = {
     Accept: 'application/json',
     ...buildAuthHeader(authType)
@@ -1086,7 +1865,10 @@ async function apiCall(path, method, body, authType = 'user') {
     payload = { raw: text };
   }
 
-  renderResponse(response.status, payload);
+  const responsePayload = hideApiKeySecret && payload.api_key
+    ? { ...payload, api_key: { ...payload.api_key, secret: '[secreto mostrado una sola vez]' } }
+    : payload;
+  renderResponse(response.status, responsePayload);
   if (!response.ok) {
     throw new Error(payload.errors || payload.error || 'Operacion fallida');
   }
@@ -1097,12 +1879,20 @@ async function apiCall(path, method, body, authType = 'user') {
 async function refreshServices() {
   const payload = await apiCall('/api/v1/services', 'GET', null, 'public');
   const services = payload.services || payload || [];
+  const target = document.getElementById('adminTargetServiceId');
   el.serviceId.innerHTML = '';
+  if (target) {
+    target.innerHTML = '';
+  }
   services.forEach((service) => {
     const option = document.createElement('option');
     option.value = service.id;
     option.textContent = `${service.id} - ${service.name}`;
     el.serviceId.append(option);
+
+    if (target) {
+      target.append(option.cloneNode(true));
+    }
   });
 }
 
@@ -1153,12 +1943,12 @@ async function refreshClientDashboard() {
   state.txPerPage = txPaginationMeta.per_page;
   persistState();
   if (rows.length === 0) {
-    el.txRows.innerHTML = '<tr><td colspan="8">Sin movimientos</td></tr>';
+    el.txRows.innerHTML = '<tr><td colspan="9">Sin movimientos</td></tr>';
   } else {
     el.txRows.innerHTML = rows
       .map(
         (tx) =>
-          `<tr><td>${tx.id || '-'}</td><td>${formatTransactionType(tx.display_type || tx.transaction_type)}</td><td>${tx.description || '-'}</td><td class="${amountClassByMovement(tx)}">${signedAmountByMovement(tx)}</td><td>${tx.status || '-'}</td><td>${formatPerformedBy(tx)}</td><td>${tx.performed_by_user_id || '-'}</td><td>${tx.created_at || '-'}</td></tr>`
+          `<tr><td>${tx.id || '-'}</td><td>${formatTransactionType(tx.display_type || tx.transaction_type)}</td><td>${tx.description || '-'}</td><td class="${amountClassByMovement(tx)}">${signedAmountByMovement(tx)}</td><td>${tx.status || '-'}</td><td>${formatPerformedBy(tx)}</td><td>${tx.performed_by_user_id || '-'}</td><td>${tx.created_at || '-'}</td><td>${tx.receipt_id ? `<button class="btn ghost mini" type="button" data-receipt-download="${tx.receipt_id}">Descargar</button>` : `<button class="btn ghost mini" type="button" data-receipt-create="${tx.id}">Generar</button>`}</td></tr>`
       )
       .join('');
   }
@@ -1218,6 +2008,52 @@ async function refreshProfileData() {
   el.profileLastName.value = user.last_name || '';
   el.profileEmail.value = user.email || '';
   el.profilePhone.value = user.phone || '';
+  el.profileDateOfBirth.value = user.date_of_birth || '';
+  el.basicAuthEmail.value = user.email || '';
+}
+
+async function refreshApiKeys() {
+  if (!state.token || !state.userId) {
+    return;
+  }
+
+  const payload = await apiCall(`/api/v1/users/${state.userId}/api_keys`, 'GET');
+  const apiKeys = payload.api_keys || [];
+  el.apiKeysRows.replaceChildren();
+
+  if (apiKeys.length === 0) {
+    const row = document.createElement('tr');
+    const cell = document.createElement('td');
+    cell.colSpan = 5;
+    cell.textContent = 'Sin API keys';
+    row.appendChild(cell);
+    el.apiKeysRows.appendChild(row);
+    return;
+  }
+
+  apiKeys.forEach((apiKey) => {
+    const row = document.createElement('tr');
+    [apiKey.name, apiKey.prefix, formatDateTime(apiKey.created_at), apiKey.last_used_at ? formatDateTime(apiKey.last_used_at) : 'Nunca'].forEach((value) => {
+      const cell = document.createElement('td');
+      cell.textContent = value;
+      row.appendChild(cell);
+    });
+
+    const actionCell = document.createElement('td');
+    if (apiKey.revoked_at) {
+      actionCell.textContent = 'Revocada';
+    } else {
+      const revokeButton = document.createElement('button');
+      revokeButton.type = 'button';
+      revokeButton.className = 'btn ghost mini';
+      revokeButton.dataset.apiKeyId = apiKey.id;
+      revokeButton.textContent = 'Revocar';
+      row.dataset.apiKeyActive = 'true';
+      actionCell.appendChild(revokeButton);
+    }
+    row.appendChild(actionCell);
+    el.apiKeysRows.appendChild(row);
+  });
 }
 
 async function refreshUserFiles() {
@@ -1239,6 +2075,65 @@ async function refreshUserFiles() {
         `<tr><td>${file.id}</td><td>${file.original_filename}</td><td>${file.content_type}</td><td>${formatFileSize(file.file_size)}</td><td>${file.created_at || '-'}</td></tr>`
     )
     .join('');
+}
+
+function renderContacts(contacts) {
+  el.contactsCount.textContent = String(contacts.length);
+  el.contactsList.replaceChildren();
+  if (contacts.length === 0) {
+    const emptyState = document.createElement('p');
+    emptyState.className = 'contacts-empty';
+    emptyState.textContent = 'Todavia no tienes contactos.';
+    el.contactsList.append(emptyState);
+    return;
+  }
+
+  contacts.forEach((contact) => {
+    const row = document.createElement('article');
+    row.className = 'contact-row';
+
+    const details = document.createElement('div');
+    const name = document.createElement('h3');
+    name.textContent = contact.name;
+    const phone = document.createElement('p');
+    phone.textContent = contact.phone;
+    details.append(name, phone);
+
+    const deleteButton = document.createElement('button');
+    deleteButton.className = 'btn alt';
+    deleteButton.type = 'button';
+    deleteButton.textContent = 'Eliminar';
+    deleteButton.setAttribute('aria-label', `Eliminar contacto ${contact.name}`);
+    deleteButton.addEventListener('click', async () => {
+      const confirmed = await openActionModal({
+        title: 'Eliminar contacto',
+        message: `Se eliminara ${contact.name} de tus contactos. Deseas continuar?`,
+        confirmText: 'Eliminar',
+        cancelText: 'Cancelar',
+        tone: 'danger',
+        showCancel: true
+      });
+      if (!confirmed) return;
+
+      try {
+        await apiCall(`/api/v1/contacts/${contact.id}`, 'DELETE');
+        el.contactsStatus.textContent = 'Contacto eliminado.';
+        await refreshContacts();
+      } catch (error) {
+        el.contactsStatus.textContent = error.message || 'No se pudo eliminar el contacto.';
+      }
+    });
+
+    row.append(details, deleteButton);
+    el.contactsList.append(row);
+  });
+}
+
+async function refreshContacts() {
+  if (!hasManagerAccess()) return;
+
+  const payload = await apiCall('/api/v1/contacts', 'GET');
+  renderContacts(payload.contacts || []);
 }
 
 async function refreshAdminFilesForSelectedUser() {
@@ -1480,9 +2375,415 @@ async function refreshAdminDashboard() {
     el.adminActivity.textContent = 'Disponible';
   }
   pushAudit('Consulta reporte de actividad de cuentas (30 dias)');
+
+  await refreshAdminDashboardMetrics();
+  await refreshAdminRoles();
+  await refreshAccountingReports();
+}
+
+async function refreshAdminDashboardMetrics() {
+  const payload = await apiCall('/api/v1/manager/reports/dashboard', 'GET', null, 'manager');
+  el.adminDashboardCustomers.textContent = String(payload.total_customers || 0);
+  el.adminDashboardAccounts.textContent = String(payload.total_accounts || 0);
+  el.adminDashboardTransactions.textContent = String(payload.transactions_today || 0);
+  el.adminDashboardIncome.textContent = `S/ ${Number(payload.income_today || 0).toFixed(2)}`;
+  el.adminDashboardExpenses.textContent = `S/ ${Number(payload.expenses_today || 0).toFixed(2)}`;
+  el.adminDashboardOverdue.textContent = String(payload.overdue_loans || 0);
+  el.adminDashboardSecurity.textContent = String(payload.security_alerts || 0);
+}
+
+async function refreshAdminRoles() {
+  const roles = await apiCall('/api/v1/manager/roles', 'GET', null, 'manager');
+  el.adminRolesRows.innerHTML = roles.map((role) =>
+    `<tr><td>${escapeAdminText(role.name)}</td><td>${role.permissions.map(escapeAdminText).join(', ')}</td></tr>`
+  ).join('');
+}
+
+async function refreshAccountingReports() {
+  const payload = await apiCall('/api/v1/manager/accounting/reports', 'GET', null, 'manager');
+  el.accountingBalanceGeneral.textContent = `S/ ${Number(payload.balance_general || 0).toFixed(2)}`;
+  el.accountingIncome.textContent = `S/ ${Number(payload.estado_resultados?.ingresos || 0).toFixed(2)}`;
+  el.accountingExpenses.textContent = `S/ ${Number(payload.estado_resultados?.egresos || 0).toFixed(2)}`;
+  el.accountingCashIn.textContent = `S/ ${Number(payload.flujo_caja?.entradas || 0).toFixed(2)}`;
+
+  const rows = payload.libro_diario || [];
+  el.accountingDailyRows.innerHTML = rows.length
+    ? rows.slice(0, 20).map((row) =>
+      `<tr><td>${row.id}</td><td>${escapeAdminText(row.fecha)}</td><td>${escapeAdminText(row.tipo)}</td><td>S/ ${Number(row.monto || 0).toFixed(2)}</td></tr>`
+    ).join('')
+    : '<tr><td colspan="4">Sin movimientos contables</td></tr>';
+}
+
+function applyDashboardTheme(theme) {
+  const isDark = theme === 'dark';
+  document.body.classList.toggle('dark-theme', isDark);
+  document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+  localStorage.setItem('angelfire-dashboard-theme', isDark ? 'dark' : 'light');
+}
+
+async function refreshCustomerPortal() {
+  if (state.role !== 'customer') return;
+
+  const dashboard = await apiCall('/api/v1/customer/dashboard', 'GET', null, 'user');
+  document.getElementById('customerPortalBalance').textContent = `S/ ${Number(dashboard.total_balance || 0).toFixed(2)}`;
+  document.getElementById('customerPortalAvailable').textContent = `S/ ${Number(dashboard.available_balance || 0).toFixed(2)}`;
+  document.getElementById('customerPortalIncome').textContent = `S/ ${Number(dashboard.income_month || 0).toFixed(2)}`;
+  document.getElementById('customerPortalExpenses').textContent = `S/ ${Number(dashboard.expenses_month || 0).toFixed(2)}`;
+
+  await refreshCustomerNotifications();
+
+  const preferences = await apiCall('/api/v1/customer/preferences', 'GET', null, 'user');
+  document.getElementById('customerTheme').value = preferences.theme || 'light';
+  applyDashboardTheme(preferences.theme || 'light');
+}
+
+async function refreshCustomerNotifications() {
+  const notifications = await apiCall('/api/v1/customer/notifications', 'GET', null, 'user');
+  const rows = notifications || [];
+  document.getElementById('customerNotificationsRows').innerHTML = rows.length
+    ? rows.map((item) => `<li>${escapeAdminText(item.title)}: ${escapeAdminText(item.message)}${item.read_at ? '' : ' (nuevo)'}</li>`).join('')
+    : '<li>Sin notificaciones</li>';
+}
+
+async function refreshCustomerServiceView() {
+  if (state.role !== 'customer_service') return;
+  await searchCustomerServiceUsers();
+  await refreshCustomerServiceTickets();
+}
+
+async function searchCustomerServiceUsers() {
+  const query = document.getElementById('customerServiceSearchQuery')?.value.trim() || '';
+  const payload = await apiCall(`/api/v1/customer_service/users/search?q=${encodeURIComponent(query)}`, 'GET', null, 'token');
+  const users = payload.users || [];
+  document.getElementById('customerServiceFoundCount').textContent = String(users.length);
+  document.getElementById('customerServiceResults').innerHTML = users.length
+    ? users.map((user) => `
+      <button class="admin-client-result" type="button" data-customer-service-user-id="${user.id}">
+        <strong>${escapeAdminText(`${user.first_name || ''} ${user.last_name || ''}`.trim())}</strong>
+        <span>ID ${user.id} | ${escapeAdminText(user.document_number || '-')} | ${escapeAdminText(user.email || '-')}</span>
+        <span>${escapeAdminText(user.status || '-')} | ${escapeAdminText(user.role || '-')}</span>
+      </button>
+    `).join('')
+    : '<p class="field-help">Sin usuarios encontrados.</p>';
+}
+
+async function selectCustomerServiceUser(userId) {
+  const payload = await apiCall(`/api/v1/customer_service/users/search?q=${encodeURIComponent(userId)}`, 'GET', null, 'token');
+  const user = (payload.users || []).find((item) => String(item.id) === String(userId));
+  if (!user) return;
+
+  selectedCustomerServiceUserId = String(user.id);
+  document.getElementById('customerServiceProfile').classList.remove('hidden');
+  document.getElementById('customerServiceName').textContent = `${user.first_name || ''} ${user.last_name || ''}`.trim();
+  document.getElementById('customerServiceMeta').textContent = `ID ${user.id} | ${user.email || '-'} | ${user.phone || '-'} | Documento: ${user.document_number || '-'}`;
+  document.getElementById('customerServiceStatus').textContent = formatUserStatus(user);
+  document.getElementById('customerServiceFirstName').value = user.first_name || '';
+  document.getElementById('customerServiceLastName').value = user.last_name || '';
+  document.getElementById('customerServiceEmail').value = user.email || '';
+  document.getElementById('customerServicePhone').value = user.phone || '';
+  document.getElementById('customerServiceDocument').value = user.document_number || '';
+  document.getElementById('customerServiceAddress').value = user.address || '';
+  document.getElementById('customerServiceAccounts').innerHTML = (user.accounts || []).length
+    ? user.accounts.map((account) => `<article class="admin-client-account"><strong>${escapeAdminText(account.account_number)}</strong><span>${escapeAdminText(account.account_category || '-')}</span><span>Saldo: ${Number(account.balance || 0).toFixed(2)}</span></article>`).join('')
+    : '<p class="field-help">Sin cuentas.</p>';
+}
+
+async function refreshCustomerServiceTickets() {
+  const payload = await apiCall('/api/v1/customer_service/tickets', 'GET', null, 'token');
+  const tickets = Array.isArray(payload) ? payload : [];
+  document.getElementById('customerServiceOpenTickets').textContent = String(tickets.filter((ticket) => !['resolved', 'closed'].includes(ticket.status)).length);
+  document.getElementById('customerServiceTicketsRows').innerHTML = tickets.length
+    ? tickets.map((ticket) => `<tr><td>${ticket.id}</td><td>${ticket.user_id}</td><td>${escapeAdminText(ticket.subject)}</td><td>${escapeAdminText(ticket.status)}</td><td>${escapeAdminText(ticket.priority)}${ticket.status !== 'closed' ? ` | <button class="btn ghost mini" type="button" data-close-ticket="${ticket.id}">Cerrar</button>` : ''}</td></tr>`).join('')
+    : '<tr><td colspan="5">Sin casos</td></tr>';
+}
+
+async function refreshCashierDashboard() {
+  if (state.role !== 'cashier') return;
+
+  const status = await apiCall('/api/v1/cashier/cash/status', 'GET', null, 'token');
+  const session = status.session;
+  document.getElementById('cashierOpeningBalance').textContent = `S/ ${Number(session?.opening_balance || 0).toFixed(2)}`;
+  document.getElementById('cashierSystemBalance').textContent = `S/ ${Number((session?.opening_balance || 0) + 0).toFixed(2)}`;
+  document.getElementById('cashierOpenedAt').textContent = session?.opened_at ? new Date(session.opened_at).toLocaleString() : '-';
+
+  const report = await apiCall('/api/v1/cashier/reports/daily', 'GET', null, 'token');
+  document.getElementById('cashierOperationCount').textContent = String(report.transaction_count || 0);
+  document.getElementById('cashDailyReport').textContent = JSON.stringify(report, null, 2);
+
+  await refreshCashierMovements();
+  await refreshCashierReceipts();
+  await refreshCashierClients();
+}
+
+async function refreshCashierMovements() {
+  const payload = await apiCall('/api/v1/cashier/cash/movements', 'GET', null, 'token');
+  const rows = payload.movements || [];
+  document.getElementById('cashMovementRows').innerHTML = rows.length
+    ? rows.map((row) => `<tr><td>${escapeAdminText(row.created_at)}</td><td>${escapeAdminText(row.type)}</td><td>S/ ${Number(row.amount || 0).toFixed(2)}</td><td>${escapeAdminText(row.account_number || '-')}</td><td>${escapeAdminText(row.status)}</td></tr>`).join('')
+    : '<tr><td colspan="5">Sin movimientos</td></tr>';
+}
+
+async function refreshCashierReceipts() {
+  const payload = await apiCall('/api/v1/cashier/receipts', 'GET', null, 'token');
+  const rows = payload.receipts || [];
+  document.getElementById('cashReceiptRows').innerHTML = rows.length
+    ? rows.map((row) => `<tr><td>${escapeAdminText(row.receipt_number)}</td><td>${escapeAdminText(row.operation)}</td><td>S/ ${Number(row.amount || 0).toFixed(2)}</td><td>${escapeAdminText(row.account_number || '-')}</td><td><button class="btn ghost mini" type="button" onclick="window.print()">Imprimir</button></td></tr>`).join('')
+    : '<tr><td colspan="5">Sin comprobantes</td></tr>';
+}
+
+async function refreshCashierClients() {
+  const query = document.getElementById('cashClientSearch').value.trim();
+  const payload = await apiCall(`/api/v1/cashier/clients/search?q=${encodeURIComponent(query)}`, 'GET', null, 'token');
+  const rows = payload.clients || [];
+  document.getElementById('cashClientRows').innerHTML = rows.length
+    ? rows.map((client) => `<tr><td>${client.id}</td><td>${escapeAdminText(`${client.first_name || ''} ${client.last_name || ''}`)}</td><td>${escapeAdminText(client.email || '-')}</td><td>${escapeAdminText(client.phone || '-')}</td><td>${(client.accounts || []).map((account) => account.account_number).join(', ') || '-'}</td></tr>`).join('')
+    : '<tr><td colspan="5">Sin clientes</td></tr>';
 }
 
 function bindEvents() {
+  el.viewCashierBtn?.addEventListener('click', () => setView('cashier'));
+  el.viewCustomerServiceBtn?.addEventListener('click', () => setView('customer_service'));
+  el.viewClientBtn?.addEventListener('click', () => setView('client'));
+  el.viewAdminBtn?.addEventListener('click', () => setView('admin'));
+
+  document.getElementById('customerServiceSearchForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    await searchCustomerServiceUsers();
+  });
+
+  document.getElementById('customerServiceRegisterForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      await apiCall('/api/v1/customer_service/users', 'POST', {
+        first_name: document.getElementById('customerServiceRegisterFirstName').value,
+        last_name: document.getElementById('customerServiceRegisterLastName').value,
+        email: document.getElementById('customerServiceRegisterEmail').value,
+        phone: document.getElementById('customerServiceRegisterPhone').value,
+        document_number: document.getElementById('customerServiceRegisterDocument').value,
+        address: document.getElementById('customerServiceRegisterAddress').value,
+        pin: document.getElementById('customerServiceRegisterPin').value
+      }, 'token');
+      event.currentTarget.reset();
+      await searchCustomerServiceUsers();
+      renderResponse(201, { message: 'Cliente registrado correctamente.' });
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('customerServiceResults')?.addEventListener('click', async (event) => {
+    const button = event.target instanceof HTMLElement ? event.target.closest('[data-customer-service-user-id]') : null;
+    if (button) await selectCustomerServiceUser(button.getAttribute('data-customer-service-user-id'));
+  });
+
+  document.getElementById('customerServiceUpdateForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!selectedCustomerServiceUserId) return;
+    try {
+      await apiCall(`/api/v1/customer_service/users/${selectedCustomerServiceUserId}`, 'PATCH', {
+        first_name: document.getElementById('customerServiceFirstName').value,
+        last_name: document.getElementById('customerServiceLastName').value,
+        email: document.getElementById('customerServiceEmail').value,
+        phone: document.getElementById('customerServicePhone').value,
+        document_number: document.getElementById('customerServiceDocument').value,
+        address: document.getElementById('customerServiceAddress').value
+      }, 'token');
+      await searchCustomerServiceUsers();
+      await selectCustomerServiceUser(selectedCustomerServiceUserId);
+      renderResponse(200, { message: 'Datos del cliente actualizados.' });
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('customerServiceUnblockBtn')?.addEventListener('click', async () => {
+    if (!selectedCustomerServiceUserId) return;
+    await apiCall(`/api/v1/customer_service/users/${selectedCustomerServiceUserId}/unblock`, 'PATCH', null, 'token');
+    await selectCustomerServiceUser(selectedCustomerServiceUserId);
+  });
+
+  document.getElementById('customerServiceDeactivateBtn')?.addEventListener('click', async () => {
+    if (!selectedCustomerServiceUserId) return;
+    await apiCall(`/api/v1/customer_service/users/${selectedCustomerServiceUserId}/deactivate`, 'PATCH', null, 'token');
+    await selectCustomerServiceUser(selectedCustomerServiceUserId);
+  });
+
+  document.getElementById('customerServiceReactivateBtn')?.addEventListener('click', async () => {
+    if (!selectedCustomerServiceUserId) return;
+    await apiCall(`/api/v1/customer_service/users/${selectedCustomerServiceUserId}/reactivate`, 'PATCH', null, 'token');
+    await selectCustomerServiceUser(selectedCustomerServiceUserId);
+  });
+
+  document.getElementById('customerServiceResetPinBtn')?.addEventListener('click', async () => {
+    if (!selectedCustomerServiceUserId) return;
+    const pin = document.getElementById('customerServiceResetPin').value;
+    await apiCall(`/api/v1/customer_service/users/${selectedCustomerServiceUserId}/reset_password`, 'PATCH', { pin }, 'token');
+    renderResponse(200, { message: 'PIN restablecido correctamente.' });
+  });
+
+  document.getElementById('customerServiceOpenAccountBtn')?.addEventListener('click', async () => {
+    if (!selectedCustomerServiceUserId) return;
+    await apiCall('/api/v1/customer_service/accounts', 'POST', {
+      user_id: selectedCustomerServiceUserId,
+      account_category: document.getElementById('customerServiceAccountCategory').value
+    }, 'token');
+    await selectCustomerServiceUser(selectedCustomerServiceUserId);
+  });
+
+  document.getElementById('customerServiceRefreshTicketsBtn')?.addEventListener('click', refreshCustomerServiceTickets);
+
+  document.getElementById('customerServiceCreateTicketForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      await apiCall('/api/v1/customer_service/tickets', 'POST', {
+        user_id: document.getElementById('customerServiceTicketUserId').value,
+        subject: document.getElementById('customerServiceTicketSubject').value,
+        description: document.getElementById('customerServiceTicketDescription').value,
+        priority: document.getElementById('customerServiceTicketPriority').value
+      }, 'token');
+      event.currentTarget.reset();
+      await refreshCustomerServiceTickets();
+      renderResponse(201, { message: 'Caso registrado correctamente.' });
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('customerServiceTicketsRows')?.addEventListener('click', async (event) => {
+    const button = event.target instanceof HTMLElement ? event.target.closest('[data-close-ticket]') : null;
+    if (!button) return;
+    await apiCall(`/api/v1/customer_service/tickets/${button.getAttribute('data-close-ticket')}/close`, 'PATCH', null, 'token');
+    await refreshCustomerServiceTickets();
+  });
+
+  el.txRows?.addEventListener('click', async (event) => {
+    const button = event.target instanceof HTMLElement ? event.target.closest('button') : null;
+    if (!button) return;
+
+    const downloadId = button.getAttribute('data-receipt-download');
+    const createId = button.getAttribute('data-receipt-create');
+    try {
+      if (createId) {
+        const receipt = await apiCall(`/api/v1/transactions/${createId}/receipt`, 'GET', null, 'user');
+        button.textContent = 'Descargar';
+        button.removeAttribute('data-receipt-create');
+        button.setAttribute('data-receipt-download', receipt.id);
+        renderResponse(200, { message: `Comprobante generado: ${receipt.receipt_number}` });
+        return;
+      }
+
+      if (downloadId) {
+        window.open(`${state.baseUrl}/api/v1/receipts/${downloadId}/download`, '_blank');
+      }
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('customerCreditRequestForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      await apiCall('/api/v1/customer/credit_requests', 'POST', {
+        account_id: document.getElementById('customerCreditAccountId').value,
+        amount: document.getElementById('customerCreditAmount').value,
+        term_months: document.getElementById('customerCreditMonths').value,
+        reason: document.getElementById('customerCreditReason').value
+      }, 'user');
+      renderResponse(201, { message: 'Solicitud de crédito creada.' });
+      event.currentTarget.reset();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('customerSupportForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      await apiCall('/api/v1/customer/tickets', 'POST', {
+        subject: document.getElementById('customerTicketSubject').value,
+        description: document.getElementById('customerTicketDescription').value
+      }, 'user');
+      renderResponse(201, { message: 'Ticket de soporte creado.' });
+      event.currentTarget.reset();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('customerPreferencesForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      const theme = document.getElementById('customerTheme').value;
+      await apiCall('/api/v1/customer/preferences', 'PATCH', {
+        theme
+      }, 'user');
+      applyDashboardTheme(theme);
+      renderResponse(200, { message: 'Preferencias actualizadas.' });
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('customerRefreshNotificationsBtn')?.addEventListener('click', refreshCustomerNotifications);
+
+  document.getElementById('cashOpenForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      await apiCall('/api/v1/cashier/cash/open', 'POST', { opening_balance: document.getElementById('cashOpeningBalance').value }, 'token');
+      await refreshCashierDashboard();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('cashReconciliationForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      const payload = await apiCall('/api/v1/cashier/cash/reconciliation', 'POST', { physical_balance: document.getElementById('cashPhysicalBalance').value }, 'token');
+      document.getElementById('cashReconciliationResult').textContent = `Sistema S/ ${payload.system_balance.toFixed(2)} | Físico S/ ${payload.physical_balance.toFixed(2)} | ${payload.result}`;
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('cashCloseForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    try {
+      await apiCall('/api/v1/cashier/cash/close', 'POST', {
+        physical_balance: document.getElementById('cashClosePhysicalBalance').value,
+        notes: document.getElementById('cashCloseNotes').value
+      }, 'token');
+      await refreshCashierDashboard();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  });
+
+  document.getElementById('cashClientSearchForm')?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    await refreshCashierClients();
+  });
+
+  document.getElementById('cashRefreshClientsBtn')?.addEventListener('click', refreshCashierClients);
+  document.getElementById('cashRefreshMovementsBtn')?.addEventListener('click', refreshCashierMovements);
+  document.getElementById('cashRefreshReportBtn')?.addEventListener('click', refreshCashierDashboard);
+
+
+  el.contactForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const name = el.contactName.value.trim();
+    const phone = el.contactPhone.value.trim();
+
+    try {
+      await apiCall('/api/v1/contacts', 'POST', { contact: { name, phone } });
+      el.contactForm.reset();
+      el.contactsStatus.textContent = 'Contacto agregado.';
+      await refreshContacts();
+    } catch (error) {
+      el.contactsStatus.textContent = error.message || 'No se pudo agregar el contacto.';
+    }
+  });
+
   if (hasCustomModal()) {
     el.actionModalConfirmBtn.addEventListener('click', () => resolveActionModal(true));
     el.actionModalCancelBtn.addEventListener('click', () => resolveActionModal(false));
@@ -1588,6 +2889,7 @@ function bindEvents() {
     }
     try {
       await refreshAdminDashboard();
+      await loadOperations();
       setView('admin');
     } catch (error) {
       renderResponse(422, { errors: error.message });
@@ -1648,6 +2950,60 @@ function bindEvents() {
       await refreshInstallmentsForClient();
       clearFormFields(document.getElementById('payServiceForm'));
     } catch (error) {
+      await handleMutationError(error);
+    }
+  });
+
+  document.getElementById('transferForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!isClientRole()) {
+      renderResponse(403, { errors: 'Las transferencias estan disponibles para el rol customer.' });
+      return;
+    }
+    if (!state.accountId) {
+      renderResponse(422, { errors: 'No hay cuenta de origen disponible.' });
+      return;
+    }
+
+    const recipient = document.getElementById('transferRecipient').value.trim();
+    const amount = Number(document.getElementById('transferAmount').value);
+    const statusNode = document.getElementById('transferStatus');
+
+    if (!recipient) {
+      renderResponse(422, { errors: 'Debes indicar la cuenta destino.' });
+      return;
+    }
+    if (/^\d+$/.test(recipient) && recipient === String(state.accountNumber || '')) {
+      renderResponse(422, { errors: 'No puedes transferir a tu propia cuenta.' });
+      return;
+    }
+    if (!amount || amount <= 0) {
+      renderResponse(422, { errors: 'Debes indicar un monto valido mayor a cero.' });
+      return;
+    }
+
+    if (!await confirmMutationAction(`Se transferira S/ ${amount.toFixed(2)} a la cuenta ${recipient}. Deseas continuar?`, 'transferForm')) {
+      return;
+    }
+
+    try {
+      const payload = await apiCall(`/api/v1/accounts/${state.accountId}/transfer`, 'POST', {
+        recipient_account_number: recipient,
+        amount: amount,
+        description: document.getElementById('transferDescription').value.trim()
+      });
+      const destination = (payload.recipient_account && payload.recipient_account.account_number) || recipient;
+      if (statusNode) {
+        statusNode.textContent = `Transferencia aplicada a la cuenta ${destination}.`;
+      }
+      pushAudit(`Transferencia enviada cuenta_destino=${destination} monto=${amount.toFixed(2)}`);
+      await refreshClientDashboard();
+      await refreshInstallmentsForClient();
+      clearFormFields(document.getElementById('transferForm'));
+    } catch (error) {
+      if (statusNode) {
+        statusNode.textContent = error.message || 'No se pudo completar la transferencia.';
+      }
       await handleMutationError(error);
     }
   });
@@ -1835,6 +3191,8 @@ function bindEvents() {
 
   el.showProfileSectionBtn.addEventListener('click', () => toggleAccountMaintenance('profile'));
   el.showSecuritySectionBtn.addEventListener('click', () => toggleAccountMaintenance('security'));
+  el.showBasicAuthSectionBtn.addEventListener('click', () => toggleAccountMaintenance('basic-auth'));
+  el.showApiKeysSectionBtn.addEventListener('click', () => toggleAccountMaintenance('api-keys'));
   el.hideAccountSectionBtn.addEventListener('click', () => toggleAccountMaintenance('hide'));
 
   document.getElementById('updateProfileForm').addEventListener('submit', async (event) => {
@@ -1850,7 +3208,8 @@ function bindEvents() {
     const payload = {
       first_name: el.profileFirstName.value.trim(),
       last_name: el.profileLastName.value.trim(),
-      email: el.profileEmail.value.trim()
+      email: el.profileEmail.value.trim(),
+      date_of_birth: el.profileDateOfBirth.value
     };
 
     const phone = el.profilePhone.value.trim();
@@ -1891,10 +3250,89 @@ function bindEvents() {
     }
   });
 
+  document.getElementById('basicAuthPasswordForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!state.token || !state.userId) {
+      renderResponse(401, { errors: 'Debes iniciar sesion para configurar Basic Auth.' });
+      return;
+    }
+
+    const password = el.basicAuthPassword.value;
+    const confirmation = el.basicAuthPasswordConfirmation.value;
+    const passwordLength = Array.from(password).length;
+    const passwordBytes = new TextEncoder().encode(password).length;
+
+    if (password !== confirmation) {
+      renderResponse(422, { errors: 'Las contraseñas Basic no coinciden.' });
+      el.basicAuthPasswordConfirmation.focus();
+      return;
+    }
+
+    if (passwordLength < 12 || passwordBytes > 72) {
+      renderResponse(422, { errors: 'La contraseña Basic debe tener al menos 12 caracteres y no más de 72 bytes.' });
+      el.basicAuthPassword.focus();
+      return;
+    }
+
+    if (!await confirmMutationAction('Se creara o reemplazara tu contraseña Basic Auth. Deseas continuar?', 'basicAuthPasswordForm')) {
+      return;
+    }
+
+    try {
+      await apiCall(`/api/v1/users/${state.userId}/basic_auth_password`, 'PUT', {
+        basic_auth_password: password
+      });
+      clearFormFields(document.getElementById('basicAuthPasswordForm'));
+    } catch (error) {
+      await handleMutationError(error);
+    }
+  });
+
+  document.getElementById('apiKeyCreateForm').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const name = el.apiKeyName.value.trim();
+    if (!name) {
+      renderResponse(422, { errors: 'Indica un nombre para identificar la API key.' });
+      return;
+    }
+    if (!await confirmMutationAction('Se creara una API key que solo se mostrara una vez. Deseas continuar?', 'apiKeyCreateForm')) {
+      return;
+    }
+
+    try {
+      const payload = await apiCall(`/api/v1/users/${state.userId}/api_keys`, 'POST', { name }, 'user', true);
+      el.apiKeySecretValue.textContent = payload.api_key.secret;
+      el.apiKeySecretResult.classList.remove('hidden');
+      clearFormFields(document.getElementById('apiKeyCreateForm'));
+      await refreshApiKeys();
+    } catch (error) {
+      await handleMutationError(error);
+    }
+  });
+
+  el.apiKeysRows.addEventListener('click', async (event) => {
+    const revokeButton = event.target.closest('button[data-api-key-id]');
+    if (!revokeButton) {
+      return;
+    }
+
+    const apiKeyId = revokeButton.dataset.apiKeyId;
+    if (!await confirmMutationAction('Esta API key dejará de funcionar y no se puede reactivar. ¿Deseas revocarla?', 'apiKeyCreateForm', 'danger')) {
+      return;
+    }
+
+    try {
+      await apiCall(`/api/v1/users/${state.userId}/api_keys/${apiKeyId}`, 'DELETE');
+      await refreshApiKeys();
+    } catch (error) {
+      await handleMutationError(error);
+    }
+  });
+
   document.getElementById('adminCreateUserForm').addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (!hasManagerAccess()) {
-      renderResponse(403, { errors: 'Operacion restringida a manager.' });
+    if (!hasAdminAccess()) {
+      renderResponse(403, { errors: 'La creacion de usuarios esta restringida al rol Admin.' });
       return;
     }
     if (!await confirmMutationAction('Se creara un nuevo usuario. Deseas continuar?', 'adminCreateUserForm')) {
@@ -1909,8 +3347,12 @@ function bindEvents() {
       role: document.getElementById('adminRole').value
     };
     const phone = document.getElementById('adminPhone').value.trim();
+    const dateOfBirth = document.getElementById('adminDateOfBirth').value;
     if (phone) {
       payload.phone = phone;
+    }
+    if (dateOfBirth) {
+      payload.date_of_birth = dateOfBirth;
     }
 
     try {
@@ -1941,20 +3383,95 @@ function bindEvents() {
     renderResponse(200, { message: 'Operacion cancelada. Formulario cerrado.' });
   });
 
-  document.getElementById('adminDeleteUserForm').addEventListener('submit', async (event) => {
+  el.adminClientLookupForm.addEventListener('submit', async (event) => {
     event.preventDefault();
-    const userId = document.getElementById('adminDeleteUserId').value.trim();
-    await executeAdminUserAction('delete', userId, 'adminDeleteUserForm');
+    await searchAdminClients();
   });
 
-  document.getElementById('adminBlockUserBtn').addEventListener('click', async () => {
-    const userId = document.getElementById('adminUserStateId').value.trim();
-    await executeAdminUserAction('block', userId, 'adminUserStateForm');
+  el.adminClientLookupResults.addEventListener('click', async (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLElement)) return;
+    const button = target.closest('[data-admin-client-id]');
+    if (!button) return;
+
+    const userId = button.getAttribute('data-admin-client-id');
+    try {
+      const payload = await apiCall(`/api/v1/manager/users/${userId}`, 'GET', null, 'manager');
+      el.adminClientLookupResults.classList.add('hidden');
+      renderAdminClientProfile(payload.user);
+    } catch (error) {
+      setAdminClientLookupValidation(normalizeAdminLookupErrorMessage(error.message));
+    }
   });
 
-  document.getElementById('adminUnblockUserBtn').addEventListener('click', async () => {
-    const userId = document.getElementById('adminUserStateId').value.trim();
-    await executeAdminUserAction('unblock', userId, 'adminUserStateForm');
+  el.adminClientEditForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const userId = state.selectedAdminUserId;
+    if (!userId) return;
+
+    try {
+      await apiCall(
+        `/api/v1/manager/users/${userId}`,
+        'PATCH',
+        {
+          first_name: el.adminClientFirstName.value.trim(),
+          last_name: el.adminClientLastName.value.trim(),
+          email: el.adminClientEmail.value.trim(),
+          phone: el.adminClientPhone.value.trim()
+        },
+        'manager'
+      );
+      pushAudit(`Actualizacion de datos de cliente user_id=${userId}`);
+      await refreshSelectedAdminClient();
+    } catch (error) {
+      setAdminClientLookupValidation(normalizeAdminLookupErrorMessage(error.message));
+    }
+  });
+
+  el.adminClientBlockBtn.addEventListener('click', async () => {
+    if (state.selectedAdminUserId) {
+      await executeAdminUserAction('block', state.selectedAdminUserId, 'adminClientEditForm');
+      await refreshSelectedAdminClient();
+    }
+  });
+
+  el.adminClientUnblockBtn.addEventListener('click', async () => {
+    if (state.selectedAdminUserId) {
+      await executeAdminUserAction('unblock', state.selectedAdminUserId, 'adminClientEditForm');
+      await refreshSelectedAdminClient();
+    }
+  });
+
+  el.adminClientDeactivateBtn.addEventListener('click', async () => {
+    if (state.selectedAdminUserId) {
+      await executeAdminUserAction('deactivate', state.selectedAdminUserId, 'adminClientEditForm');
+      await refreshSelectedAdminClient();
+    }
+  });
+
+  el.adminClientForcePasswordBtn.addEventListener('click', async () => {
+    if (!state.selectedAdminUserId) return;
+    if (!await confirmMutationAction('Se exigirá cambiar el PIN en el próximo ingreso. ¿Deseas continuar?', 'adminClientEditForm', 'warn')) return;
+    try {
+      await apiCall(
+        `/api/v1/users/${state.selectedAdminUserId}/force_password_change`,
+        'PATCH',
+        { enabled: true },
+        'manager'
+      );
+      pushAudit(`Cambio obligatorio de PIN user_id=${state.selectedAdminUserId}`);
+      renderResponse(200, { message: 'Cambio obligatorio de PIN activado.' });
+    } catch (error) {
+      setAdminClientLookupValidation(normalizeAdminLookupErrorMessage(error.message));
+    }
+  });
+
+  el.adminClientDeleteBtn.addEventListener('click', async () => {
+    if (state.selectedAdminUserId) {
+      await executeAdminUserAction('delete', state.selectedAdminUserId, 'adminClientEditForm');
+      renderAdminClientProfile(null);
+      await refreshAdminDashboard();
+    }
   });
 
   document.querySelectorAll('[data-admin-op]').forEach((button) => {
@@ -1979,12 +3496,167 @@ function bindEvents() {
     await executeAdminUserAction(action, userId);
   });
 
+  const reloadOperations = async () => {
+    try {
+      await loadOperations();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  };
+
+  if (el.opsPeriod) {
+    el.opsPeriod.addEventListener('change', async () => {
+      state.opsPeriod = el.opsPeriod.value;
+      state.opsPage = 1;
+      persistState();
+      await reloadOperations();
+    });
+  }
+
+  if (el.opsDate) {
+    el.opsDate.addEventListener('change', async () => {
+      state.opsDate = el.opsDate.value || new Date().toISOString().slice(0, 10);
+      state.opsPage = 1;
+      persistState();
+      await reloadOperations();
+    });
+  }
+
+  if (el.opsType) {
+    el.opsType.addEventListener('change', async () => {
+      state.opsType = el.opsType.value;
+      state.opsPage = 1;
+      persistState();
+      await reloadOperations();
+    });
+  }
+
+  if (el.opsActor) {
+    el.opsActor.addEventListener('change', async () => {
+      state.opsActor = el.opsActor.value;
+      state.opsPage = 1;
+      persistState();
+      await reloadOperations();
+    });
+  }
+
+  if (el.opsPerPage) {
+    el.opsPerPage.addEventListener('change', async () => {
+      state.opsPerPage = Number(el.opsPerPage.value);
+      state.opsPage = 1;
+      persistState();
+      await reloadOperations();
+    });
+  }
+
+  if (el.opsPrevPageBtn) {
+    el.opsPrevPageBtn.addEventListener('click', async () => {
+      if (!opsPaginationMeta.has_prev) {
+        return;
+      }
+      state.opsPage = Math.max(opsPaginationMeta.page - 1, 1);
+      persistState();
+      await reloadOperations();
+    });
+  }
+
+  if (el.opsNextPageBtn) {
+    el.opsNextPageBtn.addEventListener('click', async () => {
+      if (!opsPaginationMeta.has_next) {
+        return;
+      }
+      state.opsPage = opsPaginationMeta.page + 1;
+      persistState();
+      await reloadOperations();
+    });
+  }
+
+  if (el.opsRefreshBtn) {
+    el.opsRefreshBtn.addEventListener('click', reloadOperations);
+  }
+
+  if (el.opsDownloadBtn) {
+    el.opsDownloadBtn.addEventListener('click', async () => {
+      try {
+        await downloadOperations();
+      } catch (error) {
+        await handleMutationError(error);
+      }
+    });
+  }
+
+  const reloadLoginReport = async () => {
+    try {
+      await loadLoginReport();
+    } catch (error) {
+      renderResponse(422, { errors: error.message });
+    }
+  };
+
+  [el.loginsPeriod, el.loginsDate, el.loginsStatus, el.loginsPerPage].forEach((control) => {
+    if (!control) {
+      return;
+    }
+
+    control.addEventListener('change', async () => {
+      state.loginsPeriod = el.loginsPeriod.value;
+      state.loginsDate = el.loginsDate.value || new Date().toISOString().slice(0, 10);
+      state.loginsStatus = el.loginsStatus.value;
+      state.loginsPerPage = Number(el.loginsPerPage.value);
+      state.loginsPage = 1;
+      persistState();
+      await reloadLoginReport();
+    });
+  });
+
+  if (el.loginsPrevPageBtn) {
+    el.loginsPrevPageBtn.addEventListener('click', async () => {
+      if (!loginsPaginationMeta.has_prev) {
+        return;
+      }
+      state.loginsPage = loginsPaginationMeta.page - 1;
+      persistState();
+      await reloadLoginReport();
+    });
+  }
+
+  if (el.loginsNextPageBtn) {
+    el.loginsNextPageBtn.addEventListener('click', async () => {
+      if (!loginsPaginationMeta.has_next) {
+        return;
+      }
+      state.loginsPage = loginsPaginationMeta.page + 1;
+      persistState();
+      await reloadLoginReport();
+    });
+  }
+
+  if (el.loginsRefreshBtn) {
+    el.loginsRefreshBtn.addEventListener('click', reloadLoginReport);
+  }
+
+  if (el.loginsDownloadBtn) {
+    el.loginsDownloadBtn.addEventListener('click', async () => {
+      try {
+        await downloadLoginReport();
+      } catch (error) {
+        await handleMutationError(error);
+      }
+    });
+  }
+
   document.getElementById('refreshAdminDashboard').addEventListener('click', async () => {
     try {
       await refreshAdminDashboard();
     } catch (error) {
       renderResponse(422, { errors: error.message });
     }
+  });
+  el.refreshRolesBtn.addEventListener('click', async () => {
+    await refreshAdminRoles();
+  });
+  el.refreshAccountingBtn.addEventListener('click', async () => {
+    await refreshAccountingReports();
   });
 
   document.getElementById('adminAccountLookupForm').addEventListener('submit', async (event) => {
@@ -2011,6 +3683,53 @@ function bindEvents() {
       setAdminAccountLookupValidation(normalizeAdminLookupErrorMessage(error.message));
       renderResponse(422, { errors: error.message });
     }
+  });
+
+  const validateTargetAccountForOperation = async () => {
+    const lookup = document.getElementById('adminTargetAccountId').value.trim();
+    if (!lookup) {
+      setTargetOperationButtonsDisabled(true);
+      setTargetOperationFieldsDisabled(true);
+      setTargetAccountInfo(null);
+      setTargetAccountValidation('Debes indicar un account ID o numero de cuenta valido.');
+      renderResponse(422, { errors: 'Debes indicar account ID o numero de cuenta.' });
+      return false;
+    }
+
+    try {
+      const summary = await apiCall(`/api/v1/manager/accounts/${lookup}/summary`, 'GET', null, 'manager');
+      setTargetOperationButtonsDisabled(false);
+      setTargetOperationFieldsDisabled(false);
+      setTargetAccountInfo(summary);
+      setTargetAccountValidation('');
+      return true;
+    } catch (error) {
+      setTargetOperationButtonsDisabled(true);
+      setTargetOperationFieldsDisabled(true);
+      setTargetAccountInfo(null);
+      setTargetAccountValidation(normalizeAdminLookupErrorMessage(error.message));
+      renderResponse(422, { errors: error.message });
+      return false;
+    }
+  };
+
+  document.getElementById('adminValidateTargetAccountBtn').addEventListener('click', async () => {
+    await validateTargetAccountForOperation();
+  });
+
+  document.getElementById('adminTargetAccountId').addEventListener('input', () => {
+    const lookup = document.getElementById('adminTargetAccountId').value.trim();
+    if (!lookup) {
+      setTargetOperationButtonsDisabled(true);
+      setTargetOperationFieldsDisabled(true);
+      setTargetAccountInfo(null);
+      setTargetAccountValidation('Debes indicar un account ID o numero de cuenta valido.');
+      return;
+    }
+    setTargetOperationButtonsDisabled(true);
+    setTargetOperationFieldsDisabled(true);
+    setTargetAccountInfo(null);
+    setTargetAccountValidation('');
   });
 
   el.adminInspectLoanId.addEventListener('change', async () => {
@@ -2124,6 +3843,11 @@ function bindEvents() {
       return;
     }
 
+    const isValidTarget = await validateLoanAccountForOperation();
+    if (!isValidTarget) {
+      return;
+    }
+
     const values = getAdminLoanFormValues();
     const validationError = validateAdminLoanFormValues(values);
     if (validationError) {
@@ -2145,6 +3869,32 @@ function bindEvents() {
     }
   });
 
+  document.getElementById('adminValidateLoanAccountBtn').addEventListener('click', async () => {
+    await validateLoanAccountForOperation();
+  });
+
+  document.getElementById('adminLoanAccountId').addEventListener('input', () => {
+    const lookup = document.getElementById('adminLoanAccountId').value.trim();
+    if (!lookup) {
+      setLoanAccountInfo(null);
+      setLoanAccountValidation('Debes indicar un account ID o numero de cuenta valido.');
+      document.getElementById('adminLoanAmount').disabled = true;
+      document.getElementById('adminLoanTermMonths').disabled = true;
+      document.getElementById('adminLoanFirstDueDate').disabled = true;
+      document.getElementById('adminPreviewLoanBtn').disabled = true;
+      document.getElementById('adminCreateLoanBtn').disabled = true;
+      return;
+    }
+
+    setLoanAccountInfo(null);
+    setLoanAccountValidation('');
+    document.getElementById('adminLoanAmount').disabled = true;
+    document.getElementById('adminLoanTermMonths').disabled = true;
+    document.getElementById('adminLoanFirstDueDate').disabled = true;
+    document.getElementById('adminPreviewLoanBtn').disabled = true;
+    document.getElementById('adminCreateLoanBtn').disabled = true;
+  });
+
   document.getElementById('adminLoanAmount').addEventListener('input', () => {
     updateAdminLoanRateHintFromAmount();
   });
@@ -2154,6 +3904,12 @@ function bindEvents() {
       renderResponse(403, { errors: 'Operacion restringida a manager.' });
       return;
     }
+
+    const isValidTarget = await validateLoanAccountForOperation();
+    if (!isValidTarget) {
+      return;
+    }
+
     if (!await confirmMutationAction('Se creara el prestamo para la cuenta indicada. Deseas continuar?', 'adminCreateLoanForm')) {
       return;
     }
@@ -2181,8 +3937,12 @@ function bindEvents() {
   });
 
   document.getElementById('adminDepositTargetBtn').addEventListener('click', async () => {
-    if (!hasManagerAccess()) {
-      renderResponse(403, { errors: 'Operacion restringida a manager.' });
+    if (!hasStaffAccess()) {
+      renderResponse(403, { errors: 'Operacion restringida a personal autorizado.' });
+      return;
+    }
+    const isValidTarget = await validateTargetAccountForOperation();
+    if (!isValidTarget) {
       return;
     }
     if (!await confirmMutationAction('Se depositara saldo en la cuenta objetivo. Deseas continuar?', 'adminAccountOpsForm')) {
@@ -2213,8 +3973,12 @@ function bindEvents() {
   });
 
   document.getElementById('adminWithdrawTargetBtn').addEventListener('click', async () => {
-    if (!hasManagerAccess()) {
-      renderResponse(403, { errors: 'Operacion restringida a manager.' });
+    if (!hasStaffAccess()) {
+      renderResponse(403, { errors: 'Operacion restringida a personal autorizado.' });
+      return;
+    }
+    const isValidTarget = await validateTargetAccountForOperation();
+    if (!isValidTarget) {
       return;
     }
     if (!await confirmMutationAction('Se retirara saldo de la cuenta objetivo. Deseas continuar?', 'adminAccountOpsForm', 'danger')) {
@@ -2231,6 +3995,11 @@ function bindEvents() {
       renderResponse(422, { errors: 'Debes indicar un monto valido mayor a cero.' });
       return;
     }
+    const hasBalance = await validateTargetAccountBalanceForAction('withdraw', amount);
+    if (!hasBalance) {
+      return;
+    }
+
     try {
       await apiCall(`/api/v1/manager/accounts/${accountId}/withdraw`, 'POST', {
         amount: amount,
@@ -2245,8 +4014,12 @@ function bindEvents() {
   });
 
   document.getElementById('adminPayLoanTargetBtn').addEventListener('click', async () => {
-    if (!hasManagerAccess()) {
-      renderResponse(403, { errors: 'Operacion restringida a manager.' });
+    if (!hasStaffAccess()) {
+      renderResponse(403, { errors: 'Operacion restringida a personal autorizado.' });
+      return;
+    }
+    const isValidTarget = await validateTargetAccountForOperation();
+    if (!isValidTarget) {
       return;
     }
     if (!await confirmMutationAction('Se aplicara el pago del prestamo objetivo. Deseas continuar?', 'adminAccountOpsForm')) {
@@ -2268,12 +4041,63 @@ function bindEvents() {
       renderResponse(422, { errors: 'Debes indicar un monto valido mayor a cero.' });
       return;
     }
+    const hasBalance = await validateTargetAccountBalanceForAction('pay_loan', amount);
+    if (!hasBalance) {
+      return;
+    }
 
     try {
       await apiCall(`/api/v1/manager/accounts/${accountId}/loans/${loanId}/pay`, 'POST', {
         amount: amount
       }, 'manager');
       pushAudit(`Pago de prestamo por gerente account_id=${accountId} loan_id=${loanId}`);
+      await refreshAdminDashboard();
+      clearFormFields(document.getElementById('adminAccountOpsForm'));
+    } catch (error) {
+      await handleMutationError(error);
+    }
+  });
+
+  document.getElementById('adminPayServiceTargetBtn').addEventListener('click', async () => {
+    if (!hasStaffAccess()) {
+      renderResponse(403, { errors: 'Operacion restringida a personal autorizado.' });
+      return;
+    }
+    const isValidTarget = await validateTargetAccountForOperation();
+    if (!isValidTarget) {
+      return;
+    }
+    if (!await confirmMutationAction('Se aplicara el pago del servicio en la cuenta objetivo. Deseas continuar?', 'adminAccountOpsForm')) {
+      return;
+    }
+
+    const accountId = document.getElementById('adminTargetAccountId').value.trim();
+    const serviceId = document.getElementById('adminTargetServiceId').value;
+    const amount = Number(document.getElementById('adminTargetAmount').value);
+    if (!accountId) {
+      renderResponse(422, { errors: 'Debes indicar account_id objetivo.' });
+      return;
+    }
+    if (!serviceId) {
+      renderResponse(422, { errors: 'Debes seleccionar un servicio.' });
+      return;
+    }
+    if (!amount || amount <= 0) {
+      renderResponse(422, { errors: 'Debes indicar un monto valido mayor a cero.' });
+      return;
+    }
+    const hasBalance = await validateTargetAccountBalanceForAction('pay_service', amount);
+    if (!hasBalance) {
+      return;
+    }
+
+    try {
+      await apiCall(`/api/v1/manager/accounts/${accountId}/pay_service`, 'POST', {
+        service_id: Number(serviceId),
+        amount: amount,
+        description: document.getElementById('adminTargetDescription').value.trim()
+      }, 'manager');
+      pushAudit(`Pago de servicio por ${state.role} account_id=${accountId} service_id=${serviceId}`);
       await refreshAdminDashboard();
       clearFormFields(document.getElementById('adminAccountOpsForm'));
     } catch (error) {
@@ -2320,11 +4144,51 @@ function hydrateInputs() {
   if (el.balanceAutoIndicator) {
     el.balanceAutoIndicator.classList.toggle('hidden', !state.balanceAutoRefresh);
   }
+  if (el.opsPeriod) {
+    el.opsPeriod.value = state.opsPeriod || 'day';
+    state.opsPeriod = el.opsPeriod.value;
+  }
+  if (el.opsDate) {
+    state.opsDate = state.opsDate || new Date().toISOString().slice(0, 10);
+    el.opsDate.value = state.opsDate;
+  }
+  if (el.opsType) {
+    el.opsType.value = state.opsType || 'all';
+    state.opsType = el.opsType.value;
+  }
+  if (el.opsActor) {
+    el.opsActor.value = state.opsActor || 'all';
+    state.opsActor = el.opsActor.value;
+  }
+  if (el.opsPerPage) {
+    const opsPerPage = Number(state.opsPerPage || 10);
+    el.opsPerPage.value = String([10, 20, 50].includes(opsPerPage) ? opsPerPage : 10);
+    state.opsPerPage = Number(el.opsPerPage.value);
+  }
+  if (el.loginsPeriod) {
+    el.loginsPeriod.value = state.loginsPeriod || 'day';
+    state.loginsPeriod = el.loginsPeriod.value;
+  }
+  if (el.loginsDate) {
+    state.loginsDate = state.loginsDate || new Date().toISOString().slice(0, 10);
+    el.loginsDate.value = state.loginsDate;
+  }
+  if (el.loginsStatus) {
+    el.loginsStatus.value = state.loginsStatus || 'all';
+    state.loginsStatus = el.loginsStatus.value;
+  }
+  if (el.loginsPerPage) {
+    const loginsPerPage = Number(state.loginsPerPage || 10);
+    el.loginsPerPage.value = String([10, 20, 50].includes(loginsPerPage) ? loginsPerPage : 10);
+    state.loginsPerPage = Number(el.loginsPerPage.value);
+  }
   updateAdminLoanRateHintFromAmount();
   updatePendingPaginationUi();
   updateTransactionsPaginationUi();
   updateAdminUsersPaginationUi();
   updateAdminPlanPaginationUi();
+  updateOpsPaginationUi();
+  updateLoginsPaginationUi();
   toggleAdminOperation('');
   renderAuditLog();
   updateHeader();
@@ -2336,9 +4200,11 @@ async function init() {
     return;
   }
 
+  applyDashboardTheme(localStorage.getItem('angelfire-dashboard-theme') || 'light');
+
   ensureDashboardUiElements();
   hydrateInputs();
-  const preferredView = state.activeView || (state.role === 'manager' ? 'admin' : 'client');
+  const preferredView = resolvePreferredView();
   setView(preferredView);
   setDefaultDate();
   bindEvents();
@@ -2350,9 +4216,21 @@ async function init() {
     await refreshUserFiles();
     if (hasManagerAccess()) {
       await refreshAdminDashboard();
+      await refreshContacts();
+      await loadOperations();
+      await loadLoginReport();
       if (state.adminInspectAccountLookup) {
         await refreshAdminAccountSummary(state.adminInspectAccountLookup);
       }
+    }
+    if (state.role === 'cashier') {
+      await refreshCashierDashboard();
+    }
+    if (state.role === 'customer_service') {
+      await refreshCustomerServiceView();
+    }
+    if (state.role === 'customer') {
+      await refreshCustomerPortal();
     }
     setView(preferredView);
     syncBalanceAutoRefreshState();

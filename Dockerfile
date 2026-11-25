@@ -3,7 +3,7 @@ FROM ruby:3.2.3-bookworm
 ENV BUNDLE_PATH=/usr/local/bundle \
     BUNDLE_JOBS=4 \
     BUNDLE_RETRY=3 \
-    RAILS_ENV=development \
+    RAILS_ENV=production \
     PORT=3000
 
 WORKDIR /app
@@ -17,4 +17,5 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0", "-p", "3000"]
+#CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0", "-p", "3000"]
+CMD ["sh", "-c", "bundle exec rails db:migrate && bundle exec rails db:seed && bundle exec rails server -b 0.0.0.0 -p ${PORT:-3000}"]

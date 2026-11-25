@@ -28,10 +28,93 @@ Caracteristicas:
 - Manejo de sesion y rol desde la misma UI.
 - Selectores data-testid para futura automatizacion con Playwright.
 
-Admin semilla (db:seed):
-- Email: admin@angelfire.local
-- Cuenta sugerida: 9000000001
-- PIN: vacio (UI usa fallback 1234) o 1234
+Bootstrap de `super_admin` en producción (`db:seed`):
+- Solo crea el primer usuario cuando la base de datos no contiene usuarios.
+- Requiere `ANGELFIRE_ADMIN_EMAIL`, `ANGELFIRE_ADMIN_PIN` (4 dígitos) y `ANGELFIRE_ADMIN_ACCOUNT_NUMBER` configurados como variables de entorno.
+- Si falta una variable, el seed falla claramente en vez de crear credenciales predeterminadas.
+- El registro público siempre crea usuarios `customer`; no concede privilegios administrativos.
+
+## Matriz actual de roles
+
+- customer: servicios propios, transferencias, pagos, préstamos, comprobantes y soporte.
+- cashier: caja, arqueo, cierre, operaciones sobre cuentas y reportes diarios.
+- customer_service: clientes, acceso, cuentas, soporte y reclamos.
+- manager: gestión, reportes, préstamos y conciliaciones.
+- admin: administración completa.
+- super_admin: acceso total; solo otro super_admin puede crear este rol.
+- accountant, auditor, supervisor y financial_manager: roles especializados disponibles en el modelo y catálogo de roles.
+
+## Endpoints nuevos por módulo
+
+### Recuperación y reversión
+
+- POST /api/v1/password/reset/request
+- POST /api/v1/password/reset
+- POST /api/v1/accounts/:id/reverse/:transaction_id
+
+### Portal del cliente
+
+- GET /api/v1/customer/dashboard
+- GET /api/v1/customer/transactions
+- GET /api/v1/customer/accounts/:account_id/statement
+- GET /api/v1/customer/credit_requests
+- POST /api/v1/customer/credit_requests
+- GET /api/v1/customer/tickets
+- POST /api/v1/customer/tickets
+- GET /api/v1/customer/preferences
+- PATCH /api/v1/customer/preferences
+- GET /api/v1/customer/notifications
+- PATCH /api/v1/customer/notifications/:id/read
+
+### Comprobantes
+
+- GET /api/v1/receipts/:id
+- GET /api/v1/receipts/:id/download
+- GET /api/v1/transactions/:transaction_id/receipt
+
+### Caja del cajero
+
+- POST /api/v1/cashier/cash/open
+- GET /api/v1/cashier/cash/status
+- GET /api/v1/cashier/cash/movements
+- POST /api/v1/cashier/cash/reconciliation
+- POST /api/v1/cashier/cash/close
+- GET /api/v1/cashier/reports/daily
+- GET /api/v1/cashier/receipts
+- GET /api/v1/cashier/clients/search
+
+### Atención al Cliente
+
+- GET /api/v1/customer_service/users/search
+- POST /api/v1/customer_service/users
+- PATCH /api/v1/customer_service/users/:id
+- PATCH /api/v1/customer_service/users/:id/unblock
+- PATCH /api/v1/customer_service/users/:id/deactivate
+- PATCH /api/v1/customer_service/users/:id/reactivate
+- PATCH /api/v1/customer_service/users/:id/reset_password
+- POST /api/v1/customer_service/accounts
+- PATCH /api/v1/customer_service/accounts/:id/status
+- GET /api/v1/customer_service/users/:user_id/accounts
+- GET /api/v1/customer_service/tickets
+- POST /api/v1/customer_service/tickets
+- PATCH /api/v1/customer_service/tickets/:id/close
+
+### Roles, conciliación, contabilidad y facturas
+
+- GET /api/v1/manager/roles
+- GET /api/v1/manager/reports/dashboard
+- GET /api/v1/manager/reconciliations
+- POST /api/v1/manager/reconciliations
+- GET /api/v1/manager/accounting/accounts
+- POST /api/v1/manager/accounting/accounts
+- GET /api/v1/manager/accounting/journal_entries
+- POST /api/v1/manager/accounting/journal_entries
+- POST /api/v1/manager/accounting/journal_entries/:id/approve
+- GET /api/v1/manager/accounting/reports
+- GET /api/v1/manager/invoices
+- POST /api/v1/manager/invoices
+- PATCH /api/v1/manager/accounts/:account_id/limits
+- PATCH /api/v1/manager/accounts/:account_id/status
 
 ## 1. Salud y autenticacion
 
@@ -41,12 +124,26 @@ Verifica API operativa.
 ### POST /api/v1/register
 Registra cliente.
 
+El formulario web solicita datos personales, fecha de nacimiento y domicilio en tres pasos. Para mantener compatibilidad, `phone`, `date_of_birth` y `address` son opcionales para clientes API anteriores.
+
 Body:
 {
   "first_name": "Ana",
   "last_name": "Lopez",
   "email": "ana@example.com",
-  "pin": "1234"
+  "phone": "+59170000000",
+  "date_of_birth": "1990-04-12",
+  "pin": "1234",
+  "address": {
+    "country": "Bolivia",
+    "city": "La Paz",
+    "province": "La Paz",
+    "street": "Avenida Central",
+    "street_number": "123",
+    "district": "Centro",
+    "postal_code": "0001",
+    "reference": "Edificio azul"
+  }
 }
 
 ### POST /api/v1/login
@@ -73,7 +170,9 @@ Body:
 }
 
 ### GET /api/v1/users/:id/profile
-Retorna perfil con role.
+Retorna el perfil del usuario autenticado con `role` y `date_of_birth` (`YYYY-MM-DD` o `null`).
+
+Las respuestas de registro, login, perfil y actualización también incluyen `date_of_birth` dentro del objeto `user`.
 
 ### GET /api/v1/users/:id/address
 Consulta direccion del usuario.
@@ -328,9 +427,23 @@ Body:
   "last_name": "Perez",
   "email": "mario.perez@example.com",
   "phone": "+51998111222",
+  "date_of_birth": "1990-04-12",
   "pin": "1234",
   "role": "customer"
 }
+```
+
+### PUT/PATCH /api/v1/manager/users/:id
+Actualiza datos de un usuario. Solo Admin puede ejecutar esta operación; se acepta
+`date_of_birth` en formato `YYYY-MM-DD`. El listado y detalle de usuarios manager
+también devuelven `date_of_birth`.
+
+Ejemplo cURL:
+```bash
+curl -X PATCH http://localhost:3001/api/v1/manager/users/5 \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $TOKEN" \
+  -d '{"date_of_birth":"1992-06-15"}'
 
 ### PATCH /api/v1/manager/users/:id/block
 Bloquea un usuario activo (no permite bloquear al propio usuario gerente ni a usuarios desactivados).
@@ -366,6 +479,20 @@ Parametro opcional:
 
 Ejemplo:
 /api/v1/manager/reports/accounts_activity?days=15
+
+### GET /api/v1/manager/logins
+Reporte paginado de accesos de usuarios. Cada intento guarda fecha, resultado (`success`, `failure`, `blocked`), ID/nombre de usuario cuando la cuenta existe y el número de cuenta intentado. No se guardan PIN ni tokens.
+
+Query params:
+- `period`: `day` (por defecto), `week` o `month`.
+- `date`: fecha de referencia `YYYY-MM-DD` (por defecto, fecha actual).
+- `status`: `all` (por defecto), `success`, `failure` o `blocked`.
+- `page` y `per_page`: paginación (por defecto 10, máximo 50).
+
+La respuesta incluye `totals_by_status` para el periodo completo y `logins` con los registros de la página solicitada.
+
+### GET /api/v1/manager/logins/download
+Descarga el reporte de accesos en CSV usando los mismos filtros `period`, `date` y `status`. Columnas: `created_at`, `status`, `user_id`, `user_name`, `account_number`.
 
 ### POST /api/v1/manager/loans/:id/cancel
 Cancela prestamo (si no esta completed).
@@ -412,6 +539,12 @@ Resumen de cuenta para consulta operativa manager.
 
 Acepta account_id o account_number en :account_id.
 
+Uso operativo:
+- Debe ejecutarse antes de continuar con operaciones sobre una cuenta objetivo.
+- Si la cuenta no existe o no corresponde a un cliente valido, la UI debe mostrar error y bloquear la operacion.
+- Si la cuenta es valida, el frontend debe mostrar la cuenta + nombre del cliente y habilitar los campos de monto/servicio/prestamo.
+- Este resumen queda disponible para personal autorizado (admin, manager y cashier) al operar una cuenta de usuario; la creacion de prestamos se mantiene restrigida a admin/manager.
+
 ### GET /api/v1/manager/accounts/:account_id/loans/:loan_id/installments
 Plan de pagos paginado para manager.
 
@@ -445,6 +578,55 @@ Retiro por manager en cuenta objetivo.
 
 ### POST /api/v1/manager/accounts/:account_id/loans/:loan_id/pay
 Pago de prestamo por manager.
+
+### GET /api/v1/manager/operations
+Bitacora de operaciones para el panel de administracion: depositos, retiros, pagos de prestamo, pagos de servicio y transferencias.
+
+Query params:
+- `period`: `day` (por defecto), `week` o `month`. El rango se calcula alrededor de la fecha de consulta.
+- `date`: fecha de referencia en formato `YYYY-MM-DD` (por defecto, la fecha actual).
+- `operation_type`: `all` (por defecto), `deposit`, `withdraw`, `transfer`, `loan_payment`, `service_payment`, `atm_deposit`, `atm_withdrawal`, o los grupos `credit` y `debit`.
+- `performed_by`: `all` (por defecto), `manager` (operaciones ejecutadas por admin) o `user`.
+- `page` y `per_page`: paginacion (por defecto 10, maximo 50).
+
+Respuesta (paginada):
+```json
+{
+  "period": "month",
+  "date": "2026-09-30",
+  "range": { "from": "2026-09-01T00:00:00Z", "to": "2026-09-30T23:59:59Z" },
+  "page": 1,
+  "per_page": 10,
+  "total": 31,
+  "total_pages": 4,
+  "has_prev": false,
+  "has_next": true,
+  "total_amount": 4120.0,
+  "operations": [
+    {
+      "id": 186,
+      "created_at": "2026-09-29T05:00:29.206Z",
+      "transaction_type": "withdraw",
+      "amount": 70.0,
+      "description": "test MPC",
+      "status": "completed",
+      "account_id": 95,
+      "account_number": "5660550485",
+      "user_id": 90,
+      "user_name": "Nombre Apellido",
+      "performed_by_role": "user",
+      "performed_by_user_id": 90,
+      "performed_by_name": "Nombre Apellido",
+      "performed_by_label": "Nombre Apellido"
+    }
+  ]
+}
+```
+
+### GET /api/v1/manager/operations/download
+Descarga la bitacora de operaciones en CSV, aplicando los mismos filtros que el listado (`period`, `date`, `operation_type`, `performed_by`). La respuesta se envia como `text/csv` con `Content-Disposition: attachment`.
+
+Columnas: `id`, `created_at`, `transaction_type`, `amount`, `description`, `status`, `account_number`, `user_id`, `user_name`, `performed_by_role`, `performed_by_user_id`, `performed_by_name`.
 
 ## 9. Ejemplos cURL rapidos
 
