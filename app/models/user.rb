@@ -148,7 +148,7 @@ class User < ApplicationRecord
   private
 
   def create_default_account
-    account_attributes = { default: true, balance: 1_000 }
+    account_attributes = { default: true, balance: 0 }
     if default_account_number.present?
       account_attributes[:account_number] = default_account_number.to_s.strip
     end
