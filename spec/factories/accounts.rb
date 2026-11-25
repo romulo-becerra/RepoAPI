@@ -15,8 +15,8 @@
 FactoryBot.define do
   factory :account do
     user
-    account_number { "1234567890" }
+    sequence(:account_number) { |n| (8_000_000_000 + n).to_s }
     balance        { 1_000 }
-    clabe          { "123456789012345678" }
+    sequence(:clabe) { |n| (800_000_000_000_000_000 + n).to_s }
   end
 end

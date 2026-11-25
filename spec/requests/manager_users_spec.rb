@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe 'Manager::Users API', type: :request do
+  before { host! 'localhost' }
+
   let(:admin) { create(:user, role: :admin, pin: '1234') }
   let!(:admin_account) { create(:account, user: admin) }
   let(:manager) { create(:user, role: :manager, pin: '1234') }
@@ -176,8 +178,10 @@ RSpec.describe 'Manager::Users API', type: :request do
     end
 
     it 'creates a cashier user with the requested account number when an admin specifies it' do
+      account_number = "9#{SecureRandom.random_number(1_000_000_000).to_s.rjust(9, '0')}"
+
       post '/api/v1/manager/users',
-           params: { first_name: 'Caja', last_name: 'Tres', email: 'caja.tres@example.com', pin: '1234', role: 'cashier', account_number: '9000000003' },
+           params: { first_name: 'Caja', last_name: 'Tres', email: 'caja.tres@example.com', pin: '1234', role: 'cashier', account_number: account_number },
            headers: headers,
            as: :json
 
@@ -185,7 +189,7 @@ RSpec.describe 'Manager::Users API', type: :request do
       created = User.find_by(email: 'caja.tres@example.com')
       expect(created).to be_present
       expect(created.role).to eq('cashier')
-      expect(created.accounts.find_by(default: true).account_number).to eq('9000000003')
+      expect(created.accounts.find_by(default: true).account_number).to eq(account_number)
     end
   end
 end
